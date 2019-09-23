@@ -3,18 +3,9 @@
 #include <vector>
 #include <fstream>
 
+#include "util.hpp"
+
 namespace autocomplete {
-
-// assume 32 bits are enough to store
-// both a term_id and a doc_id
-typedef uint32_t term_id_type;
-typedef uint32_t doc_id_type;
-
-namespace global {
-static const doc_id_type invalid_doc_id = doc_id_type(-1);
-static const term_id_type invalid_term_id = term_id_type(-1);
-static const term_id_type terminator = 0;
-}  // namespace global
 
 struct range {
     uint64_t begin, end;
@@ -85,6 +76,10 @@ struct completion {
 
     void swap(completion& other) {
         term_ids.swap(other.term_ids);
+    }
+
+    void push_back(term_id_type t) {
+        term_ids.push_back(t);
     }
 
     doc_id_type doc_id;

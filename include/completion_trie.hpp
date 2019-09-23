@@ -20,7 +20,7 @@ struct completion_trie {
                 m_left_extremes[i].reserve(params.nodes_per_level[i]);
                 m_sizes[i].reserve(params.nodes_per_level[i]);
                 if (i != params.num_levels - 1) {
-                    m_pointers[i].reserve(params.nodes_per_level[i]);
+                    m_pointers[i].reserve(params.nodes_per_level[i] + 1);
                     m_pointers[i].push_back(0);
                 }
             }
@@ -29,8 +29,7 @@ struct completion_trie {
             std::ifstream input(params.collection_basename, std::ios_base::in);
             completion_iterator it(params, input);
             completion prev = completion::empty();
-            uint32_t begin = 0;
-            uint32_t end = 0;
+            range r = {0, 0};
 
             while (input) {
                 completion& curr = *it;
@@ -45,8 +44,6 @@ struct completion_trie {
                        curr[l] == prev[l]) {
                     ++l;
                 }
-
-                std::cout << "|lcp| = " << l << std::endl;
 
                 for (uint32_t i = l;
                      prev.size() > 0 and i < params.num_levels - 1 and
@@ -67,12 +64,12 @@ struct completion_trie {
 
                 for (uint32_t i = l; prev.size() > 0 and i <= prev.size();
                      ++i) {
-                    m_sizes[i].push_back(end - 1);
+                    m_sizes[i].push_back(r.end - 1);
                 }
 
                 for (uint32_t i = l; i <= curr.size(); ++i) {
                     m_nodes[i].push_back(curr[i]);
-                    m_left_extremes[i].push_back(begin);
+                    m_left_extremes[i].push_back(r.begin);
                 }
 
                 // for (auto x : offsets) {
@@ -82,14 +79,18 @@ struct completion_trie {
 
                 prev.swap(curr);
                 ++it;
-                ++begin;
-                ++end;
+                ++r.begin;
+                ++r.end;
             }
 
             input.close();
 
             for (uint32_t i = 0; i != prev.size() + 1; ++i) {
-                m_sizes[i].push_back(end - 1);
+                m_sizes[i].push_back(r.end - 1);
+            }
+
+            for (uint32_t i = 0; i != params.num_levels - 1; ++i) {
+                m_pointers[i].push_back(m_nodes[i + 1].size());
             }
 
             // NOTE: take the lengths of the ranges (minus 1)
@@ -114,45 +115,45 @@ struct completion_trie {
                 }
             }
 
-            std::cout << "nodes: " << std::endl;
-            std::cout << "| ";
-            for (auto const& vec : m_nodes) {
-                for (auto x : vec) {
-                    std::cout << x << " ";
-                }
-                std::cout << "| ";
-            }
-            std::cout << std::endl;
+            // std::cout << "nodes: " << std::endl;
+            // std::cout << "| ";
+            // for (auto const& vec : m_nodes) {
+            //     for (auto x : vec) {
+            //         std::cout << x << " ";
+            //     }
+            //     std::cout << "| ";
+            // }
+            // std::cout << std::endl;
 
-            std::cout << "pointers: " << std::endl;
-            std::cout << "| ";
-            for (auto const& vec : m_pointers) {
-                for (auto x : vec) {
-                    std::cout << x << " ";
-                }
-                std::cout << "| ";
-            }
-            std::cout << std::endl;
+            // std::cout << "pointers: " << std::endl;
+            // std::cout << "| ";
+            // for (auto const& vec : m_pointers) {
+            //     for (auto x : vec) {
+            //         std::cout << x << " ";
+            //     }
+            //     std::cout << "| ";
+            // }
+            // std::cout << std::endl;
 
-            std::cout << "left_extremes: " << std::endl;
-            std::cout << "| ";
-            for (auto const& vec : m_left_extremes) {
-                for (auto x : vec) {
-                    std::cout << x << " ";
-                }
-                std::cout << "| ";
-            }
-            std::cout << std::endl;
+            // std::cout << "left_extremes: " << std::endl;
+            // std::cout << "| ";
+            // for (auto const& vec : m_left_extremes) {
+            //     for (auto x : vec) {
+            //         std::cout << x << " ";
+            //     }
+            //     std::cout << "| ";
+            // }
+            // std::cout << std::endl;
 
-            std::cout << "sizes: " << std::endl;
-            std::cout << "| ";
-            for (auto const& vec : m_sizes) {
-                for (auto x : vec) {
-                    std::cout << x << " ";
-                }
-                std::cout << "| ";
-            }
-            std::cout << std::endl;
+            // std::cout << "sizes: " << std::endl;
+            // std::cout << "| ";
+            // for (auto const& vec : m_sizes) {
+            //     for (auto x : vec) {
+            //         std::cout << x << " ";
+            //     }
+            //     std::cout << "| ";
+            // }
+            // std::cout << std::endl;
         }
 
         void swap(builder& other) {
@@ -198,6 +199,24 @@ struct completion_trie {
     };
 
     completion_trie() {}
+
+    range prefix_range(completion const& c) const {
+        range r = {global::not_found, global::not_found};
+        range pointer = {0, m_nodes.front().size()};
+        uint32_t levels = c.size();
+
+        for (uint32_t i = 0; i <= levels; ++i) {
+            uint64_t pos = m_nodes[i].find(pointer, c[i]);
+            if (pos == global::not_found) break;
+            r.begin = m_left_extremes[i].access(pos) + pos;
+            uint64_t size = m_sizes[i].access(pos) -
+                            (pos ? m_sizes[i].access(pos - 1) : 0) + 1;
+            r.end = r.begin + size;
+            if (i != levels) pointer = m_pointers[i][pos];
+        }
+
+        return r;
+    }
 
     // void print_stats(essentials::json_lines& stats, size_t bytes);
 

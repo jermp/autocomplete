@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "util.hpp"
 #include "../external/essentials/include/essentials.hpp"
 
 namespace autocomplete {
@@ -43,6 +44,48 @@ struct uint32_vec {
         assert(m_data.size() == n);
     }
 
+    struct iterator {
+        iterator(uint32_vec const& vec, uint64_t pos)
+            : m_vec(&vec)
+            , m_pos(pos) {}
+
+        uint32_t operator*() {
+            return m_vec->access(m_pos);
+        }
+
+        void operator++() {
+            ++m_pos;
+        }
+
+    private:
+        uint32_vec const* m_vec;
+        uint64_t m_pos;
+    };
+
+    size_t size() const {
+        return m_data.size();
+    }
+
+    uint32_t access(uint64_t i) const {
+        assert(i < size());
+        return m_data[i];
+    }
+
+    uint64_t find(range const& r, uint64_t id) const {
+        assert(r.end > r.begin);
+        assert(r.end <= size());
+        uint64_t prev_upper = previous_range_upperbound(r);
+        return scan_binary_search(*this, id + prev_upper, r.begin, r.end - 1);
+    }
+
+    inline range operator[](uint64_t i) const {
+        return {access(i), access(i + 1)};
+    }
+
+    iterator at(uint64_t pos) const {
+        return iterator(*this, pos);
+    }
+
     size_t bytes() const {
         return essentials::vec_bytes(m_data);
     }
@@ -60,6 +103,12 @@ struct uint32_vec {
 
 private:
     std::vector<uint32_t> m_data;
+
+    uint64_t previous_range_upperbound(range const& r) const {
+        uint64_t x = 0;
+        if (r.begin) x = access(r.begin - 1);
+        return x;
+    }
 };
 
 }  // namespace autocomplete
