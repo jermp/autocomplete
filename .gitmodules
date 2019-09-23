@@ -1,0 +1,3 @@
+[submodule "external/essentials"]
+	path = external/essentials
+	url = https://github.com/jermp/essentials

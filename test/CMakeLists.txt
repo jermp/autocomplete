@@ -1,0 +1,1 @@
+add_executable(test_completion_trie test_completion_trie.cpp)
