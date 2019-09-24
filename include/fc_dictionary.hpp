@@ -161,18 +161,11 @@ private:
 
     term_id_type locate_term(byte_range t, byte_range h,
                              term_id_type bucket_id) const {
-        assert(bucket_id < buckets());
-        static std::string decoded(256 + 1, '\0');
-        uint8_t const* begin = h.begin;
-        uint8_t i = 0;
-        for (; begin[i] != '\0'; ++i) {
-            decoded[i] = begin[i];
-        }
-        decoded[i] = '\0';
-
+        static uint8_t* decoded = new uint8_t[256 + 1];
+        memcpy(decoded, h.begin, h.end - h.begin + 1);
         range pointer = m_pointers_to_buckets[bucket_id];
         uint32_t n = pointer.end - pointer.begin;
-        uint8_t const* curr = &m_buckets[pointer.begin];
+        uint8_t const* curr = m_buckets.data() + pointer.begin;
         for (term_id_type i = 1; i <= n; ++i) {
             uint8_t l = *curr;  // |lcp|
             curr += 1;
@@ -180,14 +173,13 @@ private:
                 decoded[l] = *curr;
             }
             decoded[l] = '\0';
-            begin = reinterpret_cast<uint8_t const*>(decoded.c_str());
-            int cmp = byte_range_compare(t, {begin, begin + l});
+            int cmp = byte_range_compare(t, {decoded, decoded + l});
             if (cmp == 0) return i;
-            if (cmp < 0) break;  // not found
+            if (cmp < 0) return global::invalid_term_id;
             curr += 1;
         }
-
-        return global::invalid_term_id;
+        assert(false);
+        __builtin_unreachable();
     }
 };
 
