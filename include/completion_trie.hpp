@@ -52,16 +52,6 @@ struct completion_trie {
                     offsets[i] = 0;
                 }
 
-                // if (l == 0) {  // special case
-                //     for (uint32_t i = 0; i < curr_s; ++i) {
-                //         ++offsets[i];
-                //     }
-                // } else {
-                //     for (uint32_t i = l; i <= curr_s; ++i) {
-                //         ++offsets[i - 1];
-                //     }
-                // }
-
                 uint32_t one = l > 0 ? 1 : 0;
                 for (uint32_t i = l; i < curr_s + one; ++i) {
                     ++offsets[i - one];

@@ -1,12 +1,16 @@
 Input data format
 -----------------
 
-The test file `completions` lists all completions in
-*lexicographical* order.
+The input file should list all completions in
+*lexicographical* order, e.g., see the the files
+`completions` and `trec05_efficiency_queries`.
 
 The first column represent the
 ID of the completion; the other columns contain the
 tokens separated by white spaces.
+(The IDs for the file `trec05_efficiency_queries` are
+fake, i.e., they do not take into account any
+particular assignment.)
 
 The file `completions.dict` lists all the distinct
 tokens in the completions sorted in lexicographical
