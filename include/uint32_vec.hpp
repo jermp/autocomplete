@@ -3,7 +3,6 @@
 #include <vector>
 
 #include "util.hpp"
-#include "../external/essentials/include/essentials.hpp"
 
 namespace autocomplete {
 

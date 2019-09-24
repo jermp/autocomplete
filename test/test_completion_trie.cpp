@@ -65,7 +65,11 @@ int main(int argc, char** argv) {
         // test prefix_range() for all prefixes
         std::vector<completion> completions;
         completions.reserve(params.num_completions);
-        std::ifstream input(params.collection_basename, std::ios_base::in);
+        std::ifstream input(params.collection_basename + ".mapped",
+                            std::ios_base::in);
+        if (!input.good()) {
+            throw std::runtime_error("File not found");
+        }
         completion_iterator it(params, input);
         while (input) {
             completion const& c = *it;

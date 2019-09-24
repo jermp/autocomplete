@@ -8,38 +8,60 @@
 namespace autocomplete {
 
 struct range {
-    uint64_t begin, end;
+    uint64_t begin;
+    uint64_t end;
 };
+
+struct byte_range {
+    uint8_t const* begin;
+    uint8_t const* end;
+};
+
+byte_range string_to_byte_range(std::string const& s) {
+    const uint8_t* begin = reinterpret_cast<uint8_t const*>(s.c_str());
+    const uint8_t* end = begin + s.size() + 1;  // for terminator
+    return {begin, end};
+}
+
+int byte_range_compare(byte_range l, byte_range r) {
+    uint32_t i = 0;
+    while (l.begin != l.end and r.begin != r.end and *(l.begin) == *(r.begin)) {
+        ++i;
+        ++l.begin;
+        ++r.begin;
+    }
+    return *(l.begin) - *(r.begin);
+}
 
 struct parameters {
     parameters()
-        : num_completions(0)
-        , num_levels(0)
-        , collection_basename(nullptr) {}
+        : num_terms(0)
+        , num_completions(0)
+        , num_levels(0) {}
 
     void load() {
-        std::string filename = std::string(collection_basename) + ".stats";
-        std::ifstream input(filename.c_str(), std::ios_base::in);
+        std::ifstream input((collection_basename + ".mapped.stats").c_str(),
+                            std::ios_base::in);
         if (!input.good()) {
             throw std::runtime_error("File with statistics not found");
         }
+        input >> num_terms;
         input >> num_completions;
         input >> num_levels;
+        assert(num_terms > 0);
         assert(num_completions > 0);
         assert(num_levels > 0);
         nodes_per_level.resize(num_levels, 0);
         for (uint32_t i = 0; i != num_levels; ++i) {
             input >> nodes_per_level[i];
         }
-        // for (auto x : nodes_per_level) {
-        //     std::cout << x << std::endl;
-        // }
     }
 
+    uint32_t num_terms;
     uint32_t num_completions;
     uint32_t num_levels;
     std::vector<uint32_t> nodes_per_level;
-    char const* collection_basename;
+    std::string collection_basename;
 };
 
 struct completion {

@@ -27,18 +27,15 @@ struct completion_trie {
             }
 
             std::vector<uint32_t> offsets(levels - 1, 0);
-            std::ifstream input(params.collection_basename, std::ios_base::in);
+            std::ifstream input(
+                (params.collection_basename + ".mapped").c_str(),
+                std::ios_base::in);
             completion_iterator it(params, input);
             completion prev = completion::empty();
             range r = {0, 0};
 
             while (input) {
                 completion& curr = *it;
-
-                // std::cout << "\n" << curr << std::endl;
-                // std::cout << "prev size: " << prev.size() << std::endl;
-                // std::cout << "curr size: " << curr.size() << std::endl;
-
                 uint32_t prev_s = prev.size();
                 uint32_t curr_s = curr.size();
                 uint32_t l = 0;  // |lcp(curr,prev)|
@@ -103,46 +100,6 @@ struct completion_trie {
                     vec[i] -= i;
                 }
             }
-
-            // std::cout << "nodes: " << std::endl;
-            // std::cout << "| ";
-            // for (auto const& vec : m_nodes) {
-            //     for (auto x : vec) {
-            //         std::cout << x << " ";
-            //     }
-            //     std::cout << "| ";
-            // }
-            // std::cout << std::endl;
-
-            // std::cout << "pointers: " << std::endl;
-            // std::cout << "| ";
-            // for (auto const& vec : m_pointers) {
-            //     for (auto x : vec) {
-            //         std::cout << x << " ";
-            //     }
-            //     std::cout << "| ";
-            // }
-            // std::cout << std::endl;
-
-            // std::cout << "left_extremes: " << std::endl;
-            // std::cout << "| ";
-            // for (auto const& vec : m_left_extremes) {
-            //     for (auto x : vec) {
-            //         std::cout << x << " ";
-            //     }
-            //     std::cout << "| ";
-            // }
-            // std::cout << std::endl;
-
-            // std::cout << "sizes: " << std::endl;
-            // std::cout << "| ";
-            // for (auto const& vec : m_sizes) {
-            //     for (auto x : vec) {
-            //         std::cout << x << " ";
-            //     }
-            //     std::cout << "| ";
-            // }
-            // std::cout << std::endl;
         }
 
         void swap(builder& other) {

@@ -6,7 +6,7 @@ nodes_per_level = {} # (level_id, num_nodes)
 lines = 0
 print("building stats...")
 
-output_file = open(input_filename + ".stats", 'w')
+output_file = open(input_filename + ".stats", 'a')
 prev = []
 with open(input_filename, 'r') as f:
     for line in f:

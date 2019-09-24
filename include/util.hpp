@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../external/essentials/include/essentials.hpp"
+
 namespace autocomplete {
 
 // assume 32 bits are enough to store

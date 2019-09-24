@@ -15,6 +15,8 @@ lines = 0
 print("mapping dataset...")
 
 output_file = open(input_filename + ".mapped", 'w')
+stats_file = open(input_filename + ".mapped.stats", 'w')
+
 with open(input_filename, 'r') as f:
     for line in f:
         x = line.rstrip('\n').split()
@@ -37,3 +39,6 @@ with open(input_filename, 'r') as f:
         if lines % 1000000 == 0:
             print("processed " + str(lines) + " lines")
 output_file.close()
+
+stats_file.write(str(len(tokens)) + "\n")
+stats_file.close()
