@@ -4,6 +4,17 @@
 
 using namespace autocomplete;
 
+range prefix_range(std::vector<completion> const& completions,
+                   completion const& c) {
+    completion_comparator comp;
+    auto b = std::lower_bound(completions.begin(), completions.end(), c, comp);
+    uint64_t begin = std::distance(completions.begin(), b);
+    auto e = std::upper_bound(completions.begin() + begin, completions.end(), c,
+                              comp);
+    uint64_t end = std::distance(completions.begin(), e);
+    return {begin, end};
+}
+
 int main(int argc, char** argv) {
     int mandatory = 2;
     if (argc < mandatory) {
@@ -53,21 +64,37 @@ int main(int argc, char** argv) {
         ct.print();
 
         // test prefix_range() for all prefixes
+        std::vector<completion> completions;
+        completions.reserve(params.num_completions);
         std::ifstream input(params.collection_basename, std::ios_base::in);
         completion_iterator it(params, input);
         while (input) {
             completion const& c = *it;
+            completions.push_back(std::move(c));
+            ++it;
+        }
+
+        for (auto const& c : completions) {
             for (uint32_t prefix_len = 1; prefix_len <= c.size();
                  ++prefix_len) {
                 completion prefix(prefix_len);
                 for (uint32_t i = 0; i != prefix_len; ++i) {
                     prefix.push_back(c[i]);
                 }
-                range r = ct.prefix_range(prefix);
+                range got = ct.prefix_range(prefix);
+                range expected = prefix_range(completions, prefix);
+
+                if ((got.begin != expected.begin) or
+                    (got.end != expected.end)) {
+                    std::cout << "Error: expected [" << expected.begin << ","
+                              << expected.end << ") but got [" << got.begin
+                              << "," << got.end << ")" << std::endl;
+                    return 1;
+                }
+
                 std::cout << "prefix range of '" << prefix << "' is ["
-                          << r.begin << "," << r.end << ")" << std::endl;
+                          << got.begin << "," << got.end << ")" << std::endl;
             }
-            ++it;
         }
     }
 

@@ -38,16 +38,16 @@ struct completion_trie {
                 // std::cout << "prev size: " << prev.size() << std::endl;
                 // std::cout << "curr size: " << curr.size() << std::endl;
 
+                uint32_t prev_s = prev.size();
+                uint32_t curr_s = curr.size();
                 uint32_t l = 0;  // |lcp(curr,prev)|
 
-                while (l != curr.size() and l != prev.size() and
-                       curr[l] == prev[l]) {
+                while (l != curr_s and l != prev_s and curr[l] == prev[l]) {
                     ++l;
                 }
 
                 for (uint32_t i = l;
-                     prev.size() > 0 and i < params.num_levels - 1 and
-                     i <= prev.size();
+                     prev_s > 0 and i < params.num_levels - 1 and i <= prev_s;
                      ++i) {
                     uint32_t last = m_pointers[i].back();
                     m_pointers[i].push_back(last + offsets[i]);
@@ -57,17 +57,16 @@ struct completion_trie {
                 if (l == 0) {  // special case
                     ++offsets[0];
                 } else {
-                    for (uint32_t i = l; i <= curr.size(); ++i) {
+                    for (uint32_t i = l; i <= curr_s; ++i) {
                         ++offsets[i - 1];
                     }
                 }
 
-                for (uint32_t i = l; prev.size() > 0 and i <= prev.size();
-                     ++i) {
+                for (uint32_t i = l; prev_s > 0 and i <= prev_s; ++i) {
                     m_sizes[i].push_back(r.end - 1);
                 }
 
-                for (uint32_t i = l; i <= curr.size(); ++i) {
+                for (uint32_t i = l; i <= curr_s; ++i) {
                     m_nodes[i].push_back(curr[i]);
                     m_left_extremes[i].push_back(r.begin);
                 }
@@ -207,11 +206,16 @@ struct completion_trie {
 
         for (uint32_t i = 0; i <= levels; ++i) {
             uint64_t pos = m_nodes[i].find(pointer, c[i]);
+
+            // if c is not stored in the trie but only
+            // a prefix p, then return the range of p
             if (pos == global::not_found) break;
+
             r.begin = m_left_extremes[i].access(pos) + pos;
             uint64_t size = m_sizes[i].access(pos) -
                             (pos ? m_sizes[i].access(pos - 1) : 0) + 1;
             r.end = r.begin + size;
+
             if (i != levels) pointer = m_pointers[i][pos];
         }
 

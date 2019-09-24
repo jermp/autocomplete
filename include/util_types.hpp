@@ -86,6 +86,16 @@ struct completion {
     std::vector<term_id_type> term_ids;
 };
 
+struct completion_comparator {
+    bool operator()(completion const& lhs, completion const& rhs) const {
+        size_t l = 0;  // |lcp(lhs,rhs)|
+        while (l < lhs.size() and l < rhs.size() and lhs[l] == rhs[l]) {
+            ++l;
+        }
+        return lhs[l] < rhs[l];
+    }
+};
+
 struct completion_iterator {
     completion_iterator(parameters const& params, std::ifstream& in)
         : m_val(params.num_levels)
