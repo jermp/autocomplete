@@ -41,9 +41,8 @@ int main(int argc, char** argv) {
         uint32_completion_trie::builder builder(params);
         uint32_completion_trie ct;
         builder.build(ct);
-
-        std::cout << "using " << ct.bytes() << " bytes" << std::endl;
-        ct.print();
+        // std::cout << "using " << ct.bytes() << " bytes" << std::endl;
+        // ct.print();
 
         if (output_filename) {
             // essentials::print_size(ct);
@@ -61,7 +60,7 @@ int main(int argc, char** argv) {
         essentials::logger("DONE");
         // essentials::print_size(ct);
         std::cout << "using " << ct.bytes() << " bytes" << std::endl;
-        ct.print();
+        // ct.print();
 
         // test prefix_range() for all prefixes
         std::vector<completion> completions;

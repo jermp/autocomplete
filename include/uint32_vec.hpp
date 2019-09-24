@@ -105,9 +105,7 @@ private:
     std::vector<uint32_t> m_data;
 
     uint64_t previous_range_upperbound(range const& r) const {
-        uint64_t x = 0;
-        if (r.begin) x = access(r.begin - 1);
-        return x;
+        return r.begin ? access(r.begin - 1) : 0;
     }
 };
 

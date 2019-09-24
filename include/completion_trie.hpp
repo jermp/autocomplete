@@ -15,17 +15,18 @@ struct completion_trie {
             , m_pointers(params.num_levels - 1)
             , m_left_extremes(params.num_levels)
             , m_sizes(params.num_levels) {
-            for (uint32_t i = 0; i != params.num_levels; ++i) {
+            uint32_t levels = params.num_levels;
+            for (uint32_t i = 0; i != levels; ++i) {
                 m_nodes[i].reserve(params.nodes_per_level[i]);
                 m_left_extremes[i].reserve(params.nodes_per_level[i]);
                 m_sizes[i].reserve(params.nodes_per_level[i]);
-                if (i != params.num_levels - 1) {
+                if (i != levels - 1) {
                     m_pointers[i].reserve(params.nodes_per_level[i] + 1);
                     m_pointers[i].push_back(0);
                 }
             }
 
-            std::vector<uint32_t> offsets(params.num_levels - 1, 0);
+            std::vector<uint32_t> offsets(levels - 1, 0);
             std::ifstream input(params.collection_basename, std::ios_base::in);
             completion_iterator it(params, input);
             completion prev = completion::empty();
@@ -42,24 +43,28 @@ struct completion_trie {
                 uint32_t curr_s = curr.size();
                 uint32_t l = 0;  // |lcp(curr,prev)|
 
-                while (l != curr_s and l != prev_s and curr[l] == prev[l]) {
-                    ++l;
-                }
+                while (l != curr_s and l != prev_s and curr[l] == prev[l]) ++l;
 
                 for (uint32_t i = l;
-                     prev_s > 0 and i < params.num_levels - 1 and i <= prev_s;
-                     ++i) {
+                     prev_s > 0 and i < levels - 1 and i <= prev_s; ++i) {
                     uint32_t last = m_pointers[i].back();
                     m_pointers[i].push_back(last + offsets[i]);
                     offsets[i] = 0;
                 }
 
-                if (l == 0) {  // special case
-                    ++offsets[0];
-                } else {
-                    for (uint32_t i = l; i <= curr_s; ++i) {
-                        ++offsets[i - 1];
-                    }
+                // if (l == 0) {  // special case
+                //     for (uint32_t i = 0; i < curr_s; ++i) {
+                //         ++offsets[i];
+                //     }
+                // } else {
+                //     for (uint32_t i = l; i <= curr_s; ++i) {
+                //         ++offsets[i - 1];
+                //     }
+                // }
+
+                uint32_t one = l > 0 ? 1 : 0;
+                for (uint32_t i = l; i < curr_s + one; ++i) {
+                    ++offsets[i - one];
                 }
 
                 for (uint32_t i = l; prev_s > 0 and i <= prev_s; ++i) {
@@ -70,11 +75,6 @@ struct completion_trie {
                     m_nodes[i].push_back(curr[i]);
                     m_left_extremes[i].push_back(r.begin);
                 }
-
-                // for (auto x : offsets) {
-                //     std::cout << x << " ";
-                // }
-                // std::cout << std::endl;
 
                 prev.swap(curr);
                 ++it;
@@ -88,13 +88,13 @@ struct completion_trie {
                 m_sizes[i].push_back(r.end - 1);
             }
 
-            for (uint32_t i = 0; i != params.num_levels - 1; ++i) {
+            for (uint32_t i = 0; i != levels - 1; ++i) {
                 m_pointers[i].push_back(m_nodes[i + 1].size());
             }
 
             // NOTE: take the lengths of the ranges (minus 1)
             // and prefix sum them
-            for (uint32_t i = 0; i != params.num_levels; ++i) {
+            for (uint32_t i = 0; i != levels; ++i) {
                 auto const& begin = m_left_extremes[i];
                 auto& end = m_sizes[i];
                 for (uint32_t k = 0, sum = 0; k != end.size(); ++k) {
@@ -207,8 +207,8 @@ struct completion_trie {
         for (uint32_t i = 0; i <= levels; ++i) {
             uint64_t pos = m_nodes[i].find(pointer, c[i]);
 
-            // if c is not stored in the trie but only
-            // a prefix p, then return the range of p
+            // NOTE: if c is not stored in the trie but only
+            // a prefix p of c, then return the range of p
             if (pos == global::not_found) break;
 
             r.begin = m_left_extremes[i].access(pos) + pos;
