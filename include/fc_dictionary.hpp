@@ -160,10 +160,8 @@ private:
 
     bool locate_bucket(byte_range t, byte_range& h,
                        term_id_type& bucket_id) const {
-        term_id_type lo = 0;
-        term_id_type hi = buckets() - 1;
-        term_id_type mi = 0;
-        int cmp = 0;
+        int lo = 0, hi = buckets() - 1;
+        int mi, cmp;
 
         while (lo <= hi) {
             mi = (lo + hi) / 2;
@@ -192,19 +190,15 @@ private:
     range locate_buckets(byte_range p) const {
         range r;
         uint32_t n = p.end - p.begin - 1;
-        int lo = 0;
-        int hi = buckets() - 1;
-        int mi = 0;
-        int cmp = 0;
-
-        int left = lo;
-        int right = hi;
+        int lo, hi, left, right;
 
         // 1. locate left bucket
+        lo = 0;
+        hi = buckets() - 1;
         while (lo <= hi) {
-            mi = (lo + hi) / 2;
+            int mi = (lo + hi) / 2;
             byte_range h = header(mi);
-            cmp = byte_range_compare(h, p, n);
+            int cmp = byte_range_compare(h, p, n);
             if (cmp >= 0) {
                 hi = mi - 1;
             } else {
@@ -212,18 +206,16 @@ private:
             }
         }
 
-        if (lo == 0) {
-            left = lo;
-        } else if (uint32_t(lo) == buckets()) {
+        if (uint32_t(lo) == buckets()) {
             r.begin = lo - 1;
             r.end = lo - 1;
             return r;
+        }
+
+        if (lo == 0) {
+            left = 0;
         } else {
-            if (byte_range_compare(header(lo), p) == 0) {
-                left = lo;
-            } else {
-                left = byte_range_compare(header(lo), p, n) >= 0 ? lo - 1 : lo;
-            }
+            left = byte_range_compare(header(lo), p) == 0 ? lo : lo - 1;
         }
 
         // 2. if the left + 1 bucket's header has a prefix of size n that is
@@ -236,14 +228,13 @@ private:
             return r;
         }
 
+        // 3. otherwise, locate the right bucket
         lo = left;
         hi = buckets() - 1;
-
-        // 3. otherwise, locate the right bucket
         while (lo <= hi) {
-            mi = (lo + hi) / 2;
+            int mi = (lo + hi) / 2;
             byte_range h = header(mi);
-            cmp = byte_range_compare(h, p, n);
+            int cmp = byte_range_compare(h, p, n);
             if (cmp <= 0) {
                 lo = mi + 1;
             } else {
@@ -251,7 +242,7 @@ private:
             }
         }
 
-        right = byte_range_compare(header(hi), p, n) > 0 ? hi - 1 : hi;
+        right = hi;
 
         r.begin = left;
         r.end = right;
