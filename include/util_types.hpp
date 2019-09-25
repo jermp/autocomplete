@@ -19,16 +19,28 @@ struct byte_range {
 
 byte_range string_to_byte_range(std::string const& s) {
     const uint8_t* begin = reinterpret_cast<uint8_t const*>(s.c_str());
-    const uint8_t* end = begin + s.size() + 1;  // for terminator
+    const uint8_t* end = begin + s.size() + 1;  // for '\0' terminator
     return {begin, end};
 }
 
 int byte_range_compare(byte_range l, byte_range r) {
-    uint32_t i = 0;
     while (l.begin != l.end and r.begin != r.end and *(l.begin) == *(r.begin)) {
-        ++i;
         ++l.begin;
         ++r.begin;
+    }
+    return *(l.begin) - *(r.begin);
+}
+
+// compare l with the prefix of r of size n
+int byte_range_compare(byte_range l, byte_range r, uint32_t n) {
+    assert(n <= r.end - r.begin);
+    uint32_t i = 0;
+    if (n > 1) {
+        while (l.begin != l.end and i != n - 1 and *(l.begin) == *(r.begin)) {
+            ++i;
+            ++l.begin;
+            ++r.begin;
+        }
     }
     return *(l.begin) - *(r.begin);
 }

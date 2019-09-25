@@ -4,9 +4,37 @@
 
 using namespace autocomplete;
 
-term_id_type id(std::vector<std::string> const& terms, std::string const& t) {
+term_id_type locate(std::vector<std::string> const& terms,
+                    std::string const& t) {
     return std::distance(terms.begin(),
                          std::lower_bound(terms.begin(), terms.end(), t));
+}
+
+range locate_prefix(std::vector<std::string> const& terms,
+                    std::string const& p) {
+    auto comp_l = [](std::string const& l, std::string const& r) {
+        if (l.size() < r.size()) {
+            return strncmp(l.c_str(), r.c_str(), l.size()) <= 0;
+        }
+        return strcmp(l.c_str(), r.c_str()) < 0;
+    };
+
+    auto comp_r = [](std::string const& l, std::string const& r) {
+        if (l.size() < r.size()) {
+            return strncmp(l.c_str(), r.c_str(), l.size()) < 0;
+        }
+        return strcmp(l.c_str(), r.c_str()) < 0;
+    };
+
+    range r;
+    r.begin = std::distance(
+        terms.begin(), std::lower_bound(terms.begin(), terms.end(), p, comp_l));
+    r.end =
+        std::distance(terms.begin(),
+                      std::upper_bound(terms.begin(), terms.end(), p, comp_r)) -
+        1;
+
+    return r;
 }
 
 int main(int argc, char** argv) {
@@ -54,7 +82,7 @@ int main(int argc, char** argv) {
         // essentials::print_size(dict);
         std::cout << "using " << dict.bytes() << " bytes" << std::endl;
 
-        // test id() for all strings
+        // test locate() for all strings
         std::vector<std::string> terms;
         terms.reserve(params.num_terms);
         std::ifstream input((params.collection_basename + ".dict").c_str(),
@@ -73,17 +101,46 @@ int main(int argc, char** argv) {
         std::cout << "terms.size() " << terms.size() << std::endl;
 
         for (auto const& t : terms) {
-            term_id_type expected = id(terms, t);
-            term_id_type got = dict.id(string_to_byte_range(t));
+            term_id_type expected = locate(terms, t);
+            term_id_type got = dict.locate(string_to_byte_range(t));
 
+            std::cout << "locating term '" << t << "'" << std::endl;
             if (got != expected) {
                 std::cout << "Error: expected id " << expected << ","
                           << " but got id " << got << std::endl;
                 return 1;
             }
 
-            std::cout << "lexicographic id of '" << t << "' is " << got
-                      << std::endl;
+            // std::cout << "lexicographic id of '" << t << "' is " << got
+            //           << std::endl;
+        }
+
+        std::string prefix;
+        prefix.reserve(256 + 1);
+        for (auto const& t : terms) {
+            uint32_t n = t.size();
+            for (uint32_t prefix_len = 1; prefix_len <= n; ++prefix_len) {
+                prefix.clear();
+                for (uint32_t i = 0; i != prefix_len; ++i) {
+                    prefix.push_back(t[i]);
+                }
+
+                std::cout << "locating prefix '" << prefix << "'" << std::endl;
+                range expected = locate_prefix(terms, prefix);
+                range got = dict.locate_prefix(string_to_byte_range(prefix));
+
+                if ((got.begin != expected.begin) or
+                    (got.end != expected.end)) {
+                    std::cout << "Error for prefix '" << prefix
+                              << "' : expected [" << expected.begin << ","
+                              << expected.end << "] but got [" << got.begin
+                              << "," << got.end << "]" << std::endl;
+                    return 1;
+                }
+
+                // std::cout << "prefix range of '" << prefix << "' is ["
+                //           << got.begin << "," << got.end << "]" << std::endl;
+            }
         }
     }
 
