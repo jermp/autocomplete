@@ -12,15 +12,15 @@ struct fc_dictionary {
     struct builder {
         builder() {}
 
-        builder(parameters const& params) {
-            uint32_t n = params.num_terms;
-            m_size = n;
-            std::cout << "processing " << n << " strings..." << std::endl;
-            uint32_t buckets = std::ceil(double(n) / (BucketSize + 1));
+        builder(parameters const& params)
+            : m_size(params.num_terms) {
+            std::cout << "processing " << m_size << " strings..." << std::endl;
+            uint32_t buckets = std::ceil(double(m_size) / (BucketSize + 1));
             std::cout << "buckets " << buckets << std::endl;
 
             m_pointers_to_buckets.reserve(buckets + 1);
-            uint32_t tail = n - ((n / (BucketSize + 1)) * (BucketSize + 1)) - 1;
+            uint32_t tail =
+                m_size - ((m_size / (BucketSize + 1)) * (BucketSize + 1)) - 1;
             std::cout << "tail " << tail << std::endl;
 
             m_pointers_to_headers.push_back(0);
@@ -88,18 +88,15 @@ struct fc_dictionary {
     fc_dictionary() {}
 
     range locate_prefix(byte_range p) const {
-        range bucket_id = locate_buckets(p);
+        auto bucket_id = locate_buckets(p);
         byte_range h_begin = header(bucket_id.begin);
         byte_range h_end = header(bucket_id.end);
-
         uint32_t p_begin = bucket_id.begin * (BucketSize + 1);
         uint32_t p_end = bucket_id.end * (BucketSize + 1);
-
         if (byte_range_compare(h_begin, p) != 0) {
             p_begin += left_locate(p, h_begin, bucket_id.begin);
         }
         p_end += right_locate(p, h_end, bucket_id.end);
-
         return {p_begin, p_end};
     }
 
@@ -249,24 +246,31 @@ private:
         return r;
     }
 
+#define LOCATE_INIT                                 \
+    static uint8_t* decoded = new uint8_t[256 + 1]; \
+    memcpy(decoded, h.begin, h.end - h.begin + 1);  \
+    uint8_t lcp_len;                                \
+    uint32_t n = bucket_size(bucket_id);            \
+    uint8_t const* curr =                           \
+        m_buckets.data() + m_pointers_to_buckets[bucket_id].begin;
+
+    uint8_t decode(uint8_t const* in, uint8_t* out, uint8_t* lcp_len) const {
+        *lcp_len = *in++;  // |lcp|
+        uint8_t l = *lcp_len;
+        while (*in) out[l++] = *in++;
+        out[l] = '\0';
+        return l;
+    }
+
     term_id_type locate(byte_range t, byte_range h,
                         term_id_type bucket_id) const {
-        static uint8_t* decoded = new uint8_t[256 + 1];
-        memcpy(decoded, h.begin, h.end - h.begin + 1);
-        uint32_t n = bucket_size(bucket_id);
-        uint8_t const* curr =
-            m_buckets.data() + m_pointers_to_buckets[bucket_id].begin;
+        LOCATE_INIT
         for (term_id_type i = 1; i <= n; ++i) {
-            uint8_t l = *curr;  // |lcp|
-            curr += 1;
-            for (; *curr != '\0'; ++l, ++curr) {
-                decoded[l] = *curr;
-            }
-            decoded[l] = '\0';
+            uint8_t l = decode(curr, decoded, &lcp_len);
             int cmp = byte_range_compare(t, {decoded, decoded + l});
             if (cmp == 0) return i;
             if (cmp < 0) return global::invalid_term_id;
-            curr += 1;
+            curr += l - lcp_len + 2;
         }
         assert(false);
         __builtin_unreachable();
@@ -274,44 +278,26 @@ private:
 
     term_id_type left_locate(byte_range p, byte_range h,
                              term_id_type bucket_id) const {
-        static uint8_t* decoded = new uint8_t[256 + 1];
-        memcpy(decoded, h.begin, h.end - h.begin + 1);
+        LOCATE_INIT
         uint32_t len = p.end - p.begin - 1;
-        uint32_t n = bucket_size(bucket_id);
-        uint8_t const* curr =
-            m_buckets.data() + m_pointers_to_buckets[bucket_id].begin;
         for (term_id_type i = 1; i <= n; ++i) {
-            uint8_t l = *curr;  // |lcp|
-            curr += 1;
-            for (; *curr != '\0'; ++l, ++curr) {
-                decoded[l] = *curr;
-            }
-            decoded[l] = '\0';
+            uint8_t l = decode(curr, decoded, &lcp_len);
             int cmp = byte_range_compare({decoded, decoded + l}, p, len);
             if (cmp == 0) return i;
-            curr += 1;
+            curr += l - lcp_len + 2;
         }
         return n + 1;
     }
 
     term_id_type right_locate(byte_range p, byte_range h,
                               term_id_type bucket_id) const {
-        static uint8_t* decoded = new uint8_t[256 + 1];
-        memcpy(decoded, h.begin, h.end - h.begin + 1);
+        LOCATE_INIT
         uint32_t len = p.end - p.begin - 1;
-        uint32_t n = bucket_size(bucket_id);
-        uint8_t const* curr =
-            m_buckets.data() + m_pointers_to_buckets[bucket_id].begin;
         for (term_id_type i = 1; i <= n; ++i) {
-            uint8_t l = *curr;  // |lcp|
-            curr += 1;
-            for (; *curr != '\0'; ++l, ++curr) {
-                decoded[l] = *curr;
-            }
-            decoded[l] = '\0';
+            uint8_t l = decode(curr, decoded, &lcp_len);
             int cmp = byte_range_compare({decoded, decoded + l}, p, len);
             if (cmp > 0) return i - 1;
-            curr += 1;
+            curr += l - lcp_len + 2;
         }
         return n;
     }
