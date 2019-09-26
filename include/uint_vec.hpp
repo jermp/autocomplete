@@ -6,16 +6,17 @@
 
 namespace autocomplete {
 
-struct uint32_vec {
-    void build(std::vector<uint32_t> const& from) {
+template <typename UintType>
+struct uint_vec {
+    void build(std::vector<UintType> const& from) {
         m_data = from;  // copy assignment operator
     }
 
-    void build(std::vector<uint32_t> const& from,
-               std::vector<uint32_t> const& pointers) {
+    template <typename Pointers>
+    void build(std::vector<UintType> const& from, Pointers const& pointers) {
         uint64_t n = from.size();
         m_data.reserve(n);
-        uint64_t prev_upper = 0;
+        UintType prev_upper = 0;
         auto pointers_it = pointers.begin();
         uint64_t start = *pointers_it;
         ++pointers_it;
@@ -35,7 +36,7 @@ struct uint32_vec {
                 } while (!run);
                 prev_upper = m_data.size() ? m_data.back() : 0;
             }
-            uint64_t v = from[i];
+            UintType v = from[i];
             m_data.push_back(v + prev_upper);
             ++within;
         }
@@ -44,11 +45,11 @@ struct uint32_vec {
     }
 
     struct iterator {
-        iterator(uint32_vec const& vec, uint64_t pos)
+        iterator(uint_vec<UintType> const& vec, uint64_t pos)
             : m_vec(&vec)
             , m_pos(pos) {}
 
-        uint32_t operator*() {
+        UintType operator*() {
             return m_vec->access(m_pos);
         }
 
@@ -57,7 +58,7 @@ struct uint32_vec {
         }
 
     private:
-        uint32_vec const* m_vec;
+        uint_vec<UintType> const* m_vec;
         uint64_t m_pos;
     };
 
@@ -65,7 +66,7 @@ struct uint32_vec {
         return m_data.size();
     }
 
-    uint32_t access(uint64_t i) const {
+    UintType access(uint64_t i) const {
         assert(i < size());
         return m_data[i];
     }
@@ -73,7 +74,7 @@ struct uint32_vec {
     uint64_t find(range const& r, uint64_t id) const {
         assert(r.end > r.begin);
         assert(r.end <= size());
-        uint64_t prev_upper = previous_range_upperbound(r);
+        UintType prev_upper = previous_range_upperbound(r);
         return scan_binary_search(*this, id + prev_upper, r.begin, r.end - 1);
     }
 
@@ -101,9 +102,9 @@ struct uint32_vec {
     }
 
 private:
-    std::vector<uint32_t> m_data;
+    std::vector<UintType> m_data;
 
-    uint64_t previous_range_upperbound(range const& r) const {
+    UintType previous_range_upperbound(range const& r) const {
         return r.begin ? access(r.begin - 1) : 0;
     }
 };

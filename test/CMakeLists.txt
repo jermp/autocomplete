@@ -1,3 +1,5 @@
 add_executable(test_completion_trie test_completion_trie.cpp)
 add_executable(test_fc_dictionary test_fc_dictionary.cpp)
 add_executable(test_succinct_rmq test_succinct_rmq.cpp)
+add_executable(test_inverted_index test_inverted_index.cpp)
+add_executable(test_forward_index test_forward_index.cpp)

@@ -76,6 +76,21 @@ struct parameters {
     std::string collection_basename;
 };
 
+struct compression_parameters {
+    compression_parameters()
+        : ef_log_sampling0(9)
+        , ef_log_sampling1(8)
+        , rb_log_rank1_sampling(9)
+        , rb_log_sampling1(8)
+        , log_partition_size(7) {}
+
+    uint8_t ef_log_sampling0;
+    uint8_t ef_log_sampling1;
+    uint8_t rb_log_rank1_sampling;
+    uint8_t rb_log_sampling1;
+    uint8_t log_partition_size;
+};
+
 struct completion {
     completion(uint32_t size)  // in terms
         : doc_id(global::invalid_doc_id) {
@@ -112,12 +127,12 @@ struct completion {
         term_ids.swap(other.term_ids);
     }
 
-    void push_back(term_id_type t) {
+    void push_back(id_type t) {
         term_ids.push_back(t);
     }
 
-    doc_id_type doc_id;
-    std::vector<term_id_type> term_ids;
+    id_type doc_id;
+    std::vector<id_type> term_ids;
 };
 
 struct completion_comparator {
@@ -156,7 +171,7 @@ private:
     void read_next() {
         m_in >> m_val.doc_id;
         m_val.term_ids.clear();
-        term_id_type x = global::invalid_term_id;
+        id_type x = global::invalid_term_id;
         while (!m_in.eof() and x != global::terminator) {
             m_in >> x;
             m_val.term_ids.push_back(x);

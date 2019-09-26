@@ -100,13 +100,21 @@ struct fc_dictionary {
         return {p_begin, p_end};
     }
 
-    term_id_type locate(byte_range t) const {
+    // NOTE: the dictionary returns
+    // 1-based ids because the id 0 is reserved
+    // to mark the end of a string
+    id_type locate(byte_range t) const {
         byte_range h;
-        term_id_type bucket_id;
+        id_type bucket_id;
         bool is_header = locate_bucket(t, h, bucket_id);
-        term_id_type t_id = bucket_id * (BucketSize + 1);
+        id_type t_id = bucket_id * (BucketSize + 1) + 1;
         if (is_header) return t_id;
         return t_id + locate(t, h, bucket_id);
+    }
+
+    void extract(id_type id, char* out) const {
+        assert(id > 0);
+        // todo
     }
 
     size_t size() const {
@@ -157,8 +165,7 @@ private:
     std::vector<uint8_t> m_headers;
     std::vector<uint8_t> m_buckets;
 
-    bool locate_bucket(byte_range t, byte_range& h,
-                       term_id_type& bucket_id) const {
+    bool locate_bucket(byte_range t, byte_range& h, id_type& bucket_id) const {
         int lo = 0, hi = buckets() - 1;
         int mi, cmp;
 
@@ -264,10 +271,9 @@ private:
         return l;
     }
 
-    term_id_type locate(byte_range t, byte_range h,
-                        term_id_type bucket_id) const {
+    id_type locate(byte_range t, byte_range h, id_type bucket_id) const {
         LOCATE_INIT
-        for (term_id_type i = 1; i <= n; ++i) {
+        for (id_type i = 1; i <= n; ++i) {
             uint8_t l = decode(curr, decoded, &lcp_len);
             int cmp = byte_range_compare(t, {decoded, decoded + l});
             if (cmp == 0) return i;
@@ -278,11 +284,10 @@ private:
         __builtin_unreachable();
     }
 
-    term_id_type left_locate(byte_range p, byte_range h,
-                             term_id_type bucket_id) const {
+    id_type left_locate(byte_range p, byte_range h, id_type bucket_id) const {
         LOCATE_INIT
         uint32_t len = p.end - p.begin - 1;
-        for (term_id_type i = 1; i <= n; ++i) {
+        for (id_type i = 1; i <= n; ++i) {
             uint8_t l = decode(curr, decoded, &lcp_len);
             int cmp = byte_range_compare({decoded, decoded + l}, p, len);
             if (cmp == 0) return i;
@@ -291,11 +296,10 @@ private:
         return n + 1;
     }
 
-    term_id_type right_locate(byte_range p, byte_range h,
-                              term_id_type bucket_id) const {
+    id_type right_locate(byte_range p, byte_range h, id_type bucket_id) const {
         LOCATE_INIT
         uint32_t len = p.end - p.begin - 1;
-        for (term_id_type i = 1; i <= n; ++i) {
+        for (id_type i = 1; i <= n; ++i) {
             uint8_t l = decode(curr, decoded, &lcp_len);
             int cmp = byte_range_compare({decoded, decoded + l}, p, len);
             if (cmp > 0) return i - 1;

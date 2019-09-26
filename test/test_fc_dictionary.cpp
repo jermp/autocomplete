@@ -4,10 +4,10 @@
 
 using namespace autocomplete;
 
-term_id_type locate(std::vector<std::string> const& terms,
-                    std::string const& t) {
+id_type locate(std::vector<std::string> const& terms, std::string const& t) {
     return std::distance(terms.begin(),
-                         std::lower_bound(terms.begin(), terms.end(), t));
+                         std::lower_bound(terms.begin(), terms.end(), t)) +
+           1;
 }
 
 range locate_prefix(std::vector<std::string> const& terms,
@@ -102,8 +102,8 @@ int main(int argc, char** argv) {
         std::cout << "terms.size() " << terms.size() << std::endl;
 
         for (auto const& t : terms) {
-            term_id_type expected = locate(terms, t);
-            term_id_type got = dict.locate(string_to_byte_range(t));
+            id_type expected = locate(terms, t);
+            id_type got = dict.locate(string_to_byte_range(t));
 
             std::cout << "locating term '" << t << "'" << std::endl;
             if (got != expected) {

@@ -24,13 +24,13 @@ namespace autocomplete {
 
 // assume 32 bits are enough to store
 // both a term_id and a doc_id
-typedef uint32_t term_id_type;
-typedef uint32_t doc_id_type;
+typedef uint32_t id_type;
+typedef std::pair<id_type, uint32_t> value_type;  // (position, value)
 
 namespace global {
-static const doc_id_type invalid_doc_id = doc_id_type(-1);
-static const term_id_type invalid_term_id = term_id_type(-1);
-static const term_id_type terminator = 0;
+static const id_type invalid_doc_id = id_type(-1);
+static const id_type invalid_term_id = id_type(-1);
+static const id_type terminator = 0;
 static const uint64_t not_found = uint64_t(-1);
 static const uint64_t linear_scan_threshold = 8;
 }  // namespace global
