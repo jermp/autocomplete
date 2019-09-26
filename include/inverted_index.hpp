@@ -59,7 +59,7 @@ struct inverted_index {
 
     inverted_index() {}
 
-    iterator_type operator[](id_type term_id) {
+    iterator_type iterator(id_type term_id) const {
         uint64_t offset = m_pointers.access(term_id);
         uint32_t n = m_data.get_bits(offset, 32);
         iterator_type it(m_data, offset + 32, m_num_docs, n, m_params);
@@ -77,6 +77,42 @@ struct inverted_index {
     size_t bytes() const {
         return essentials::pod_bytes(m_num_docs) + m_pointers.bytes() +
                m_data.bytes();
+    }
+
+    uint32_t intersect(std::vector<id_type> const& term_ids,
+                       std::vector<id_type>& out) {
+        static std::vector<iterator_type> iterators;
+        iterators.reserve(term_ids.size());
+
+        for (auto id : term_ids) {
+            iterators.push_back(std::move(iterator(id)));
+        }
+
+        std::sort(
+            iterators.begin(), iterators.end(),
+            [](auto const& l, auto const& r) { return l.size() < r.size(); });
+
+        uint32_t size = 0;
+        id_type candidate = iterators[0].access(0);
+        size_t i = 1;
+        while (candidate < num_docs()) {
+            for (; i < iterators.size(); ++i) {
+                id_type val = iterators[i].next_geq(candidate);
+                if (val != candidate) {
+                    candidate = val;
+                    i = 0;
+                    break;
+                }
+            }
+
+            if (i == iterators.size()) {
+                out[size++] = candidate;
+                candidate = iterators[0].next();
+                i = 1;
+            }
+        }
+
+        return size;
     }
 
     template <typename Visitor>

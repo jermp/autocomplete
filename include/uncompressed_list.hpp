@@ -16,59 +16,82 @@ struct uncompressed_list {
     }
 
     struct iterator {
-        iterator(bit_vector const& bv, uint64_t offset, uint64_t /*universe*/,
+        iterator(bit_vector const& bv, uint64_t offset, uint64_t universe,
                  uint64_t n, compression_parameters const& /*params*/)
-            : m_size(n)
+            : m_universe(universe)
+            , m_size(n)
             , m_position(0) {
             assert(offset % 32 == 0);
             m_data = reinterpret_cast<uint32_t const*>(bv.data().data()) +
                      offset / 32;
         }
 
-        value_type move(uint64_t position) {
-            assert(position < size());
-            m_position = position;
-            return {m_position, m_data[m_position]};
+        id_type access(uint32_t i) {
+            assert(i < size());
+            m_position = i;
+            m_id = m_data[m_position];
+            return m_id;
         }
 
-        value_type next_geq(uint64_t lower_bound) {
+        id_type next_geq(id_type lower_bound) {
             uint32_t lo = m_position;
-            uint32_t hi = m_size;
+            uint32_t hi = size() - 1;
+
             while (lo <= hi) {
                 if (hi - lo <= global::linear_scan_threshold) {
-                    for (m_position = lo; m_position != hi; ++m_position) {
+                    for (m_position = lo; m_position <= hi; ++m_position) {
                         uint32_t val = m_data[m_position];
                         if (val >= lower_bound) {
-                            return {m_position, val};
+                            m_id = val;
+                            return m_id;
                         }
                     }
+                    break;
                 }
-                uint32_t pos = (lo + hi) / 2;
-                uint32_t val = m_data[pos];
-                if (val == lower_bound) {
-                    m_position = pos;
-                    return {m_position, m_data[m_position]};
-                } else if (val > lower_bound) {
-                    hi = pos - 1;
+
+                uint32_t m_position = (lo + hi) / 2;
+                uint32_t val = m_data[m_position];
+
+                if (val > lower_bound) {
+                    hi = m_position != 0 ? m_position - 1 : 0;
+                    if (lower_bound > m_data[hi]) {
+                        m_id = val;
+                        return m_id;
+                    }
+                } else if (val < lower_bound) {
+                    lo = m_position + 1;
                 } else {
-                    lo = pos + 1;
+                    m_id = val;
+                    return m_id;
                 }
             }
-            assert(false);
-            __builtin_unreachable();
+
+            m_id = m_universe;
+            return m_id;
         }
 
-        value_type next() {
+        id_type next() {
             m_position += 1;
-            return {m_position, m_data[m_position]};
+            m_id = m_position != size() ? m_data[m_position] : m_universe;
+            return m_id;
         }
+
+        // uint32_t position() const {
+        //     return m_position;
+        // }
+
+        // uint64_t universe() const {
+        //     return m_universe;
+        // }
 
         uint64_t size() const {
             return m_size;
         }
 
     private:
+        uint64_t m_universe;
         uint64_t m_size;
+        id_type m_id;
         uint32_t m_position;
         uint32_t const* m_data;
     };
