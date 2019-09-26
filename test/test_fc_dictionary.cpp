@@ -97,6 +97,7 @@ int main(int argc, char** argv) {
             terms.push_back(std::move(term));
             input >> term;
         }
+        input.close();
 
         std::cout << "terms.size() " << terms.size() << std::endl;
 

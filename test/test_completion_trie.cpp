@@ -70,12 +70,14 @@ int main(int argc, char** argv) {
         if (!input.good()) {
             throw std::runtime_error("File not found");
         }
+
         completion_iterator it(params, input);
         while (input) {
             completion const& c = *it;
             completions.push_back(std::move(c));
             ++it;
         }
+        input.close();
 
         for (auto const& c : completions) {
             for (uint32_t prefix_len = 1; prefix_len <= c.size();
