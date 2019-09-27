@@ -2,9 +2,9 @@
 
 namespace autocomplete {
 
-template <typename ForwardListType, typename Pointers>
+template <typename ForwardList, typename Pointers>
 struct forward_index {
-    typedef typename ForwardListType::iterator iterator_type;
+    typedef typename ForwardList::iterator iterator_type;
 
     struct builder {
         builder() {}
@@ -30,7 +30,7 @@ struct forward_index {
                     list.push_back(x);
                 }
                 m_bvb.append_bits(n, 32);
-                ForwardListType::build(m_bvb, list.begin(), list.size());
+                ForwardList::build(m_bvb, list.begin(), list.size());
                 m_pointers.push_back(m_bvb.size());
             }
             m_pointers.pop_back();
@@ -44,7 +44,7 @@ struct forward_index {
             other.m_bvb.swap(m_bvb);
         }
 
-        void build(forward_index<ForwardListType, Pointers>& fi) {
+        void build(forward_index<ForwardList, Pointers>& fi) {
             fi.m_num_terms = m_num_terms;
             fi.m_pointers.build(m_pointers);
             fi.m_data.build(&m_bvb);

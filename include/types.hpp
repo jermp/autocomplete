@@ -3,6 +3,7 @@
 #include "completion_trie.hpp"
 #include "fc_dictionary.hpp"
 #include "uint_vec.hpp"
+#include "unsorted_list.hpp"
 #include "uncompressed_list.hpp"
 #include "forward_index.hpp"
 #include "inverted_index.hpp"
@@ -20,7 +21,7 @@ typedef completion_trie<uint32_vec, uint32_vec, uint32_vec, uint32_vec>
 static const uint32_t BucketSize = 16;
 typedef fc_dictionary<BucketSize, uint32_vec> fc_dictionary_B16;
 
-typedef cartesian_tree succinct_rmq;
+typedef unsorted_list<uint32_vec, cartesian_tree> unsorted_list_succinct_rmq;
 
 typedef forward_index<uncompressed_list, uint64_vec> uncompressed_forward_index;
 typedef inverted_index<uncompressed_list, uint64_vec>

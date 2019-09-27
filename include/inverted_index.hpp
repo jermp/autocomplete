@@ -2,9 +2,9 @@
 
 namespace autocomplete {
 
-template <typename InvertedListType, typename Pointers>
+template <typename InvertedList, typename Pointers>
 struct inverted_index {
-    typedef typename InvertedListType::iterator iterator_type;
+    typedef typename InvertedList::iterator iterator_type;
 
     struct builder {
         builder() {}
@@ -30,7 +30,7 @@ struct inverted_index {
                     list.push_back(x);
                 }
                 m_bvb.append_bits(n, 32);
-                InvertedListType::build(m_bvb, list.begin(), list.size());
+                InvertedList::build(m_bvb, list.begin(), list.size());
                 m_pointers.push_back(m_bvb.size());
             }
             m_pointers.pop_back();
@@ -44,7 +44,7 @@ struct inverted_index {
             other.m_bvb.swap(m_bvb);
         }
 
-        void build(inverted_index<InvertedListType, Pointers>& ii) {
+        void build(inverted_index<InvertedList, Pointers>& ii) {
             ii.m_num_docs = m_num_docs;
             ii.m_pointers.build(m_pointers);
             ii.m_data.build(&m_bvb);

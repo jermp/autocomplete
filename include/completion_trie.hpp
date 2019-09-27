@@ -36,6 +36,8 @@ struct completion_trie {
 
             while (input) {
                 completion& curr = *it;
+                m_doc_ids.push_back(curr.doc_id);
+
                 uint32_t prev_s = prev.size();
                 uint32_t curr_s = curr.size();
                 uint32_t l = 0;  // |lcp(curr,prev)|
@@ -112,6 +114,7 @@ struct completion_trie {
                     other.m_pointers[i].swap(m_pointers[i]);
                 }
             }
+            other.m_doc_ids.swap(m_doc_ids);
         }
 
         void build(completion_trie<Nodes, Pointers, LeftExtremes, Sizes>& ct) {
@@ -137,11 +140,16 @@ struct completion_trie {
             builder().swap(*this);
         }
 
+        std::vector<id_type>& doc_ids() {
+            return m_doc_ids;
+        }
+
     private:
         std::vector<std::vector<uint32_t>> m_nodes;
         std::vector<std::vector<uint32_t>> m_pointers;
         std::vector<std::vector<uint32_t>> m_left_extremes;
         std::vector<std::vector<uint32_t>> m_sizes;
+        std::vector<id_type> m_doc_ids;
     };
 
     completion_trie() {}

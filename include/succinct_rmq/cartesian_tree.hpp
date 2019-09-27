@@ -77,8 +77,12 @@ struct cartesian_tree {
     cartesian_tree() {}
 
     template <typename T, typename Comparator>
-    cartesian_tree(std::vector<T> const& v, Comparator const& comp) {
-        build_from(v, comp);
+    void build(std::vector<T> const& v, Comparator const& comp) {
+        builder<T> b;
+        for (auto const& x : v) {
+            b.push_back(x, comp);
+        }
+        cartesian_tree(&b).swap(*this);
     }
 
     // RMQ in the interval [a, b], b inclusive
@@ -139,15 +143,6 @@ protected:
     template <typename T>
     cartesian_tree(builder<T>* b) {
         bp_vector(&b->finalize(), false, true).swap(m_bp);
-    }
-
-    template <typename T, typename Comparator>
-    void build_from(std::vector<T> const& v, Comparator const& comp) {
-        builder<T> b;
-        for (auto const& x : v) {
-            b.push_back(x, comp);
-        }
-        cartesian_tree(&b).swap(*this);
     }
 
     bp_vector m_bp;

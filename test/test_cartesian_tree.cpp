@@ -47,21 +47,22 @@ int main(int argc, char** argv) {
         }
         input.close();
 
-        succinct_rmq rmq(doc_ids, std::less<uint32_t>());
+        cartesian_tree rmq;
+        rmq.build(doc_ids, std::less<uint32_t>());
         assert(rmq.size() == doc_ids.size());
         std::cout << "using " << rmq.bytes() << " bytes" << std::endl;
 
         if (output_filename) {
             // essentials::print_size(rmq);
             essentials::logger("saving data structure to disk...");
-            essentials::save<succinct_rmq>(rmq, output_filename);
+            essentials::save<cartesian_tree>(rmq, output_filename);
             essentials::logger("DONE");
         }
     }
 
     {
         // load and print
-        succinct_rmq rmq;
+        cartesian_tree rmq;
         essentials::logger("loading data structure from disk...");
         essentials::load(rmq, output_filename);
         essentials::logger("DONE");

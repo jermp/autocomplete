@@ -25,6 +25,7 @@ with open(input_filename + ".mapped.stats") as f:
     print num_docs
 
 inverted_index = [[] for i in range(num_terms + 1)] # id 0 is not assigned
+forward_index = [[] for i in range(num_docs)]
 
 with open(input_filename, 'r') as f:
     for line in f:
@@ -42,19 +43,22 @@ with open(input_filename, 'r') as f:
                 print(line)
                 exit()
 
-        forward.write(str(len(mapped)) + " ")
-        s = [str(i) for i in mapped]
-        forward.write(" ".join(s) + "\n")
+        forward_index[doc_id] = mapped;
 
         lines += 1
         if lines % 1000000 == 0:
             print("processed " + str(lines) + " lines")
 
+for i in range(0, num_docs):
+    s = [str(k) for k in forward_index[i]]
+    forward.write(str(len(forward_index[i])) + " ")
+    forward.write(" ".join(s) + "\n")
+forward.close()
+
 for i in range(1, num_terms + 1):
     posting_list = inverted_index[i]
-    s = [str(i) for i in sorted(posting_list)]
-    inverted.write(str(len(posting_list)) + " ")
+    unique = sorted(set(posting_list));
+    s = [str(i) for i in unique] # remove any possible duplicate
+    inverted.write(str(len(unique)) + " ")
     inverted.write(" ".join(s) + "\n")
-
-forward.close()
 inverted.close()

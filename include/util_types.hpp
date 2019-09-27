@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <fstream>
+#include <functional>
 
 #include "util.hpp"
 
@@ -10,7 +11,25 @@ namespace autocomplete {
 struct range {
     uint64_t begin;
     uint64_t end;
+
+    friend std::ostream& operator<<(std::ostream& os, range const& rhs) {
+        os << "[" << rhs.begin << "," << rhs.end << "]";
+        return os;
+    }
 };
+
+struct scored_range {
+    range r;
+    uint32_t min_pos;
+    id_type min_val;
+};
+
+typedef std::function<bool(scored_range const&, scored_range const&)>
+    scored_range_comparator_type;
+scored_range_comparator_type scored_range_comparator =
+    [](scored_range const& l, scored_range const& r) {
+        return l.min_val > r.min_val;
+    };
 
 struct byte_range {
     uint8_t const* begin;
@@ -177,6 +196,30 @@ private:
             m_val.term_ids.push_back(x);
         }
     }
+};
+
+// NOTE: this has log complexity but if k is small...
+struct topk_queue {
+    void push(scored_range sr) {
+        m_q.push_back(sr);
+        std::push_heap(m_q.begin(), m_q.end(), scored_range_comparator);
+    }
+
+    scored_range top() {
+        return m_q.front();
+    }
+
+    void pop() {
+        std::pop_heap(m_q.begin(), m_q.end(), scored_range_comparator);
+        m_q.pop_back();
+    }
+
+    void clear() {
+        m_q.clear();
+    }
+
+private:
+    std::vector<scored_range> m_q;
 };
 
 }  // namespace autocomplete
