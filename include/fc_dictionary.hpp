@@ -112,9 +112,12 @@ struct fc_dictionary {
         return t_id + locate(t, h, bucket_id);
     }
 
-    void extract(id_type id, char* out) const {
+    uint8_t extract(id_type id, uint8_t* out) const {
         assert(id > 0);
-        // todo
+        id -= 1;
+        uint32_t bucket_id = id / (BucketSize + 1);
+        uint32_t k = id % (BucketSize + 1);
+        return extract(k, bucket_id, out);
     }
 
     size_t size() const {
@@ -269,6 +272,21 @@ private:
         while (*in) out[l++] = *in++;
         out[l] = '\0';
         return l;
+    }
+
+    uint8_t extract(id_type id, id_type bucket_id, uint8_t* out) const {
+        byte_range h = header(bucket_id);
+        memcpy(out, h.begin, h.end - h.begin + 1);
+        uint8_t lcp_len;
+        assert(id <= bucket_size(bucket_id));
+        uint8_t const* curr =
+            m_buckets.data() + m_pointers_to_buckets[bucket_id].begin;
+        uint8_t string_len = h.end - h.begin;
+        for (id_type i = 1; i <= id; ++i) {
+            string_len = decode(curr, out, &lcp_len);
+            curr += string_len - lcp_len + 2;
+        }
+        return string_len;
     }
 
     id_type locate(byte_range t, byte_range h, id_type bucket_id) const {
