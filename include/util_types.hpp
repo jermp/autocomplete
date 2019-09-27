@@ -1,7 +1,6 @@
 #pragma once
 
 #include <vector>
-#include <fstream>
 #include <functional>
 
 #include "util.hpp"
@@ -12,10 +11,10 @@ struct range {
     uint64_t begin;
     uint64_t end;
 
-    friend std::ostream& operator<<(std::ostream& os, range const& rhs) {
-        os << "[" << rhs.begin << "," << rhs.end << "]";
-        return os;
-    }
+    // friend std::ostream& operator<<(std::ostream& os, range const& rhs) {
+    //     os << "[" << rhs.begin << "," << rhs.end << "]";
+    //     return os;
+    // }
 };
 
 struct scored_range {
@@ -42,6 +41,14 @@ byte_range string_to_byte_range(std::string const& s) {
     return {begin, end};
 }
 
+void print(byte_range br) {
+    uint32_t size = br.end - br.begin;
+    for (uint32_t i = 0; i != size; ++i) {
+        std::cout << br.begin[i];
+    }
+    std::cout << std::endl;
+}
+
 int byte_range_compare(byte_range l, byte_range r) {
     while (l.begin != l.end and r.begin != r.end and *(l.begin) == *(r.begin)) {
         ++l.begin;
@@ -63,140 +70,6 @@ int byte_range_compare(byte_range l, byte_range r, uint32_t n) {
     }
     return *(l.begin) - *(r.begin);
 }
-
-struct parameters {
-    parameters()
-        : num_terms(0)
-        , num_completions(0)
-        , num_levels(0) {}
-
-    void load() {
-        std::ifstream input((collection_basename + ".mapped.stats").c_str(),
-                            std::ios_base::in);
-        if (!input.good()) {
-            throw std::runtime_error("File with statistics not found");
-        }
-        input >> num_terms;
-        input >> num_completions;
-        input >> num_levels;
-        assert(num_terms > 0);
-        assert(num_completions > 0);
-        assert(num_levels > 0);
-        nodes_per_level.resize(num_levels, 0);
-        for (uint32_t i = 0; i != num_levels; ++i) {
-            input >> nodes_per_level[i];
-        }
-    }
-
-    uint32_t num_terms;
-    uint32_t num_completions;
-    uint32_t num_levels;
-    std::vector<uint32_t> nodes_per_level;
-    std::string collection_basename;
-};
-
-struct compression_parameters {
-    compression_parameters()
-        : ef_log_sampling0(9)
-        , ef_log_sampling1(8)
-        , rb_log_rank1_sampling(9)
-        , rb_log_sampling1(8)
-        , log_partition_size(7) {}
-
-    uint8_t ef_log_sampling0;
-    uint8_t ef_log_sampling1;
-    uint8_t rb_log_rank1_sampling;
-    uint8_t rb_log_sampling1;
-    uint8_t log_partition_size;
-};
-
-struct completion {
-    completion(uint32_t size)  // in terms
-        : doc_id(global::invalid_doc_id) {
-        term_ids.reserve(size);
-    }
-
-    static completion empty() {
-        completion val(1);
-        val.term_ids.push_back(global::terminator);
-        return val;
-    }
-
-    friend std::ostream& operator<<(std::ostream& os, completion const& rhs) {
-        os << "(";
-        for (size_t i = 0; i != rhs.term_ids.size(); ++i) {
-            os << rhs.term_ids[i];
-            if (i != rhs.term_ids.size() - 1) os << ",";
-        }
-        os << ")";
-        return os;
-    }
-
-    size_t size() const {
-        assert(term_ids.size() > 0);
-        return term_ids.size() - 1;
-    }
-
-    uint32_t operator[](size_t i) const {
-        assert(i < term_ids.size());
-        return term_ids[i];
-    }
-
-    void swap(completion& other) {
-        term_ids.swap(other.term_ids);
-    }
-
-    void push_back(id_type t) {
-        term_ids.push_back(t);
-    }
-
-    id_type doc_id;
-    std::vector<id_type> term_ids;
-};
-
-struct completion_comparator {
-    bool operator()(completion const& lhs, completion const& rhs) const {
-        size_t l = 0;  // |lcp(lhs,rhs)|
-        while (l < lhs.size() and l < rhs.size() and lhs[l] == rhs[l]) {
-            ++l;
-        }
-        return lhs[l] < rhs[l];
-    }
-};
-
-struct completion_iterator {
-    completion_iterator(parameters const& params, std::ifstream& in)
-        : m_val(params.num_levels)
-        , m_in(in) {
-        if (!m_in.good()) {
-            throw std::runtime_error(
-                "Error in opening file, it may not exist or be malformed.");
-        }
-        read_next();
-    }
-
-    void operator++() {
-        read_next();
-    }
-
-    completion& operator*() {
-        return m_val;
-    }
-
-private:
-    completion m_val;
-    std::ifstream& m_in;
-
-    void read_next() {
-        m_in >> m_val.doc_id;
-        m_val.term_ids.clear();
-        id_type x = global::invalid_term_id;
-        while (!m_in.eof() and x != global::terminator) {
-            m_in >> x;
-            m_val.term_ids.push_back(x);
-        }
-    }
-};
 
 // NOTE: this has log complexity but if k is small...
 struct topk_queue {
@@ -220,6 +93,46 @@ struct topk_queue {
 
 private:
     std::vector<scored_range> m_q;
+};
+
+uint32_t parse(std::string& s) {
+    uint32_t num_terms = 1;
+    for (uint64_t i = 0; i != s.size(); ++i) {
+        if (s[i] == ' ') {
+            s[i] = '\0';
+            ++num_terms;
+        }
+    }
+    return num_terms;
+}
+
+struct forward_byte_range_iterator {
+    forward_byte_range_iterator(byte_range const& r) {
+        init(r);
+    }
+
+    void init(byte_range const& r, char separator = '\0') {
+        m_cur_pos = r.begin;
+        m_begin = r.begin;
+        m_end = r.end;
+        m_separator = separator;
+    }
+
+    byte_range next() {
+        uint8_t const* pos = m_cur_pos;
+        for (; pos != m_end; ++pos) {
+            if (*pos == m_separator or *pos == '\n') break;
+        }
+        byte_range br = {m_cur_pos, pos};
+        m_cur_pos = pos + 1;
+        return br;
+    }
+
+private:
+    uint8_t const* m_cur_pos;
+    uint8_t const* m_begin;
+    uint8_t const* m_end;
+    char m_separator;
 };
 
 }  // namespace autocomplete

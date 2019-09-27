@@ -7,6 +7,7 @@
 #include "uncompressed_list.hpp"
 #include "forward_index.hpp"
 #include "inverted_index.hpp"
+#include "autocomplete.hpp"
 
 #include "succinct_rmq/cartesian_tree.hpp"
 
@@ -26,5 +27,10 @@ typedef unsorted_list<uint32_vec, cartesian_tree> unsorted_list_succinct_rmq;
 typedef forward_index<uncompressed_list, uint64_vec> uncompressed_forward_index;
 typedef inverted_index<uncompressed_list, uint64_vec>
     uncompressed_inverted_index;
+
+typedef autocomplete<uint32_completion_trie, unsorted_list_succinct_rmq,
+                     fc_dictionary_B16, uncompressed_inverted_index,
+                     uncompressed_forward_index>
+    autocomplete_type1;
 
 }  // namespace autocomplete

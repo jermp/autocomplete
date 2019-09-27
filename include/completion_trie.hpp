@@ -1,6 +1,8 @@
 #pragma once
 
+#include "parameters.hpp"
 #include "util_types.hpp"
+#include "completion.hpp"
 
 namespace autocomplete {
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "parameters.hpp"
+
 namespace autocomplete {
 
 template <typename ForwardList, typename Pointers>

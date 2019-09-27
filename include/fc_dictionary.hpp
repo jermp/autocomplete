@@ -1,8 +1,8 @@
 #pragma once
 
-#include <vector>
 #include <cmath>
 
+#include "parameters.hpp"
 #include "util_types.hpp"
 
 namespace autocomplete {
@@ -14,14 +14,15 @@ struct fc_dictionary {
 
         builder(parameters const& params)
             : m_size(params.num_terms) {
-            std::cout << "processing " << m_size << " strings..." << std::endl;
+            // std::cout << "processing " << m_size << " strings..." <<
+            // std::endl;
             uint32_t buckets = std::ceil(double(m_size) / (BucketSize + 1));
-            std::cout << "buckets " << buckets << std::endl;
+            // std::cout << "buckets " << buckets << std::endl;
 
             m_pointers_to_buckets.reserve(buckets + 1);
             uint32_t tail =
                 m_size - ((m_size / (BucketSize + 1)) * (BucketSize + 1)) - 1;
-            std::cout << "tail " << tail << std::endl;
+            // std::cout << "tail " << tail << std::endl;
 
             m_pointers_to_headers.push_back(0);
             m_pointers_to_buckets.push_back(0);
