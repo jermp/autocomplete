@@ -14,6 +14,7 @@ struct inverted_index {
         builder(parameters const& params)
             : m_num_docs(params.num_completions) {
             uint64_t num_terms = params.num_terms;
+            m_minimal_doc_ids.reserve(num_terms);
 
             std::ifstream input(
                 (params.collection_basename + ".inverted").c_str(),
@@ -31,6 +32,7 @@ struct inverted_index {
                     input >> x;
                     list.push_back(x);
                 }
+                m_minimal_doc_ids.push_back(list.front());
                 m_bvb.append_bits(n, 32);
                 InvertedList::build(m_bvb, list.begin(), list.size());
                 m_pointers.push_back(m_bvb.size());
@@ -40,9 +42,14 @@ struct inverted_index {
             input.close();
         }
 
+        std::vector<id_type>& minimal_doc_ids() {
+            return m_minimal_doc_ids;
+        }
+
         void swap(inverted_index::builder& other) {
             std::swap(other.m_num_docs, m_num_docs);
             other.m_pointers.swap(m_pointers);
+            other.m_minimal_doc_ids.swap(m_minimal_doc_ids);
             other.m_bvb.swap(m_bvb);
         }
 
@@ -56,6 +63,7 @@ struct inverted_index {
     private:
         uint64_t m_num_docs;
         std::vector<uint64_t> m_pointers;
+        std::vector<id_type> m_minimal_doc_ids;
         bit_vector_builder m_bvb;
     };
 
@@ -83,6 +91,8 @@ struct inverted_index {
 
     uint32_t intersect(std::vector<id_type> const& term_ids,
                        std::vector<id_type>& out) {
+        assert(term_ids.size() > 0);
+
         if (term_ids.size() == 1) {
             auto it = iterator(term_ids.front() - 1);
             return it.decode(out.data());

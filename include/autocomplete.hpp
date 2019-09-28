@@ -22,7 +22,10 @@ struct autocomplete {
         typename Dictionary::builder di_builder(params);
         typename InvertedIndex::builder ii_builder(params);
         typename ForwardIndex::builder fi_builder(params);
+
         m_unsorted_docs_list.build(ct_builder.doc_ids());
+        m_unsorted_minimal_docs_list.build(ii_builder.minimal_doc_ids());
+
         ct_builder.build(m_completion_trie);
         di_builder.build(m_dictionary);
         ii_builder.build(m_inverted_index);
@@ -34,13 +37,10 @@ struct autocomplete {
         completion_type prefix;
         byte_range suffix;
         parse(query, prefix, suffix);
-
         auto& topk = m_pool.scores();
         uint32_t num_completions = 0;
-
         range r = m_completion_trie.prefix_range(prefix);
         num_completions = m_unsorted_docs_list.topk(r, k, topk);
-
         return extract_strings(num_completions, topk);
     }
 
@@ -49,7 +49,7 @@ struct autocomplete {
         completion_type prefix;
         byte_range suffix;
         uint32_t num_terms = parse(query, prefix, suffix);
-        if (num_terms > 1) prefix.pop_back();
+        assert(num_terms > 0);
 
         auto& topk = m_pool.scores();
         uint32_t num_completions = 0;
@@ -57,15 +57,34 @@ struct autocomplete {
         suffix.end += 1;  // include null terminator
         range suffix_lex_range = m_dictionary.locate_prefix(suffix);
 
-        static const uint32_t size = m_inverted_index.num_docs();
-        static std::vector<id_type> intersection(size);  // at most
-        uint64_t n = m_inverted_index.intersect(prefix, intersection);
-        for (uint32_t i = 0; i != n; ++i) {
-            id_type doc_id = intersection[i];
-            auto it = m_forward_index.iterator(doc_id);
-            if (it.contains(suffix_lex_range)) {
-                topk[num_completions++] = doc_id;
-                if (num_completions == k) break;
+        // std::cout << "num_terms " << num_terms << std::endl;
+        // std::cout << "prefix is ";
+        // for (auto x : prefix) {
+        //     std::cout << x << " ";
+        // }
+        // std::cout << std::endl;
+        // std::cout << "suffix is '" << std::string(suffix.begin, suffix.end)
+        //           << "'" << std::endl;
+
+        if (num_terms == 1) {  // special case
+
+            num_completions = m_unsorted_minimal_docs_list.topk(
+                suffix_lex_range, k, topk,
+                true  // must return unique results
+            );
+
+        } else {
+            prefix.pop_back();
+            static const uint32_t max_size = m_inverted_index.num_docs();
+            static std::vector<id_type> intersection(max_size);
+            uint64_t n = m_inverted_index.intersect(prefix, intersection);
+            for (uint32_t i = 0; i != n; ++i) {
+                id_type doc_id = intersection[i];
+                auto it = m_forward_index.iterator(doc_id);
+                if (it.contains(suffix_lex_range)) {
+                    topk[num_completions++] = doc_id;
+                    if (num_completions == k) break;
+                }
             }
         }
 
@@ -74,14 +93,15 @@ struct autocomplete {
 
     size_t bytes() const {
         return m_completion_trie.bytes() + m_unsorted_docs_list.bytes() +
-               m_dictionary.bytes() + m_inverted_index.bytes() +
-               m_forward_index.bytes();
+               m_unsorted_minimal_docs_list.bytes() + m_dictionary.bytes() +
+               m_inverted_index.bytes() + m_forward_index.bytes();
     }
 
     template <typename Visitor>
     void visit(Visitor& visitor) {
         visitor.visit(m_completion_trie);
         visitor.visit(m_unsorted_docs_list);
+        visitor.visit(m_unsorted_minimal_docs_list);
         visitor.visit(m_dictionary);
         visitor.visit(m_inverted_index);
         visitor.visit(m_forward_index);
@@ -90,6 +110,7 @@ struct autocomplete {
 private:
     CompletionTrie m_completion_trie;
     UnsortedDocsList m_unsorted_docs_list;
+    UnsortedDocsList m_unsorted_minimal_docs_list;
     Dictionary m_dictionary;
     InvertedIndex m_inverted_index;
     ForwardIndex m_forward_index;

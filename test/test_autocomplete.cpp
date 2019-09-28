@@ -73,9 +73,10 @@ int main(int argc, char** argv) {
         {
             uint32_t k = 7;
             std::vector<std::string> queries = {
-                "dave mat", "florence", "florida be", "for s",
-                "for sa",   "for sal",  "for sale",   "ford a",
-                "ford au",  "ford m",   "ford mu"};
+                "dave mat", "florence", "florida be", "for s",   "for sa",
+                "for sal",  "for sale", "ford a",     "ford au", "ford m",
+                "ford mu",  "for",      "fo",         "f",       "matt",
+                "fl",       "flor",     "fly"};
 
             for (auto& query : queries) {
                 auto it = a.conjunctive_topk(query, k);

@@ -13,7 +13,9 @@ struct unsorted_list {
         m_list.build(list);
     }
 
-    uint32_t topk(range r, uint32_t k, std::vector<id_type>& topk) {
+    uint32_t topk(range r, uint32_t k, std::vector<id_type>& topk,
+                  bool unique = false  // return unique results
+    ) {
         uint32_t range_len = r.end - r.begin;
         if (range_len <= k) {  // report everything in range
             for (uint32_t i = 0; i != range_len; ++i) {
@@ -34,7 +36,13 @@ struct unsorted_list {
         uint32_t i = 0;
         while (true) {
             scored_range min = m_q.top();
-            topk[i++] = min.min_val;
+
+            if (!unique or
+                (unique and !std::binary_search(topk.begin(), topk.begin() + i,
+                                                min.min_val))) {
+                topk[i++] = min.min_val;
+            }
+
             if (i == k) break;
             m_q.pop();
 
