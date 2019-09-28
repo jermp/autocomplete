@@ -107,39 +107,41 @@ int main(int argc, char** argv) {
     }
 
     {
-        unsorted_list_succinct_rmq list;
-        essentials::logger("loading data structure from disk...");
-        essentials::load(list, output_filename);
-        essentials::logger("DONE");
+        if (output_filename) {
+            unsorted_list_succinct_rmq list;
+            essentials::logger("loading data structure from disk...");
+            essentials::load(list, output_filename);
+            essentials::logger("DONE");
 
-        std::cout << "using " << list.bytes() << " bytes" << std::endl;
+            std::cout << "using " << list.bytes() << " bytes" << std::endl;
 
-        std::vector<id_type> topk(max_k);
-        auto queries = gen_random_queries(num_queries, doc_ids.size());
-        std::cout << "testing top-" << k << " " << num_queries
-                  << " random queries..." << std::endl;
+            std::vector<id_type> topk(max_k);
+            auto queries = gen_random_queries(num_queries, doc_ids.size());
+            std::cout << "testing top-" << k << " " << num_queries
+                      << " random queries..." << std::endl;
 
-        for (auto q : queries) {
-            auto expected = naive_topk(doc_ids, q, k);
-            uint32_t num_elements = list.topk(q, k, topk);
+            for (auto q : queries) {
+                auto expected = naive_topk(doc_ids, q, k);
+                uint32_t num_elements = list.topk(q, k, topk);
 
-            if (expected.size() != num_elements) {
-                std::cout << "Error: expected " << expected.size()
-                          << " topk elements but got " << num_elements
-                          << std::endl;
-                return 1;
-            }
-
-            for (uint32_t i = 0; i != num_elements; ++i) {
-                if (topk[i] != expected[i]) {
-                    std::cout << "Error: expected " << expected[i]
-                              << " but got " << topk[i] << std::endl;
+                if (expected.size() != num_elements) {
+                    std::cout << "Error: expected " << expected.size()
+                              << " topk elements but got " << num_elements
+                              << std::endl;
                     return 1;
                 }
-            }
-        }
 
-        std::cout << "it's all good" << std::endl;
+                for (uint32_t i = 0; i != num_elements; ++i) {
+                    if (topk[i] != expected[i]) {
+                        std::cout << "Error: expected " << expected[i]
+                                  << " but got " << topk[i] << std::endl;
+                        return 1;
+                    }
+                }
+            }
+
+            std::cout << "it's all good" << std::endl;
+        }
     }
 
     return 0;

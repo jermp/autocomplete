@@ -62,17 +62,19 @@ int main(int argc, char** argv) {
 
     {
         // load and print
-        cartesian_tree rmq;
-        essentials::logger("loading data structure from disk...");
-        essentials::load(rmq, output_filename);
-        essentials::logger("DONE");
+        if (output_filename) {
+            cartesian_tree rmq;
+            essentials::logger("loading data structure from disk...");
+            essentials::load(rmq, output_filename);
+            essentials::logger("DONE");
 
-        std::cout << "using " << rmq.bytes() << " bytes" << std::endl;
+            std::cout << "using " << rmq.bytes() << " bytes" << std::endl;
 
-        for (size_t i = 0; i != rmq.size(); ++i) {
-            for (size_t j = i; j != rmq.size(); ++j) {
-                std::cout << "rmq[" << i << "," << j << "] = " << rmq.rmq(i, j)
-                          << std::endl;
+            for (size_t i = 0; i != rmq.size(); ++i) {
+                for (size_t j = i; j != rmq.size(); ++j) {
+                    std::cout << "rmq[" << i << "," << j
+                              << "] = " << rmq.rmq(i, j) << std::endl;
+                }
             }
         }
     }

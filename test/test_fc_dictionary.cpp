@@ -74,92 +74,96 @@ int main(int argc, char** argv) {
     }
 
     {
-        // load and print
-        fc_dictionary_B16 dict;
-        essentials::logger("loading data structure from disk...");
-        essentials::load(dict, output_filename);
-        essentials::logger("DONE");
-        // essentials::print_size(dict);
-        std::cout << "using " << dict.bytes() << " bytes" << std::endl;
+        if (output_filename) {
+            fc_dictionary_B16 dict;
+            essentials::logger("loading data structure from disk...");
+            essentials::load(dict, output_filename);
+            essentials::logger("DONE");
+            // essentials::print_size(dict);
+            std::cout << "using " << dict.bytes() << " bytes" << std::endl;
 
-        // test locate() and extract for all strings
-        std::vector<std::string> terms;
-        terms.reserve(params.num_terms);
-        std::ifstream input((params.collection_basename + ".dict").c_str(),
-                            std::ios_base::in);
-        if (!input.good()) {
-            throw std::runtime_error("File not found");
-        }
-        std::string term;
-        term.reserve(256 + 1);
-        input >> term;
-        while (input) {
-            terms.push_back(std::move(term));
+            // test locate() and extract for all strings
+            std::vector<std::string> terms;
+            terms.reserve(params.num_terms);
+            std::ifstream input((params.collection_basename + ".dict").c_str(),
+                                std::ios_base::in);
+            if (!input.good()) {
+                throw std::runtime_error("File not found");
+            }
+            std::string term;
+            term.reserve(256 + 1);
             input >> term;
-        }
-        input.close();
-
-        std::cout << "terms.size() " << terms.size() << std::endl;
-
-        std::vector<uint8_t> decoded(256 + 1);  // assume this is enough
-
-        for (auto const& t : terms) {
-            id_type expected = locate(terms, t);
-            id_type got = dict.locate(string_to_byte_range(t));
-
-            std::cout << "locating term '" << t << "'" << std::endl;
-            if (got != expected) {
-                std::cout << "Error: expected id " << expected << ","
-                          << " but got id " << got << std::endl;
-                return 1;
+            while (input) {
+                terms.push_back(std::move(term));
+                input >> term;
             }
+            input.close();
 
-            std::cout << "extracting term '" << t << "'" << std::endl;
-            uint8_t string_len = dict.extract(got, decoded.data());
+            std::cout << "terms.size() " << terms.size() << std::endl;
 
-            if (string_len != t.size()) {
-                std::cout << "Error: expected size " << t.size() << ","
-                          << " but got size " << string_len << std::endl;
-                return 1;
-            }
+            std::vector<uint8_t> decoded(256 + 1);  // assume this is enough
 
-            std::string d(reinterpret_cast<char const*>(decoded.data()));
-            if (d != t) {
-                std::cout << "Error: expected '" << t << "',"
-                          << " but got '" << d << "'" << std::endl;
-                return 1;
-            }
+            for (auto const& t : terms) {
+                id_type expected = locate(terms, t);
+                id_type got = dict.locate(string_to_byte_range(t));
 
-            // std::cout << "lexicographic id of '" << t << "' is " << got
-            //           << std::endl;
-        }
-
-        // test locate_prefix() for all strings
-        std::string prefix;
-        prefix.reserve(256 + 1);
-        for (auto const& t : terms) {
-            uint32_t n = t.size();
-            for (uint32_t prefix_len = 1; prefix_len <= n; ++prefix_len) {
-                prefix.clear();
-                for (uint32_t i = 0; i != prefix_len; ++i) {
-                    prefix.push_back(t[i]);
-                }
-
-                std::cout << "locating prefix '" << prefix << "'" << std::endl;
-                range expected = locate_prefix(terms, prefix);
-                range got = dict.locate_prefix(string_to_byte_range(prefix));
-
-                if ((got.begin != expected.begin) or
-                    (got.end != expected.end)) {
-                    std::cout << "Error for prefix '" << prefix
-                              << "' : expected [" << expected.begin << ","
-                              << expected.end << "] but got [" << got.begin
-                              << "," << got.end << "]" << std::endl;
+                std::cout << "locating term '" << t << "'" << std::endl;
+                if (got != expected) {
+                    std::cout << "Error: expected id " << expected << ","
+                              << " but got id " << got << std::endl;
                     return 1;
                 }
 
-                // std::cout << "prefix range of '" << prefix << "' is ["
-                //           << got.begin << "," << got.end << "]" << std::endl;
+                std::cout << "extracting term '" << t << "'" << std::endl;
+                uint8_t string_len = dict.extract(got, decoded.data());
+
+                if (string_len != t.size()) {
+                    std::cout << "Error: expected size " << t.size() << ","
+                              << " but got size " << string_len << std::endl;
+                    return 1;
+                }
+
+                std::string d(reinterpret_cast<char const*>(decoded.data()));
+                if (d != t) {
+                    std::cout << "Error: expected '" << t << "',"
+                              << " but got '" << d << "'" << std::endl;
+                    return 1;
+                }
+
+                // std::cout << "lexicographic id of '" << t << "' is " << got
+                //           << std::endl;
+            }
+
+            // test locate_prefix() for all strings
+            std::string prefix;
+            prefix.reserve(256 + 1);
+            for (auto const& t : terms) {
+                uint32_t n = t.size();
+                for (uint32_t prefix_len = 1; prefix_len <= n; ++prefix_len) {
+                    prefix.clear();
+                    for (uint32_t i = 0; i != prefix_len; ++i) {
+                        prefix.push_back(t[i]);
+                    }
+
+                    std::cout << "locating prefix '" << prefix << "'"
+                              << std::endl;
+                    range expected = locate_prefix(terms, prefix);
+                    range got =
+                        dict.locate_prefix(string_to_byte_range(prefix));
+
+                    if ((got.begin != expected.begin) or
+                        (got.end != expected.end)) {
+                        std::cout << "Error for prefix '" << prefix
+                                  << "' : expected [" << expected.begin << ","
+                                  << expected.end << "] but got [" << got.begin
+                                  << "," << got.end << "]" << std::endl;
+                        return 1;
+                    }
+
+                    // std::cout << "prefix range of '" << prefix << "' is ["
+                    //           << got.begin << "," << got.end << "]" <<
+                    //           std::endl;
+                }
             }
         }
     }

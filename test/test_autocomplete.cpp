@@ -26,7 +26,6 @@ int main(int argc, char** argv) {
     params.load();
 
     {
-        // build, print and write
         autocomplete_type1 a(params);
         std::cout << "using " << a.bytes() << " bytes" << std::endl;
 
@@ -39,54 +38,56 @@ int main(int argc, char** argv) {
     }
 
     {
-        // load and print
-        autocomplete_type1 a;
-        essentials::logger("loading data structure from disk...");
-        essentials::load(a, output_filename);
-        essentials::logger("DONE");
-        // essentials::print_size(a);
-        std::cout << "using " << a.bytes() << " bytes" << std::endl;
+        if (output_filename) {
+            autocomplete_type1 a;
+            essentials::logger("loading data structure from disk...");
+            essentials::load(a, output_filename);
+            essentials::logger("DONE");
+            // essentials::print_size(a);
+            std::cout << "using " << a.bytes() << " bytes" << std::endl;
 
-        // test prefix_topk()
-        {
-            uint32_t k = 7;
-            std::vector<std::string> queries = {
-                "a",          "10",       "african",     "air",
-                "commercial", "internet", "paris",       "somerset",
-                "the",        "the new",  "the perfect", "the starting line",
-                "yu gi oh",   "for sale"};
+            // test prefix_topk()
+            {
+                uint32_t k = 7;
+                std::vector<std::string> queries = {
+                    "a",        "10",          "african",
+                    "air",      "commercial",  "internet",
+                    "paris",    "somerset",    "the",
+                    "the new",  "the perfect", "the starting line",
+                    "yu gi oh", "for sale"};
 
-            for (auto& query : queries) {
-                auto it = a.prefix_topk(query, k);
-                std::cout << "top-" << it.size() << " completions for '"
-                          << query << "':\n";
-                for (uint32_t i = 0; i != it.size(); ++i, ++it) {
-                    auto completion = *it;
-                    std::cout << "(" << completion.score << ", '";
-                    print(completion.string);
-                    std::cout << "')" << std::endl;
+                for (auto& query : queries) {
+                    auto it = a.prefix_topk(query, k);
+                    std::cout << "top-" << it.size() << " completions for '"
+                              << query << "':\n";
+                    for (uint32_t i = 0; i != it.size(); ++i, ++it) {
+                        auto completion = *it;
+                        std::cout << "(" << completion.score << ", '";
+                        print(completion.string);
+                        std::cout << "')" << std::endl;
+                    }
                 }
             }
-        }
 
-        // test conjunctive_topk()
-        {
-            uint32_t k = 7;
-            std::vector<std::string> queries = {
-                "dave mat", "florence", "florida be", "for s",   "for sa",
-                "for sal",  "for sale", "ford a",     "ford au", "ford m",
-                "ford mu",  "for",      "fo",         "f",       "matt",
-                "fl",       "flor",     "fly"};
+            // test conjunctive_topk()
+            {
+                uint32_t k = 7;
+                std::vector<std::string> queries = {
+                    "dave mat", "florence", "florida be", "for s",   "for sa",
+                    "for sal",  "for sale", "ford a",     "ford au", "ford m",
+                    "ford mu",  "for",      "fo",         "f",       "matt",
+                    "fl",       "flor",     "fly"};
 
-            for (auto& query : queries) {
-                auto it = a.conjunctive_topk(query, k);
-                std::cout << "top-" << it.size() << " completions for '"
-                          << query << "':\n";
-                for (uint32_t i = 0; i != it.size(); ++i, ++it) {
-                    auto completion = *it;
-                    std::cout << "(" << completion.score << ", '";
-                    print(completion.string);
-                    std::cout << "')" << std::endl;
+                for (auto& query : queries) {
+                    auto it = a.conjunctive_topk(query, k);
+                    std::cout << "top-" << it.size() << " completions for '"
+                              << query << "':\n";
+                    for (uint32_t i = 0; i != it.size(); ++i, ++it) {
+                        auto completion = *it;
+                        std::cout << "(" << completion.score << ", '";
+                        print(completion.string);
+                        std::cout << "')" << std::endl;
+                    }
                 }
             }
         }

@@ -42,14 +42,15 @@ int main(int argc, char** argv) {
     }
 
     {
-        // load and print
-        uncompressed_forward_index fi;
-        essentials::logger("loading data structure from disk...");
-        essentials::load(fi, output_filename);
-        essentials::logger("DONE");
-        std::cout << "using " << fi.bytes() << " bytes" << std::endl;
-        std::cout << "num docs " << fi.num_docs() << std::endl;
-        std::cout << "num terms " << fi.num_terms() << std::endl;
+        if (output_filename) {
+            uncompressed_forward_index fi;
+            essentials::logger("loading data structure from disk...");
+            essentials::load(fi, output_filename);
+            essentials::logger("DONE");
+            std::cout << "using " << fi.bytes() << " bytes" << std::endl;
+            std::cout << "num docs " << fi.num_docs() << std::endl;
+            std::cout << "num terms " << fi.num_terms() << std::endl;
+        }
     }
 
     return 0;

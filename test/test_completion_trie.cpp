@@ -53,57 +53,59 @@ int main(int argc, char** argv) {
     }
 
     {
-        // load and print
-        uint32_completion_trie ct;
-        essentials::logger("loading data structure from disk...");
-        essentials::load(ct, output_filename);
-        essentials::logger("DONE");
-        // essentials::print_size(ct);
-        std::cout << "using " << ct.bytes() << " bytes" << std::endl;
-        // ct.print();
+        if (output_filename) {
+            uint32_completion_trie ct;
+            essentials::logger("loading data structure from disk...");
+            essentials::load(ct, output_filename);
+            essentials::logger("DONE");
+            // essentials::print_size(ct);
+            std::cout << "using " << ct.bytes() << " bytes" << std::endl;
+            // ct.print();
 
-        // test prefix_range() for all prefixes
-        std::vector<completion_type> completions;
-        completions.reserve(params.num_completions);
-        std::ifstream input(params.collection_basename + ".mapped",
-                            std::ios_base::in);
-        if (!input.good()) {
-            throw std::runtime_error("File not found");
-        }
+            // test prefix_range() for all prefixes
+            std::vector<completion_type> completions;
+            completions.reserve(params.num_completions);
+            std::ifstream input(params.collection_basename + ".mapped",
+                                std::ios_base::in);
+            if (!input.good()) {
+                throw std::runtime_error("File not found");
+            }
 
-        completion_iterator it(params, input);
-        while (input) {
-            auto const& record = *it;
-            completions.push_back(std::move(record.completion));
-            ++it;
-        }
-        input.close();
+            completion_iterator it(params, input);
+            while (input) {
+                auto const& record = *it;
+                completions.push_back(std::move(record.completion));
+                ++it;
+            }
+            input.close();
 
-        for (auto const& c : completions) {
-            for (uint32_t prefix_len = 1; prefix_len <= c.size() - 1;
-                 ++prefix_len) {
-                completion_type prefix;
-                prefix.reserve(prefix_len);
-                for (uint32_t i = 0; i != prefix_len; ++i) {
-                    prefix.push_back(c[i]);
+            for (auto const& c : completions) {
+                for (uint32_t prefix_len = 1; prefix_len <= c.size() - 1;
+                     ++prefix_len) {
+                    completion_type prefix;
+                    prefix.reserve(prefix_len);
+                    for (uint32_t i = 0; i != prefix_len; ++i) {
+                        prefix.push_back(c[i]);
+                    }
+                    range got = ct.prefix_range(prefix);
+                    range expected = prefix_range(completions, prefix);
+
+                    if ((got.begin != expected.begin) or
+                        (got.end != expected.end)) {
+                        std::cout << "Error: expected [" << expected.begin
+                                  << "," << expected.end << ") but got ["
+                                  << got.begin << "," << got.end << ")"
+                                  << std::endl;
+                        return 1;
+                    }
+
+                    std::cout << "prefix range of ";
+                    for (auto x : prefix) {
+                        std::cout << x << " ";
+                    }
+                    std::cout << "is [" << got.begin << "," << got.end << ")"
+                              << std::endl;
                 }
-                range got = ct.prefix_range(prefix);
-                range expected = prefix_range(completions, prefix);
-
-                if ((got.begin != expected.begin) or
-                    (got.end != expected.end)) {
-                    std::cout << "Error: expected [" << expected.begin << ","
-                              << expected.end << ") but got [" << got.begin
-                              << "," << got.end << ")" << std::endl;
-                    return 1;
-                }
-
-                std::cout << "prefix range of ";
-                for (auto x : prefix) {
-                    std::cout << x << " ";
-                }
-                std::cout << "is [" << got.begin << "," << got.end << ")"
-                          << std::endl;
             }
         }
     }

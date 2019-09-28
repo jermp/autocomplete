@@ -174,8 +174,7 @@ private:
     std::vector<uint8_t> m_buckets;
 
     bool locate_bucket(byte_range t, byte_range& h, id_type& bucket_id) const {
-        int lo = 0, hi = buckets() - 1;
-        int mi, cmp;
+        int lo = 0, hi = buckets() - 1, mi = 0, cmp = 0;
 
         while (lo <= hi) {
             mi = (lo + hi) / 2;
