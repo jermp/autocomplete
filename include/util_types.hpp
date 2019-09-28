@@ -35,6 +35,11 @@ struct byte_range {
     uint8_t const* end;
 };
 
+struct scored_byte_range {
+    byte_range string;
+    id_type score;
+};
+
 byte_range string_to_byte_range(std::string const& s) {
     const uint8_t* begin = reinterpret_cast<uint8_t const*>(s.c_str());
     const uint8_t* end = begin + s.size() + 1;  // for '\0' terminator
@@ -46,7 +51,6 @@ void print(byte_range br) {
     for (uint32_t i = 0; i != size; ++i) {
         std::cout << br.begin[i];
     }
-    std::cout << std::endl;
 }
 
 int byte_range_compare(byte_range l, byte_range r) {

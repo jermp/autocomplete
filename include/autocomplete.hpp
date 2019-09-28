@@ -1,20 +1,22 @@
 #pragma once
 
 #include "util_types.hpp"
-#include "strings_pool.hpp"
+#include "scored_strings_pool.hpp"
 
 namespace autocomplete {
 
 template <typename CompletionTrie, typename UnsortedDocsList,
           typename Dictionary, typename InvertedIndex, typename ForwardIndex>
 struct autocomplete {
-    static const size_t POOL_SIZE = 1024;
+    static const size_t pool_size = 1024;
+    static const uint32_t max_k = 15;
 
     autocomplete() {
-        m_pool.resize(POOL_SIZE);
+        m_pool.resize(pool_size, max_k);
     }
 
-    autocomplete(parameters const& params) {
+    autocomplete(parameters const& params)
+        : autocomplete() {
         typename CompletionTrie::builder ct_builder(params);
         typename Dictionary::builder di_builder(params);
         typename InvertedIndex::builder ii_builder(params);
@@ -24,10 +26,10 @@ struct autocomplete {
         di_builder.build(m_dictionary);
         ii_builder.build(m_inverted_index);
         fi_builder.build(m_forward_index);
-        m_pool.resize(POOL_SIZE);
     }
 
-    strings_pool::iterator prefix_topk(std::string& query, uint32_t k) {
+    scored_strings_pool::iterator prefix_topk(std::string& query, uint32_t k) {
+        assert(k <= max_k);
         m_pool.clear();
         m_pool.init();
         uint32_t num_terms = parse(query);
@@ -40,11 +42,8 @@ struct autocomplete {
             prefix.push_back(term_id);
         }
 
-        // std::cout << "prefix " << prefix << std::endl;
-
         range r = m_completion_trie.prefix_range(prefix);
-
-        std::vector<id_type> topk(k);
+        auto& topk = m_pool.scores();
         uint32_t num_completions = m_unsorted_docs_list.topk(r, k, topk);
 
         for (uint32_t i = 0; i != num_completions; ++i) {
@@ -65,6 +64,7 @@ struct autocomplete {
             m_pool.push_back_offset(offset);
         }
 
+        assert(m_pool.size() == num_completions);
         return m_pool.begin();
     }
 
@@ -89,6 +89,6 @@ private:
     Dictionary m_dictionary;
     InvertedIndex m_inverted_index;
     ForwardIndex m_forward_index;
-    strings_pool m_pool;
+    scored_strings_pool m_pool;
 };
 }  // namespace autocomplete

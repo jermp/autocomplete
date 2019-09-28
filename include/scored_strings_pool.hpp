@@ -4,12 +4,13 @@
 
 namespace autocomplete {
 
-struct strings_pool {
+struct scored_strings_pool {
     void init() {
         push_back_offset(0);
     }
 
-    void resize(size_t num_bytes) {
+    void resize(size_t num_bytes, uint32_t k) {
+        m_scores.resize(k);
         m_data.resize(num_bytes);
     }
 
@@ -34,13 +35,21 @@ struct strings_pool {
         m_offsets.push_back(offset);
     }
 
-    byte_range operator[](size_t i) const {
+    std::vector<id_type>& scores() {
+        return m_scores;
+    }
+
+    scored_byte_range operator[](size_t i) const {
         assert(i < size());
-        return {m_data.data() + m_offsets[i], m_data.data() + m_offsets[i + 1]};
+        scored_byte_range sbr;
+        sbr.string = {m_data.data() + m_offsets[i],
+                      m_data.data() + m_offsets[i + 1]};
+        sbr.score = m_scores[i];
+        return sbr;
     }
 
     struct iterator {
-        iterator(strings_pool const* pool, size_t pos = 0)
+        iterator(scored_strings_pool const* pool, size_t pos = 0)
             : m_pool(pool)
             , m_pos(pos) {}
 
@@ -52,12 +61,12 @@ struct strings_pool {
             return m_pool->size();
         }
 
-        byte_range operator*() {
+        scored_byte_range operator*() {
             return m_pool->operator[](m_pos);
         }
 
     private:
-        strings_pool const* m_pool;
+        scored_strings_pool const* m_pool;
         size_t m_pos;
     };
 
@@ -66,6 +75,7 @@ struct strings_pool {
     }
 
 private:
+    std::vector<id_type> m_scores;
     std::vector<size_t> m_offsets;
     std::vector<uint8_t> m_data;
 };

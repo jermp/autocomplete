@@ -47,13 +47,23 @@ int main(int argc, char** argv) {
         // essentials::print_size(a);
         std::cout << "using " << a.bytes() << " bytes" << std::endl;
 
-        uint32_t k = 5;
-        std::string query("a");  // 10
-        auto it = a.prefix_topk(query, k);
-        std::cout << "size " << it.size() << std::endl;
-        for (uint32_t i = 0; i != it.size(); ++i, ++it) {
-            byte_range br = *it;
-            print(br);
+        uint32_t k = 7;
+        std::vector<std::string> queries = {
+            "a",          "10",       "african",     "air",
+            "commercial", "internet", "paris",       "somerset",
+            "the",        "the new",  "the perfect", "the starting line",
+            "yu gi oh"};
+
+        for (auto& query : queries) {
+            auto it = a.prefix_topk(query, k);
+            std::cout << "top-" << it.size() << " completions for '" << query
+                      << "':\n";
+            for (uint32_t i = 0; i != it.size(); ++i, ++it) {
+                auto completion = *it;
+                std::cout << "(" << completion.score << ", '";
+                print(completion.string);
+                std::cout << "')" << std::endl;
+            }
         }
     }
 
