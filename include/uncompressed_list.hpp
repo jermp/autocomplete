@@ -26,6 +26,11 @@ struct uncompressed_list {
                      offset / 32;
         }
 
+        uint32_t decode(uint32_t* out) {
+            memcpy(out, m_data, size() * sizeof(uint32_t));
+            return size();
+        }
+
         id_type access(uint32_t i) {
             assert(i < size());
             m_position = i;
@@ -74,6 +79,16 @@ struct uncompressed_list {
             m_position += 1;
             m_id = m_position != size() ? m_data[m_position] : m_universe;
             return m_id;
+        }
+
+        bool contains(range r) const {
+            bool answer = false;
+            for (uint32_t i = 0; i != size(); ++i) {
+                uint32_t val = m_data[i];
+                if (val > r.end) break;
+                if (val >= r.begin and val <= r.end) answer = true;
+            }
+            return answer;
         }
 
         // uint32_t position() const {

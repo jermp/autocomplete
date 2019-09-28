@@ -100,8 +100,8 @@ int main(int argc, char** argv) {
         }
         std::cout << std::endl;
 
-        // for (uint32_t i = 0; i != ii.num_terms(); ++i) {
-        //     for (uint32_t j = i; j != ii.num_terms(); ++j) {
+        // for (uint32_t i = 1; i != ii.num_terms() + 1; ++i) {
+        //     for (uint32_t j = i; j != ii.num_terms() + 1; ++j) {
         //         term_ids.clear();
         //         term_ids.push_back(i);
         //         term_ids.push_back(j);

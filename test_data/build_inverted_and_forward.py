@@ -43,6 +43,7 @@ with open(input_filename, 'r') as f:
                 print(line)
                 exit()
 
+        # NOTE: not sorted!
         forward_index[doc_id] = mapped;
 
         lines += 1

@@ -108,9 +108,13 @@ struct fc_dictionary {
         byte_range h;
         id_type bucket_id;
         bool is_header = locate_bucket(t, h, bucket_id);
-        id_type t_id = bucket_id * (BucketSize + 1) + 1;
-        if (is_header) return t_id;
-        return t_id + locate(t, h, bucket_id);
+        id_type base_id = bucket_id * (BucketSize + 1) + 1;
+        if (is_header) return base_id;
+        id_type offset_id = locate(t, h, bucket_id);
+        if (offset_id == global::invalid_term_id) {
+            return global::invalid_term_id;
+        }
+        return base_id + offset_id;
     }
 
     uint8_t extract(id_type id, uint8_t* out) const {

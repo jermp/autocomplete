@@ -99,11 +99,11 @@ private:
     std::vector<scored_range> m_q;
 };
 
-uint32_t parse(std::string& s) {
+uint32_t parse_query(std::string& query) {
     uint32_t num_terms = 1;
-    for (uint64_t i = 0; i != s.size(); ++i) {
-        if (s[i] == ' ') {
-            s[i] = '\0';
+    for (uint64_t i = 0; i != query.size(); ++i) {
+        if (query[i] == ' ') {
+            query[i] = '\0';
             ++num_terms;
         }
     }

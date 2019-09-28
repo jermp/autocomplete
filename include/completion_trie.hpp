@@ -33,15 +33,17 @@ struct completion_trie {
                 (params.collection_basename + ".mapped").c_str(),
                 std::ios_base::in);
             completion_iterator it(params, input);
-            completion prev = completion::empty();
+            completion_type prev;
+            prev.push_back(global::terminator);
             range r = {0, 0};
 
             while (input) {
-                completion& curr = *it;
-                m_doc_ids.push_back(curr.doc_id);
+                auto& record = *it;
+                auto& curr = record.completion;
+                m_doc_ids.push_back(record.doc_id);
 
-                uint32_t prev_s = prev.size();
-                uint32_t curr_s = curr.size();
+                uint32_t prev_s = prev.size() - 1;
+                uint32_t curr_s = curr.size() - 1;
                 uint32_t l = 0;  // |lcp(curr,prev)|
 
                 while (l != curr_s and l != prev_s and curr[l] == prev[l]) ++l;
@@ -75,7 +77,7 @@ struct completion_trie {
 
             input.close();
 
-            for (uint32_t i = 0; i != prev.size() + 1; ++i) {
+            for (uint32_t i = 0; i != prev.size(); ++i) {
                 m_sizes[i].push_back(r.end - 1);
             }
 
@@ -156,10 +158,11 @@ struct completion_trie {
 
     completion_trie() {}
 
-    range prefix_range(completion const& c) const {
+    range prefix_range(completion_type const& c) const {
+        assert(c.size() > 0);
         range r = {global::not_found, global::not_found};
         range pointer = {0, m_nodes.front().size()};
-        uint32_t levels = c.size();
+        uint32_t levels = c.size() - 1;
 
         for (uint32_t i = 0; i <= levels; ++i) {
             uint64_t pos = m_nodes[i].find(pointer, c[i]);

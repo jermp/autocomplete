@@ -41,8 +41,8 @@ int main(int argc, char** argv) {
         }
         completion_iterator it(params, input);
         while (input) {
-            completion const& c = *it;
-            doc_ids.push_back(c.doc_id);
+            auto const& record = *it;
+            doc_ids.push_back(record.doc_id);
             ++it;
         }
         input.close();

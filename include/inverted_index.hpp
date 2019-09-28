@@ -83,11 +83,18 @@ struct inverted_index {
 
     uint32_t intersect(std::vector<id_type> const& term_ids,
                        std::vector<id_type>& out) {
+        if (term_ids.size() == 1) {
+            auto it = iterator(term_ids.front() - 1);
+            return it.decode(out.data());
+        }
+
         static std::vector<iterator_type> iterators;
+        iterators.clear();
         iterators.reserve(term_ids.size());
 
         for (auto id : term_ids) {
-            iterators.push_back(std::move(iterator(id)));
+            assert(id > 0);  // id 0 is reserved for null terminator
+            iterators.push_back(std::move(iterator(id - 1)));
         }
 
         std::sort(

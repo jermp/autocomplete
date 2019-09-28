@@ -4,8 +4,8 @@
 
 using namespace autocomplete;
 
-range prefix_range(std::vector<completion> const& completions,
-                   completion const& c) {
+range prefix_range(std::vector<completion_type> const& completions,
+                   completion_type const& c) {
     completion_comparator comp;
     auto b = std::lower_bound(completions.begin(), completions.end(), c, comp);
     uint64_t begin = std::distance(completions.begin(), b);
@@ -63,7 +63,7 @@ int main(int argc, char** argv) {
         // ct.print();
 
         // test prefix_range() for all prefixes
-        std::vector<completion> completions;
+        std::vector<completion_type> completions;
         completions.reserve(params.num_completions);
         std::ifstream input(params.collection_basename + ".mapped",
                             std::ios_base::in);
@@ -73,16 +73,17 @@ int main(int argc, char** argv) {
 
         completion_iterator it(params, input);
         while (input) {
-            completion const& c = *it;
-            completions.push_back(std::move(c));
+            auto const& record = *it;
+            completions.push_back(std::move(record.completion));
             ++it;
         }
         input.close();
 
         for (auto const& c : completions) {
-            for (uint32_t prefix_len = 1; prefix_len <= c.size();
+            for (uint32_t prefix_len = 1; prefix_len <= c.size() - 1;
                  ++prefix_len) {
-                completion prefix(prefix_len);
+                completion_type prefix;
+                prefix.reserve(prefix_len);
                 for (uint32_t i = 0; i != prefix_len; ++i) {
                     prefix.push_back(c[i]);
                 }
@@ -97,8 +98,12 @@ int main(int argc, char** argv) {
                     return 1;
                 }
 
-                std::cout << "prefix range of '" << prefix << "' is ["
-                          << got.begin << "," << got.end << ")" << std::endl;
+                std::cout << "prefix range of ";
+                for (auto x : prefix) {
+                    std::cout << x << " ";
+                }
+                std::cout << "is [" << got.begin << "," << got.end << ")"
+                          << std::endl;
             }
         }
     }
