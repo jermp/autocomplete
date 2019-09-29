@@ -55,26 +55,14 @@ void print(byte_range br) {
     }
 }
 
-int byte_range_compare(byte_range l, byte_range r) {
-    while (l.begin != l.end and r.begin != r.end and *(l.begin) == *(r.begin)) {
-        ++l.begin;
-        ++r.begin;
-    }
-    return *(l.begin) - *(r.begin);
+inline int byte_range_compare(byte_range l, byte_range r) {
+    return strcmp(reinterpret_cast<const char*>(l.begin),
+                  reinterpret_cast<const char*>(r.begin));
 }
 
-// compare l with the prefix of r of size n
-int byte_range_compare(byte_range l, byte_range r, uint32_t n) {
-    assert(n <= r.end - r.begin);
-    uint32_t i = 0;
-    if (n > 1) {
-        while (l.begin != l.end and i != n - 1 and *(l.begin) == *(r.begin)) {
-            ++i;
-            ++l.begin;
-            ++r.begin;
-        }
-    }
-    return *(l.begin) - *(r.begin);
+inline int byte_range_compare(byte_range l, byte_range r, uint32_t n) {
+    return strncmp(reinterpret_cast<const char*>(l.begin),
+                   reinterpret_cast<const char*>(r.begin), n);
 }
 
 void print_completion(completion_type const& c) {
