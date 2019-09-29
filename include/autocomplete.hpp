@@ -97,6 +97,8 @@ struct autocomplete {
                m_inverted_index.bytes() + m_forward_index.bytes();
     }
 
+    void print_stats() const;
+
     template <typename Visitor>
     void visit(Visitor& visitor) {
         visitor.visit(m_completion_trie);

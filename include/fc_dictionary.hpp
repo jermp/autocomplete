@@ -147,8 +147,6 @@ struct fc_dictionary {
                 m_headers.data() + pointer.end - 1};
     }
 
-    // void print_stats(essentials::json_lines& stats, size_t bytes);
-
     size_t bytes() const {
         return essentials::pod_bytes(m_size) + m_pointers_to_headers.bytes() +
                m_pointers_to_buckets.bytes() +

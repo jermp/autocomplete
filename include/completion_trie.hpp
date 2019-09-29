@@ -197,8 +197,6 @@ struct completion_trie {
         return true;
     }
 
-    // void print_stats(essentials::json_lines& stats, size_t bytes);
-
     size_t bytes() const {
         size_t bytes = sizeof(size_t) * 4;  // for std::vector's size()
         uint32_t levels = m_nodes.size();

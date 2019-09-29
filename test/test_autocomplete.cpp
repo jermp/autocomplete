@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "types.hpp"
+#include "statistics.hpp"
 
 using namespace autocomplete;
 
@@ -27,10 +28,7 @@ int main(int argc, char** argv) {
 
     {
         autocomplete_type1 a(params);
-        std::cout << "using " << a.bytes() << " bytes" << std::endl;
-
         if (output_filename) {
-            // essentials::print_size(a);
             essentials::logger("saving data structure to disk...");
             essentials::save<autocomplete_type1>(a, output_filename);
             essentials::logger("DONE");
@@ -43,8 +41,7 @@ int main(int argc, char** argv) {
             essentials::logger("loading data structure from disk...");
             essentials::load(a, output_filename);
             essentials::logger("DONE");
-            // essentials::print_size(a);
-            std::cout << "using " << a.bytes() << " bytes" << std::endl;
+            a.print_stats();
 
             // test prefix_topk()
             {
