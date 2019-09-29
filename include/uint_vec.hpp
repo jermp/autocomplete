@@ -8,12 +8,14 @@ namespace autocomplete {
 
 template <typename UintType>
 struct uint_vec {
-    void build(std::vector<UintType> const& from) {
-        m_data = from;  // copy assignment operator
+    template <typename T>
+    void build(std::vector<T> const& from) {
+        m_data.reserve(from.size());
+        std::copy(from.begin(), from.end(), std::back_inserter(m_data));
     }
 
-    template <typename Pointers>
-    void build(std::vector<UintType> const& from, Pointers const& pointers) {
+    template <typename T, typename Pointers>
+    void build(std::vector<T> const& from, Pointers const& pointers) {
         uint64_t n = from.size();
         m_data.reserve(n);
         UintType prev_upper = 0;
@@ -71,7 +73,7 @@ struct uint_vec {
         return m_data[i];
     }
 
-    uint64_t find(range const& r, uint64_t id) const {
+    uint64_t find(range const& r, UintType id) const {
         assert(r.end > r.begin);
         assert(r.end <= size());
         UintType prev_upper = previous_range_upperbound(r);

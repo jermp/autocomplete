@@ -16,8 +16,8 @@ namespace autocomplete {
 typedef uint_vec<uint32_t> uint32_vec;
 typedef uint_vec<uint64_t> uint64_vec;
 
-typedef completion_trie<uint32_vec, uint32_vec, uint32_vec, uint32_vec>
-    uint32_completion_trie;
+typedef completion_trie<uint64_vec, uint32_vec, uint32_vec, uint32_vec>
+    uint64_completion_trie;
 
 static const uint32_t BucketSize = 16;
 typedef fc_dictionary<BucketSize, uint32_vec> fc_dictionary_B16;
@@ -28,7 +28,7 @@ typedef forward_index<uncompressed_list, uint64_vec> uncompressed_forward_index;
 typedef inverted_index<uncompressed_list, uint64_vec>
     uncompressed_inverted_index;
 
-typedef autocomplete<uint32_completion_trie, unsorted_list_succinct_rmq,
+typedef autocomplete<uint64_completion_trie, unsorted_list_succinct_rmq,
                      fc_dictionary_B16, uncompressed_inverted_index,
                      uncompressed_forward_index>
     autocomplete_type1;

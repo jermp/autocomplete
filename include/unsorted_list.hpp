@@ -9,8 +9,10 @@ struct unsorted_list {
     unsorted_list() {}
 
     void build(std::vector<id_type> const& list) {
+        essentials::logger("building unsorted_list...");
         m_rmq.build(list, std::less<id_type>());
         m_list.build(list);
+        essentials::logger("DONE");
     }
 
     uint32_t topk(range r, uint32_t k, std::vector<id_type>& topk,

@@ -13,6 +13,8 @@ struct forward_index {
 
         builder(parameters const& params)
             : m_num_terms(params.num_terms) {
+            essentials::logger("building forward_index...");
+
             uint64_t num_completions = params.num_completions;
 
             std::ifstream input(
@@ -24,40 +26,47 @@ struct forward_index {
             std::vector<id_type> permutation;
 
             m_pointers.push_back(0);
+
             for (uint64_t i = 0; i != num_completions; ++i) {
                 list.clear();
                 sorted_permutation.clear();
+                permutation.clear();
+
                 uint32_t n = 0;
                 input >> n;
+                assert(n > 0);
                 list.reserve(n);
+                sorted_permutation.reserve(n);
+
                 for (uint64_t k = 0; k != n; ++k) {
                     id_type x;
                     input >> x;
                     list.push_back(x);
                     sorted_permutation.push_back(k);
                 }
+
                 m_bvb.append_bits(n, 32);
 
                 std::sort(
                     sorted_permutation.begin(), sorted_permutation.end(),
-                    [&](uint32_t i, uint32_t j) { return list[i] <= list[j]; });
+                    [&](id_type l, id_type r) { return list[l] < list[r]; });
 
                 permutation.resize(n);
-                for (uint32_t i = 0; i != sorted_permutation.size(); ++i) {
+                for (uint32_t i = 0; i != n; ++i) {
                     permutation[sorted_permutation[i]] = i;
                 }
 
                 std::sort(list.begin(), list.end());
-                ForwardList::build(m_bvb, list.begin(), list.size());
+                ForwardList::build(m_bvb, list.begin(), n);
                 m_pointers.push_back(m_bvb.size());
 
-                ForwardList::build(m_bvb, permutation.begin(),
-                                   permutation.size());
+                ForwardList::build(m_bvb, permutation.begin(), n);
                 m_pointers.push_back(m_bvb.size());
             }
-            m_pointers.pop_back();
 
+            m_pointers.pop_back();
             input.close();
+            essentials::logger("DONE");
         }
 
         void swap(forward_index::builder& other) {

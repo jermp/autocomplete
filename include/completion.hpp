@@ -4,16 +4,11 @@ namespace autocomplete {
 
 typedef std::vector<id_type> completion_type;
 
-struct completion_comparator {
-    bool operator()(completion_type const& lhs,
-                    completion_type const& rhs) const {
-        size_t l = 0;  // |lcp(lhs,rhs)|
-        while (l < lhs.size() - 1 and l < rhs.size() - 1 and lhs[l] == rhs[l]) {
-            ++l;
-        }
-        return lhs[l] < rhs[l];
+void print_completion(completion_type const& c) {
+    for (auto x : c) {
+        std::cout << x << " ";
     }
-};
+}
 
 struct completion_iterator {
     struct value_type {

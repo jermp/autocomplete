@@ -32,23 +32,30 @@ with open(input_filename, 'r') as f:
         x = line.rstrip('\n').split()
         mapped = []
         doc_id = int(x[0])
+        discard = False
         for i in range(1, len(x)):
-            term = x[i].encode('utf-8')
             try:
-                term_id = tokens[term]
-                mapped.append(term_id)
-                inverted_index[term_id].append(doc_id)
-            except KeyError:
-                print("'" + term + "' not found in dictionary")
-                print(line)
-                exit()
+                term = x[i].encode('utf-8')
+                try:
+                    term_id = tokens[term]
+                    mapped.append(term_id)
+                    inverted_index[term_id].append(doc_id)
+                except KeyError:
+                    print("'" + term + "' not found in dictionary")
+                    print(line)
+                    exit()
+            except UnicodeDecodeError:
+                discard = True
 
-        # NOTE: not sorted!
-        forward_index[doc_id] = mapped;
+        if not discard:
+            # NOTE: not sorted!
+            if doc_id >= num_docs:
+                print doc_id,num_docs
+            forward_index[doc_id] = mapped;
 
-        lines += 1
-        if lines % 1000000 == 0:
-            print("processed " + str(lines) + " lines")
+            lines += 1
+            if lines % 1000000 == 0:
+                print("processed " + str(lines) + " lines")
 
 for i in range(0, num_docs):
     s = [str(k) for k in forward_index[i]]

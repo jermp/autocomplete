@@ -13,6 +13,8 @@ struct inverted_index {
 
         builder(parameters const& params)
             : m_num_docs(params.num_completions) {
+            essentials::logger("building inverted_index...");
+
             uint64_t num_terms = params.num_terms;
             m_minimal_doc_ids.reserve(num_terms);
 
@@ -37,9 +39,10 @@ struct inverted_index {
                 InvertedList::build(m_bvb, list.begin(), list.size());
                 m_pointers.push_back(m_bvb.size());
             }
-            m_pointers.pop_back();
 
+            m_pointers.pop_back();
             input.close();
+            essentials::logger("DONE");
         }
 
         std::vector<id_type>& minimal_doc_ids() {

@@ -17,6 +17,8 @@ struct completion_trie {
             , m_pointers(params.num_levels - 1)
             , m_left_extremes(params.num_levels)
             , m_sizes(params.num_levels) {
+            essentials::logger("building completion_trie...");
+
             uint32_t levels = params.num_levels;
             for (uint32_t i = 0; i != levels; ++i) {
                 m_nodes[i].reserve(params.nodes_per_level[i]);
@@ -106,6 +108,8 @@ struct completion_trie {
                     vec[i] -= i;
                 }
             }
+
+            essentials::logger("DONE");
         }
 
         void swap(builder& other) {
@@ -180,6 +184,18 @@ struct completion_trie {
         }
 
         return r;
+    }
+
+    bool is_member(completion_type const& c) const {
+        assert(c.size() > 0);
+        range pointer = {0, m_nodes.front().size()};
+        uint32_t levels = c.size() - 1;
+        for (uint32_t i = 0; i <= levels; ++i) {
+            uint64_t pos = m_nodes[i].find(pointer, c[i]);
+            if (pos == global::not_found) return false;
+            if (i != levels) pointer = m_pointers[i][pos];
+        }
+        return true;
     }
 
     // void print_stats(essentials::json_lines& stats, size_t bytes);
