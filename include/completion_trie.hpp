@@ -163,8 +163,8 @@ struct completion_trie {
 
     range prefix_range(completion_type const& c) const {
         assert(c.size() > 0);
-        range r = {global::not_found, global::not_found};
-        range pointer = {0, m_nodes.front().size()};
+        range r{global::not_found, global::not_found};
+        range pointer{0, m_nodes.front().size()};
         uint32_t levels = c.size() - 1;
 
         for (uint32_t i = 0; i <= levels; ++i) {
@@ -187,7 +187,7 @@ struct completion_trie {
 
     bool is_member(completion_type const& c) const {
         assert(c.size() > 0);
-        range pointer = {0, m_nodes.front().size()};
+        range pointer{0, m_nodes.front().size()};
         uint32_t levels = c.size() - 1;
         for (uint32_t i = 0; i <= levels; ++i) {
             uint64_t pos = m_nodes[i].find(pointer, c[i]);

@@ -8,12 +8,12 @@ namespace autocomplete {
 template <typename CompletionTrie, typename UnsortedDocsList,
           typename Dictionary, typename InvertedIndex, typename ForwardIndex>
 struct autocomplete {
-    static const size_t pool_size = 1024;
-    static const uint32_t max_k = 15;
+    static const size_t POOL_SIZE = 1024;
+    static const uint32_t MAX_K = 15;
     typedef scored_strings_pool::iterator iterator_type;
 
     autocomplete() {
-        m_pool.resize(pool_size, max_k);
+        m_pool.resize(POOL_SIZE, MAX_K);
     }
 
     autocomplete(parameters const& params)
@@ -33,7 +33,7 @@ struct autocomplete {
     }
 
     iterator_type prefix_topk(std::string& query, uint32_t k) {
-        assert(k <= max_k);
+        assert(k <= MAX_K);
         completion_type prefix;
         byte_range suffix;
         parse(query, prefix, suffix);
@@ -45,7 +45,7 @@ struct autocomplete {
     }
 
     iterator_type conjunctive_topk(std::string& query, uint32_t k) {
-        assert(k <= max_k);
+        assert(k <= MAX_K);
         completion_type prefix;
         byte_range suffix;
         uint32_t num_terms = parse(query, prefix, suffix);

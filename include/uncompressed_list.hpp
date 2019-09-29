@@ -82,13 +82,12 @@ struct uncompressed_list {
         }
 
         bool contains(range r) const {
-            bool answer = false;
             for (uint32_t i = 0; i != size(); ++i) {
                 uint32_t val = m_data[i];
                 if (val > r.end) break;
-                if (val >= r.begin and val <= r.end) answer = true;
+                if (val >= r.begin and val <= r.end) return true;
             }
-            return answer;
+            return false;
         }
 
         // uint32_t position() const {
