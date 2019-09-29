@@ -60,6 +60,8 @@ struct forward_index {
                 ForwardList::build(m_bvb, list.begin(), n);
                 m_pointers.push_back(m_bvb.size());
 
+                // NOTE: permutation could be safely stored as
+                // a 8-bit integer vector
                 ForwardList::build(m_bvb, permutation.begin(), n);
                 m_pointers.push_back(m_bvb.size());
             }

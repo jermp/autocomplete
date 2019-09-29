@@ -7,6 +7,8 @@
 
 namespace autocomplete {
 
+typedef std::vector<id_type> completion_type;
+
 struct range {
     uint64_t begin;
     uint64_t end;
@@ -74,6 +76,51 @@ int byte_range_compare(byte_range l, byte_range r, uint32_t n) {
     }
     return *(l.begin) - *(r.begin);
 }
+
+void print_completion(completion_type const& c) {
+    for (auto x : c) {
+        std::cout << x << " ";
+    }
+}
+
+struct completion_iterator {
+    struct value_type {
+        id_type doc_id;
+        completion_type completion;
+    };
+
+    completion_iterator(parameters const& params, std::ifstream& in)
+        : m_in(in) {
+        m_val.completion.reserve(params.num_levels);
+        if (!m_in.good()) {
+            throw std::runtime_error(
+                "Error in opening file, it may not exist or be malformed.");
+        }
+        read_next();
+    }
+
+    void operator++() {
+        read_next();
+    }
+
+    value_type& operator*() {
+        return m_val;
+    }
+
+private:
+    value_type m_val;
+    std::ifstream& m_in;
+
+    void read_next() {
+        m_in >> m_val.doc_id;
+        m_val.completion.clear();
+        id_type x = global::invalid_term_id;
+        while (!m_in.eof() and x != global::terminator) {
+            m_in >> x;
+            m_val.completion.push_back(x);
+        }
+    }
+};
 
 // NOTE: this has log complexity but if k is small...
 struct topk_queue {
