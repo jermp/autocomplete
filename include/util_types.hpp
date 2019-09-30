@@ -138,7 +138,7 @@ private:
 uint32_t parse_query(std::string& query) {
     uint32_t num_terms = 1;
     for (uint64_t i = 0; i != query.size(); ++i) {
-        if (query[i] == ' ') {
+        if (query[i] == ' ' or query[i] == '\0') {
             query[i] = '\0';
             ++num_terms;
         }

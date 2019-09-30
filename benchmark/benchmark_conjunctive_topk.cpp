@@ -29,15 +29,16 @@ int main(int argc, char** argv) {
 
     std::vector<std::string> queries;
     essentials::logger("loading queries...");
-    uint32_t num_queries = load_queries(queries, max_num_queries);
+    uint32_t num_queries =
+        load_queries(queries, max_num_queries, true, std::cin);
     essentials::logger("loaded " + std::to_string(num_queries) + " queries");
 
-    essentials::logger("benchmarking prefix_topk queries...");
+    essentials::logger("benchmarking conjunctive_topk queries...");
     std::vector<timer_type> timers(4);
     uint64_t reported_strings = 0;
     for (uint32_t run = 0; run != runs; ++run) {
         for (auto& query : queries) {
-            auto it = autocomp.prefix_topk(query, k, timers);
+            auto it = autocomp.conjunctive_topk(query, k, timers);
             reported_strings += it.size();
         }
     }
@@ -54,9 +55,9 @@ int main(int argc, char** argv) {
     breakdowns.add("num_queries", std::to_string(num_queries));
     breakdowns.add("parsing_ns_per_query",
                    std::to_string(ns_x_query(timers[0].elapsed())));
-    breakdowns.add("completion_trie_search_ns_per_query",
+    breakdowns.add("dictionary_search_ns_per_query",
                    std::to_string(ns_x_query(timers[1].elapsed())));
-    breakdowns.add("topk_rmq_ns_per_query",
+    breakdowns.add("conjunctive_search_ns_per_query",
                    std::to_string(ns_x_query(timers[2].elapsed())));
     breakdowns.add("reporting_ns_per_query",
                    std::to_string(ns_x_query(timers[3].elapsed())));

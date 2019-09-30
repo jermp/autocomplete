@@ -43,35 +43,6 @@ struct autocomplete {
         return extract_strings(num_completions, topk);
     }
 
-    iterator_type prefix_topk(std::string& query, uint32_t k,
-                              std::vector<timer_type>& timers) {
-        // step 0
-        timers[0].start();
-        assert(k <= MAX_K);
-        completion_type prefix;
-        byte_range suffix;
-        parse(query, prefix, suffix);
-        timers[0].stop();
-
-        // step 1
-        timers[1].start();
-        range r = m_completion_trie.prefix_range(prefix);
-        timers[1].stop();
-
-        // step 2
-        timers[2].start();
-        auto& topk = m_pool.scores();
-        uint32_t num_completions = m_unsorted_docs_list.topk(r, k, topk);
-        timers[2].stop();
-
-        // step 3
-        timers[3].start();
-        auto it = extract_strings(num_completions, topk);
-        timers[3].stop();
-
-        return it;
-    }
-
     iterator_type conjunctive_topk(std::string& query, uint32_t k) {
         assert(k <= MAX_K);
         completion_type prefix;
@@ -117,6 +88,90 @@ struct autocomplete {
         }
 
         return extract_strings(num_completions, topk);
+    }
+
+    // for benchmarking
+    iterator_type prefix_topk(std::string& query, uint32_t k,
+                              std::vector<timer_type>& timers) {
+        // step 0
+        timers[0].start();
+        assert(k <= MAX_K);
+        completion_type prefix;
+        byte_range suffix;
+        parse(query, prefix, suffix);
+        timers[0].stop();
+
+        // step 1
+        timers[1].start();
+        range r = m_completion_trie.prefix_range(prefix);
+        timers[1].stop();
+
+        // step 2
+        timers[2].start();
+        auto& topk = m_pool.scores();
+        uint32_t num_completions = m_unsorted_docs_list.topk(r, k, topk);
+        timers[2].stop();
+
+        // step 3
+        timers[3].start();
+        auto it = extract_strings(num_completions, topk);
+        timers[3].stop();
+
+        return it;
+    }
+
+    // for benchmarking
+    iterator_type conjunctive_topk(std::string& query, uint32_t k,
+                                   std::vector<timer_type>& timers) {
+        // step 0
+        timers[0].start();
+        assert(k <= MAX_K);
+        completion_type prefix;
+        byte_range suffix;
+        uint32_t num_terms = parse(query, prefix, suffix);
+        assert(num_terms > 0);
+        timers[0].stop();
+
+        auto& topk = m_pool.scores();
+        uint32_t num_completions = 0;
+
+        // step 1
+        timers[1].start();
+        suffix.end += 1;  // include null terminator
+        range suffix_lex_range = m_dictionary.locate_prefix(suffix);
+        timers[1].stop();
+
+        // step 2
+        timers[2].start();
+        if (num_terms == 1) {  // special case
+
+            num_completions = m_unsorted_minimal_docs_list.topk(
+                suffix_lex_range, k, topk,
+                true  // must return unique results
+            );
+
+        } else {
+            prefix.pop_back();
+            static const uint32_t max_size = m_inverted_index.num_docs();
+            static std::vector<id_type> intersection(max_size);
+            uint64_t n = m_inverted_index.intersect(prefix, intersection);
+            for (uint32_t i = 0; i != n; ++i) {
+                id_type doc_id = intersection[i];
+                auto it = m_forward_index.iterator(doc_id);
+                if (it.contains(suffix_lex_range)) {
+                    topk[num_completions++] = doc_id;
+                    if (num_completions == k) break;
+                }
+            }
+        }
+        timers[2].stop();
+
+        // step 3
+        timers[3].start();
+        auto it = extract_strings(num_completions, topk);
+        timers[3].stop();
+
+        return it;
     }
 
     size_t bytes() const {
