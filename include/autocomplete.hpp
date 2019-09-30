@@ -76,7 +76,11 @@ struct autocomplete {
             prefix.pop_back();
             static const uint32_t max_size = m_inverted_index.num_docs();
             static std::vector<id_type> intersection(max_size);
+
+            // NOTE: if n is large, then we may spend a lot of time here...
+            // we may need an interator over the intersection
             uint64_t n = m_inverted_index.intersect(prefix, intersection);
+
             for (uint32_t i = 0; i != n; ++i) {
                 id_type doc_id = intersection[i];
                 auto it = m_forward_index.iterator(doc_id);
