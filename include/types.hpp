@@ -31,6 +31,6 @@ typedef inverted_index<uncompressed_list, uint64_vec>
 typedef autocomplete<uint64_completion_trie, unsorted_list_succinct_rmq,
                      fc_dictionary_B16, uncompressed_inverted_index,
                      uncompressed_forward_index>
-    autocomplete_type1;
+    uncompressed_autocomplete_type;
 
 }  // namespace autocomplete

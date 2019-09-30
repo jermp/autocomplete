@@ -38,10 +38,38 @@ struct autocomplete {
         byte_range suffix;
         parse(query, prefix, suffix);
         auto& topk = m_pool.scores();
-        uint32_t num_completions = 0;
         range r = m_completion_trie.prefix_range(prefix);
-        num_completions = m_unsorted_docs_list.topk(r, k, topk);
+        uint32_t num_completions = m_unsorted_docs_list.topk(r, k, topk);
         return extract_strings(num_completions, topk);
+    }
+
+    iterator_type prefix_topk(std::string& query, uint32_t k,
+                              std::vector<timer_type>& timers) {
+        // step 0
+        timers[0].start();
+        assert(k <= MAX_K);
+        completion_type prefix;
+        byte_range suffix;
+        parse(query, prefix, suffix);
+        timers[0].stop();
+
+        // step 1
+        timers[1].start();
+        range r = m_completion_trie.prefix_range(prefix);
+        timers[1].stop();
+
+        // step 2
+        timers[2].start();
+        auto& topk = m_pool.scores();
+        uint32_t num_completions = m_unsorted_docs_list.topk(r, k, topk);
+        timers[2].stop();
+
+        // step 3
+        timers[3].start();
+        auto it = extract_strings(num_completions, topk);
+        timers[3].stop();
+
+        return it;
     }
 
     iterator_type conjunctive_topk(std::string& query, uint32_t k) {

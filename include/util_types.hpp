@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <functional>
+#include <chrono>
 
 #include "util.hpp"
 
@@ -173,5 +174,35 @@ private:
     uint8_t const* m_end;
     char m_separator;
 };
+
+typedef std::chrono::high_resolution_clock clock_type;
+typedef std::chrono::microseconds duration_type;
+
+template <typename ClockType, typename DurationType>
+struct timer {
+    timer()
+        : m_elapsed(0.0) {}
+
+    void start() {
+        m_start = ClockType::now();
+    }
+
+    void stop() {
+        m_stop = ClockType::now();
+        auto e = std::chrono::duration_cast<DurationType>(m_stop - m_start);
+        m_elapsed += e.count();
+    }
+
+    double elapsed() const {
+        return m_elapsed;
+    }
+
+private:
+    typename ClockType::time_point m_start;
+    typename ClockType::time_point m_stop;
+    double m_elapsed;
+};
+
+typedef timer<clock_type, duration_type> timer_type;
 
 }  // namespace autocomplete

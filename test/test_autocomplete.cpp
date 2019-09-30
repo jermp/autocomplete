@@ -27,21 +27,22 @@ int main(int argc, char** argv) {
     params.load();
 
     {
-        autocomplete_type1 a(params);
+        uncompressed_autocomplete_type autocomp(params);
         if (output_filename) {
             essentials::logger("saving data structure to disk...");
-            essentials::save<autocomplete_type1>(a, output_filename);
+            essentials::save<uncompressed_autocomplete_type>(autocomp,
+                                                             output_filename);
             essentials::logger("DONE");
         }
     }
 
     {
         if (output_filename) {
-            autocomplete_type1 a;
+            uncompressed_autocomplete_type autocomp;
             essentials::logger("loading data structure from disk...");
-            essentials::load(a, output_filename);
+            essentials::load(autocomp, output_filename);
             essentials::logger("DONE");
-            a.print_stats();
+            autocomp.print_stats();
 
             // test prefix_topk()
             {
@@ -54,7 +55,7 @@ int main(int argc, char** argv) {
                     "yu gi oh", "for sale"};
 
                 for (auto& query : queries) {
-                    auto it = a.prefix_topk(query, k);
+                    auto it = autocomp.prefix_topk(query, k);
                     std::cout << "top-" << it.size() << " completions for '"
                               << query << "':\n";
                     for (uint32_t i = 0; i != it.size(); ++i, ++it) {
@@ -76,7 +77,7 @@ int main(int argc, char** argv) {
                     "fl",       "flor",     "fly"};
 
                 for (auto& query : queries) {
-                    auto it = a.conjunctive_topk(query, k);
+                    auto it = autocomp.conjunctive_topk(query, k);
                     std::cout << "top-" << it.size() << " completions for '"
                               << query << "':\n";
                     for (uint32_t i = 0; i != it.size(); ++i, ++it) {

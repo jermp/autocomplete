@@ -268,7 +268,7 @@ inline uint64_t reverse_bits(uint64_t x) {
 }
 
 inline uint64_t popcount(uint64_t x) {
-#if USE_POPCNT
+#if USE_INTRINSICS
     return uint64_t(_mm_popcnt_u64(x));
 #else
     return bytes_sum(byte_counts(x));

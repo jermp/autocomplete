@@ -24,11 +24,23 @@ if(UNIX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fno-omit-frame-pointer")
   endif()
 
+  if(USE_PDEP)
+    # Use parallel bit deposit intrinsic.
+    # Available on x86-64 since Intel’s Haswell CPUs: BMI2 (Bit Manipulation Instruction Set 2).
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_PDEP")
+  endif()
+
+  if(USE_INTRINSICS)
+    # Use intrinsics. Available on x86-64 since SSE4.2.
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse4.2")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_INTRINSICS")
+  endif()
+
 endif()
 
 include_directories(${AUTOCOMPLETE_SOURCE_DIR}/include)
 
 add_subdirectory(external)
-# add_subdirectory(src)
-# add_subdirectory(tools)
+add_subdirectory(src)
+add_subdirectory(benchmark)
 add_subdirectory(test)
