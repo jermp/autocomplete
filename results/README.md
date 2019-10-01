@@ -6,7 +6,7 @@ Test machine
 Compiler
 --------
 
-gcc 7.3.0
+gcc 7.4.0
 
 `cmake .. -DCMAKE_BUILD_TYPE=Release -DUSE_SANITIZERS=OFF -DUSE_INTRINSICS=ON -DUSE_PDEP=ON`
 

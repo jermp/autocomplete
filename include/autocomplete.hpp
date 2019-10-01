@@ -156,15 +156,41 @@ struct autocomplete {
 
         } else {
             prefix.pop_back();
-            static const uint32_t max_size = m_inverted_index.num_docs();
-            static std::vector<id_type> intersection(max_size);
-            uint64_t n = m_inverted_index.intersect(prefix, intersection);
-            for (uint32_t i = 0; i != n; ++i) {
-                id_type doc_id = intersection[i];
-                auto it = m_forward_index.iterator(doc_id);
-                if (it.contains(suffix_lex_range)) {
-                    topk[num_completions++] = doc_id;
-                    if (num_completions == k) break;
+
+            // static const uint32_t max_size = m_inverted_index.num_docs();
+            // static std::vector<id_type> intersection(max_size);
+            // uint64_t n = m_inverted_index.intersect(prefix, intersection);
+            // for (uint32_t i = 0; i != n; ++i) {
+            //     id_type doc_id = intersection[i];
+            //     auto it = m_forward_index.iterator(doc_id);
+            //     if (it.contains(suffix_lex_range)) {
+            //         topk[num_completions++] = doc_id;
+            //         if (num_completions == k) break;
+            //     }
+            // }
+
+            if (prefix.size() == 1) {
+                auto ii_list_it = m_inverted_index.iterator(prefix.front() - 1);
+                uint32_t n = ii_list_it.size();
+                for (uint32_t i = 0; i != n; ++i) {
+                    id_type doc_id = ii_list_it.access(i);
+                    auto it = m_forward_index.iterator(doc_id);
+                    if (it.contains(suffix_lex_range)) {
+                        topk[num_completions++] = doc_id;
+                        if (num_completions == k) break;
+                    }
+                }
+            } else {
+                auto intersec_it =
+                    m_inverted_index.intersection_iterator(prefix);
+                while (intersec_it.has_next()) {
+                    id_type doc_id = *intersec_it;
+                    auto it = m_forward_index.iterator(doc_id);
+                    if (it.contains(suffix_lex_range)) {
+                        topk[num_completions++] = doc_id;
+                        if (num_completions == k) break;
+                    }
+                    ++intersec_it;
                 }
             }
         }

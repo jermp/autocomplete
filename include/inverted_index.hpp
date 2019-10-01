@@ -137,6 +137,67 @@ struct inverted_index {
         return size;
     }
 
+    struct intersection_iterator_type {
+        intersection_iterator_type(inverted_index const* ii,
+                                   std::vector<id_type> const& term_ids) {
+            assert(term_ids.size() > 1);
+            m_iterators.reserve(term_ids.size());
+            for (auto id : term_ids) {
+                assert(id > 0);  // id 0 is reserved for null terminator
+                m_iterators.push_back(std::move(ii->iterator(id - 1)));
+            }
+
+            std::sort(m_iterators.begin(), m_iterators.end(),
+                      [](auto const& l, auto const& r) {
+                          return l.size() < r.size();
+                      });
+
+            m_candidate = m_iterators[0].access(0);
+            m_i = 1;
+            m_num_docs = ii->num_docs();
+            next();
+        }
+
+        bool has_next() const {
+            return m_candidate < m_num_docs;
+        }
+
+        id_type operator*() {
+            return m_candidate;
+        }
+
+        void operator++() {
+            assert(m_i == m_iterators.size());
+            m_candidate = m_iterators[0].next();
+            m_i = 1;
+            next();
+        }
+
+    private:
+        id_type m_candidate;
+        size_t m_i;
+        uint64_t m_num_docs;
+        std::vector<iterator_type> m_iterators;
+
+        void next() {
+            id_type val = 0;
+            while (val < m_num_docs and m_i != m_iterators.size()) {
+                val = m_iterators[m_i].next_geq(m_candidate);
+                if (val != m_candidate) {
+                    m_candidate = val;
+                    m_i = 0;
+                } else {
+                    ++m_i;
+                }
+            }
+        }
+    };
+
+    intersection_iterator_type intersection_iterator(
+        std::vector<id_type> const& term_ids) {
+        return intersection_iterator_type(this, term_ids);
+    }
+
     template <typename Visitor>
     void visit(Visitor& visitor) {
         visitor.visit(m_num_docs);
