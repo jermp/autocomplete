@@ -24,8 +24,11 @@ typedef fc_dictionary<BucketSize, uint32_vec> fc_dictionary_B16;
 
 typedef unsorted_list<uint32_vec, cartesian_tree> unsorted_list_succinct_rmq;
 
-typedef forward_index<uncompressed_list, uint64_vec> uncompressed_forward_index;
-typedef inverted_index<uncompressed_list, uint64_vec>
+typedef uncompressed_list<uint32_t> uncompressed_list32_t;
+
+typedef forward_index<uncompressed_list32_t, uint64_vec>
+    uncompressed_forward_index;
+typedef inverted_index<uncompressed_list32_t, uint64_vec>
     uncompressed_inverted_index;
 
 typedef autocomplete<uint64_completion_trie, unsorted_list_succinct_rmq,

@@ -4,9 +4,13 @@
 
 namespace autocomplete {
 
-template <typename ForwardList, typename Pointers>
+template <typename ListType, typename Pointers>
 struct forward_index {
-    typedef typename ForwardList::iterator iterator_type;
+    typedef ListType forward_list_type;
+    typedef typename forward_list_type::iterator forward_list_iterator_type;
+    typedef uncompressed_list<uint8_t> permutation_list_type;
+    typedef
+        typename permutation_list_type::iterator permutation_list_iterator_type;
 
     struct builder {
         builder() {}
@@ -23,7 +27,7 @@ struct forward_index {
 
             std::vector<id_type> list;
             std::vector<id_type> sorted_permutation;
-            std::vector<id_type> permutation;
+            std::vector<uint8_t> permutation;
 
             m_pointers.push_back(0);
 
@@ -34,7 +38,7 @@ struct forward_index {
 
                 uint32_t n = 0;
                 input >> n;
-                assert(n > 0);
+                assert(n > 0 and n < 256);
                 list.reserve(n);
                 sorted_permutation.reserve(n);
 
@@ -57,12 +61,10 @@ struct forward_index {
                 }
 
                 std::sort(list.begin(), list.end());
-                ForwardList::build(m_bvb, list.begin(), n);
+                forward_list_type::build(m_bvb, list.begin(), n);
                 m_pointers.push_back(m_bvb.size());
 
-                // NOTE: permutation could be safely stored as
-                // a 8-bit integer vector
-                ForwardList::build(m_bvb, permutation.begin(), n);
+                permutation_list_type::build(m_bvb, permutation.begin(), n);
                 m_pointers.push_back(m_bvb.size());
             }
 
@@ -77,7 +79,7 @@ struct forward_index {
             other.m_bvb.swap(m_bvb);
         }
 
-        void build(forward_index<ForwardList, Pointers>& fi) {
+        void build(forward_index<ListType, Pointers>& fi) {
             fi.m_num_terms = m_num_terms;
             fi.m_pointers.build(m_pointers);
             fi.m_data.build(&m_bvb);
@@ -92,10 +94,11 @@ struct forward_index {
 
     forward_index() {}
 
-    iterator_type iterator(id_type doc_id) {
+    forward_list_iterator_type iterator(id_type doc_id) {
         uint64_t offset = m_pointers.access(doc_id * 2);
         uint32_t n = m_data.get_bits(offset, 32);
-        iterator_type it(m_data, offset + 32, m_num_terms, n, m_params);
+        forward_list_iterator_type it(m_data, offset + 32, m_num_terms, n,
+                                      m_params);
         return it;
     }
 
@@ -104,11 +107,12 @@ struct forward_index {
     }
 
     struct permuting_iterator_type {
-        permuting_iterator_type(iterator_type sorted, iterator_type permutation)
+        permuting_iterator_type(forward_list_iterator_type sorted,
+                                permutation_list_iterator_type permuted)
             : m_i(0)
             , m_sorted(sorted)
-            , m_permutation(permutation) {
-            assert(sorted.size() == permutation.size());
+            , m_permuted(permuted) {
+            assert(sorted.size() == permuted.size());
         }
 
         uint32_t size() const {
@@ -116,7 +120,7 @@ struct forward_index {
         }
 
         id_type operator*() {
-            return m_sorted.access(m_permutation.access(m_i));
+            return m_sorted.access(m_permuted.access(m_i));
         }
 
         void operator++() {
@@ -125,18 +129,19 @@ struct forward_index {
 
     private:
         uint32_t m_i;
-        iterator_type m_sorted;
-        iterator_type m_permutation;
+        forward_list_iterator_type m_sorted;
+        permutation_list_iterator_type m_permuted;
     };
 
     permuting_iterator_type permuting_iterator(id_type doc_id) {
         uint64_t offset = m_pointers.access(doc_id * 2);
         uint32_t n = m_data.get_bits(offset, 32);
-        iterator_type it_sorted_set(m_data, offset + 32, m_num_terms, n,
-                                    m_params);
+        forward_list_iterator_type it_sorted(m_data, offset + 32, m_num_terms,
+                                             n, m_params);
         offset = m_pointers.access(doc_id * 2 + 1);
-        iterator_type it_permutation(m_data, offset, m_num_terms, n, m_params);
-        return permuting_iterator_type(it_sorted_set, it_permutation);
+        permutation_list_iterator_type it_permutation(m_data, offset,
+                                                      m_num_terms, n, m_params);
+        return permuting_iterator_type(it_sorted, it_permutation);
     }
 
     uint64_t num_terms() const {

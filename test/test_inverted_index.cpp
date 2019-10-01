@@ -63,31 +63,21 @@ int main(int argc, char** argv) {
             id_type j = 5430;
             term_ids.push_back(i + 1);
             term_ids.push_back(j + 1);
-            uint64_t size = ii.intersect(term_ids, intersection);
+            // uint64_t size = ii.intersect(term_ids, intersection);
 
             {
+                std::cout << "size of intersection between " << i << " and "
+                          << j << " is: ";
                 uint32_t i = 0;
                 auto intersec_it = ii.intersection_iterator(term_ids);
                 while (intersec_it.has_next()) {
                     id_type doc_id = *intersec_it;
-                    if (doc_id != intersection[i]) {
-                        std::cout << "Error: expected doc_id "
-                                  << intersection[i] << " but got " << doc_id
-                                  << std::endl;
-                        return 1;
-                    }
+                    std::cout << doc_id << " ";
                     ++i;
                     ++intersec_it;
                 }
-                assert(i == size);
+                std::cout << std::endl;
             }
-
-            std::cout << "size of intersection between " << i << " and " << j
-                      << " is " << size << ": ";
-            for (uint32_t i = 0; i != size; ++i) {
-                std::cout << intersection[i] << " ";
-            }
-            std::cout << std::endl;
 
             std::vector<id_type> a;
             {
@@ -111,7 +101,7 @@ int main(int argc, char** argv) {
                                             b.end(), intersection.begin());
             intersection.resize(it - intersection.begin());
             std::cout << "size of intersection between " << i << " and " << j
-                      << " is " << intersection.size() << ": ";
+                      << " is: ";
             for (auto x : intersection) {
                 std::cout << x << " ";
             }
