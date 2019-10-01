@@ -17,3 +17,4 @@ Experiments
 - The file `space.md` reports the space breakdowns.
 - The file `prefix_topk.md` reports the timing breakdowns for the prefix_topk step by varying the number of query terms.
 - The file `conjunctive_topk.md` reports the timing breakdowns for the conjunctive_topk step by varying the number of query terms.
+- The file `fc_dictionary.md` reports on the dictionary benchmark.

@@ -131,7 +131,7 @@ struct autocomplete {
         timers[0].start();
         assert(k <= MAX_K);
         completion_type prefix;
-        byte_range suffix;
+        byte_range suffix{0, 0};
         uint32_t num_terms = parse(query, prefix, suffix);
         assert(num_terms > 0);
         timers[0].stop();
