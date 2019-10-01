@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
     std::cout << reported_strings << std::endl;
 
     auto ns_x_query = [&](double time) {
-        return time / (runs * num_queries) * 1000.0;
+        return uint64_t(time / (runs * num_queries) * 1000);
     };
 
     essentials::json_lines breakdowns;
