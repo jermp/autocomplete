@@ -12,3 +12,17 @@ Average among 10 runs.
     {"num_terms_per_query": "6", "num_queries": "50000", "parsing_ns_per_query": "2656", "dictionary_search_ns_per_query": "10", "conjunctive_search_ns_per_query": "22094", "reporting_ns_per_query": "412"}
     {"num_terms_per_query": "7", "num_queries": "50000", "parsing_ns_per_query": "3152", "dictionary_search_ns_per_query": "9", "conjunctive_search_ns_per_query": "18857", "reporting_ns_per_query": "429"}
     {"num_terms_per_query": "8+", "num_queries": "50000", "parsing_ns_per_query": "4121", "dictionary_search_ns_per_query": "6", "conjunctive_search_ns_per_query": "13913", "reporting_ns_per_query": "789"}
+
+
+If we do not check the forward index (thus erronously reporting the first k docids of the intersection), we have:
+
+    {"num_terms_per_query": "3", "num_queries": "50000", "conjunctive_search_ns_per_query": "10362"}
+    {"num_terms_per_query": "4", "num_queries": "50000", "conjunctive_search_ns_per_query": "21327"}
+    {"num_terms_per_query": "5", "num_queries": "50000", "conjunctive_search_ns_per_query": "23187"}
+    {"num_terms_per_query": "6", "num_queries": "50000",  "conjunctive_search_ns_per_query": "21259"}
+    {"num_terms_per_query": "7", "num_queries": "50000",  "conjunctive_search_ns_per_query": "18234"}
+    {"num_terms_per_query": "8+", "num_queries": "50000",  "conjunctive_search_ns_per_query": "13912"}
+
+We can see that the time for the `conjunctive_search` remains the same, except for the case with 3 terms.
+This suggests that the time needed to check the forward index is negligible compared to the one
+needed to produce the intersection. This can also be observed considering that the time for the case with 2 terms is very small: in this case we check the forward index for each doc in the inverted list of the first term.
