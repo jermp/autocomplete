@@ -14,7 +14,8 @@ struct fc_dictionary {
 
         builder(parameters const& params)
             : m_size(params.num_terms) {
-            essentials::logger("building fc_dictionary...");
+            essentials::logger("building fc_dictionary with bucket size " +
+                               std::to_string(BucketSize) + "...");
 
             uint32_t buckets = std::ceil(double(m_size) / (BucketSize + 1));
             m_pointers_to_buckets.reserve(buckets + 1);
