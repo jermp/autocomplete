@@ -99,6 +99,10 @@ struct forward_index {
         return it;
     }
 
+    bool contains(id_type doc_id, range r) {
+        return iterator(doc_id).contains(r);
+    }
+
     struct permuting_iterator_type {
         permuting_iterator_type(iterator_type sorted, iterator_type permutation)
             : m_i(0)

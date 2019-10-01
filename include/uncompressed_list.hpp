@@ -26,6 +26,19 @@ struct uncompressed_list {
                      offset / 32;
         }
 
+        bool has_next() const {
+            return m_position < size();
+        }
+
+        void operator++() {
+            m_position += 1;
+            m_id = m_position != size() ? m_data[m_position] : m_universe;
+        }
+
+        id_type operator*() {
+            return m_id;
+        }
+
         uint32_t decode(uint32_t* out) {
             memcpy(out, m_data, size() * sizeof(uint32_t));
             return size();
@@ -75,7 +88,7 @@ struct uncompressed_list {
             return m_id;
         }
 
-        id_type next() {
+        id_type next() {  // could use operator++ and operator* here...
             m_position += 1;
             m_id = m_position != size() ? m_data[m_position] : m_universe;
             return m_id;

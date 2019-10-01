@@ -56,15 +56,6 @@ struct autocomplete {
         suffix.end += 1;  // include null terminator
         range suffix_lex_range = m_dictionary.locate_prefix(suffix);
 
-        // std::cout << "num_terms " << num_terms << std::endl;
-        // std::cout << "prefix is ";
-        // for (auto x : prefix) {
-        //     std::cout << x << " ";
-        // }
-        // std::cout << std::endl;
-        // std::cout << "suffix is '" << std::string(suffix.begin, suffix.end)
-        //           << "'" << std::endl;
-
         if (num_terms == 1) {  // special case
 
             num_completions = m_unsorted_minimal_docs_list.topk(
@@ -74,20 +65,14 @@ struct autocomplete {
 
         } else {
             prefix.pop_back();
-            static const uint32_t max_size = m_inverted_index.num_docs();
-            static std::vector<id_type> intersection(max_size);
-
-            // NOTE: if n is large, then we may spend a lot of time here...
-            // we may need an interator over the intersection
-            uint64_t n = m_inverted_index.intersect(prefix, intersection);
-
-            for (uint32_t i = 0; i != n; ++i) {
-                id_type doc_id = intersection[i];
-                auto it = m_forward_index.iterator(doc_id);
-                if (it.contains(suffix_lex_range)) {
-                    topk[num_completions++] = doc_id;
-                    if (num_completions == k) break;
-                }
+            if (prefix.size() == 1) {  // we've got nothing to intersect
+                auto it = m_inverted_index.iterator(prefix.front() - 1);
+                num_completions =
+                    conjunctive_topk(it, suffix_lex_range, topk, k);
+            } else {
+                auto it = m_inverted_index.intersection_iterator(prefix);
+                num_completions =
+                    conjunctive_topk(it, suffix_lex_range, topk, k);
             }
         }
 
@@ -156,42 +141,14 @@ struct autocomplete {
 
         } else {
             prefix.pop_back();
-
-            // static const uint32_t max_size = m_inverted_index.num_docs();
-            // static std::vector<id_type> intersection(max_size);
-            // uint64_t n = m_inverted_index.intersect(prefix, intersection);
-            // for (uint32_t i = 0; i != n; ++i) {
-            //     id_type doc_id = intersection[i];
-            //     auto it = m_forward_index.iterator(doc_id);
-            //     if (it.contains(suffix_lex_range)) {
-            //         topk[num_completions++] = doc_id;
-            //         if (num_completions == k) break;
-            //     }
-            // }
-
-            if (prefix.size() == 1) {
-                auto ii_list_it = m_inverted_index.iterator(prefix.front() - 1);
-                uint32_t n = ii_list_it.size();
-                for (uint32_t i = 0; i != n; ++i) {
-                    id_type doc_id = ii_list_it.access(i);
-                    auto it = m_forward_index.iterator(doc_id);
-                    if (it.contains(suffix_lex_range)) {
-                        topk[num_completions++] = doc_id;
-                        if (num_completions == k) break;
-                    }
-                }
+            if (prefix.size() == 1) {  // we've got nothing to intersect
+                auto it = m_inverted_index.iterator(prefix.front() - 1);
+                num_completions =
+                    conjunctive_topk(it, suffix_lex_range, topk, k);
             } else {
-                auto intersec_it =
-                    m_inverted_index.intersection_iterator(prefix);
-                while (intersec_it.has_next()) {
-                    id_type doc_id = *intersec_it;
-                    auto it = m_forward_index.iterator(doc_id);
-                    if (it.contains(suffix_lex_range)) {
-                        topk[num_completions++] = doc_id;
-                        if (num_completions == k) break;
-                    }
-                    ++intersec_it;
-                }
+                auto it = m_inverted_index.intersection_iterator(prefix);
+                num_completions =
+                    conjunctive_topk(it, suffix_lex_range, topk, k);
             }
         }
         timers[2].stop();
@@ -244,6 +201,21 @@ private:
             prefix.push_back(term_id);
         }
         return num_terms;
+    }
+
+    template <typename Iterator>
+    uint32_t conjunctive_topk(Iterator& it, range r, std::vector<id_type>& topk,
+                              uint32_t k) {
+        uint32_t i = 0;
+        while (it.has_next()) {
+            id_type doc_id = *it;
+            if (m_forward_index.contains(doc_id, r)) {
+                topk[i++] = doc_id;
+                if (i == k) break;
+            }
+            ++it;
+        }
+        return i;
     }
 
     iterator_type extract_strings(uint32_t num_completions,
