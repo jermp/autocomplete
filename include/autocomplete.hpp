@@ -1,7 +1,7 @@
 #pragma once
 
 #include "util_types.hpp"
-#include "scored_strings_pool.hpp"
+#include "scored_string_pool.hpp"
 
 namespace autocomplete {
 
@@ -10,7 +10,7 @@ template <typename CompletionTrie, typename UnsortedDocsList,
 struct autocomplete {
     static const size_t POOL_SIZE = 1024;
     static const uint32_t MAX_K = 15;
-    typedef scored_strings_pool::iterator iterator_type;
+    typedef scored_string_pool::iterator iterator_type;
 
     autocomplete() {
         m_pool.resize(POOL_SIZE, MAX_K);
@@ -186,7 +186,7 @@ private:
     Dictionary m_dictionary;
     InvertedIndex m_inverted_index;
     ForwardIndex m_forward_index;
-    scored_strings_pool m_pool;
+    scored_string_pool m_pool;
 
     uint32_t parse(std::string& query, completion_type& prefix,
                    byte_range& suffix) {

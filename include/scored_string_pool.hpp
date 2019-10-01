@@ -4,7 +4,7 @@
 
 namespace autocomplete {
 
-struct scored_strings_pool {
+struct scored_string_pool {
     void init() {
         push_back_offset(0);
     }
@@ -49,7 +49,7 @@ struct scored_strings_pool {
     }
 
     struct iterator {
-        iterator(scored_strings_pool const* pool, size_t pos = 0)
+        iterator(scored_string_pool const* pool, size_t pos = 0)
             : m_pool(pool)
             , m_pos(pos) {}
 
@@ -66,7 +66,7 @@ struct scored_strings_pool {
         }
 
     private:
-        scored_strings_pool const* m_pool;
+        scored_string_pool const* m_pool;
         size_t m_pos;
     };
 
