@@ -13,3 +13,5 @@
   using the dictionary (we use extract(x), where x = M[docID] is the lex. id of docID).
 
 - Study the effect of compression.
+
+- Implement some competitors: 1. Bast's approach; 2. Explicit union...others?
