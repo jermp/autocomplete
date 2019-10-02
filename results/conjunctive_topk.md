@@ -1,8 +1,10 @@
-AOL query log
--------------
+Conjunctive top-k
+-----------------
 
 Executing queries shuffled at random, for k = 7 (as Google).
 Average among 10 runs.
+
+### AOL
 
     {"num_terms_per_query": "1", "num_queries": "50000", "parsing_ns_per_query": "0", "dictionary_search_ns_per_query": "1", "conjunctive_search_ns_per_query": "2718", "reporting_ns_per_query": "328"}
     {"num_terms_per_query": "2", "num_queries": "50000", "parsing_ns_per_query": "537", "dictionary_search_ns_per_query": "4", "conjunctive_search_ns_per_query": "2336", "reporting_ns_per_query": "2270"}
@@ -26,3 +28,14 @@ If we do not check the forward index (thus erronously reporting the first k doci
 We can see that the time for the `conjunctive_search` remains the same, except for the case with 3 terms.
 This suggests that the time needed to check the forward index is negligible compared to the one
 needed to produce the intersection. This can also be observed considering that the time for the case with 2 terms is very small: in this case we check the forward index for each doc in the inverted list of the first term.
+
+### MSN
+
+	{"num_terms_per_query": "1", "num_queries": "50000", "parsing_ns_per_query": "2", "dictionary_search_ns_per_query": "3", "conjunctive_search_ns_per_query": "2814", "reporting_ns_per_query": "540"}
+	{"num_terms_per_query": "2", "num_queries": "50000", "parsing_ns_per_query": "438", "dictionary_search_ns_per_query": "5", "conjunctive_search_ns_per_query": "2209", "reporting_ns_per_query": "1872"}
+	{"num_terms_per_query": "3", "num_queries": "50000", "parsing_ns_per_query": "1044", "dictionary_search_ns_per_query": "7", "conjunctive_search_ns_per_query": "12351", "reporting_ns_per_query": "1040"}
+	{"num_terms_per_query": "4", "num_queries": "50000", "parsing_ns_per_query": "1558", "dictionary_search_ns_per_query": "8", "conjunctive_search_ns_per_query": "13431", "reporting_ns_per_query": "505"}
+	{"num_terms_per_query": "5", "num_queries": "50000", "parsing_ns_per_query": "2054", "dictionary_search_ns_per_query": "7", "conjunctive_search_ns_per_query": "11448", "reporting_ns_per_query": "295"}
+	{"num_terms_per_query": "6", "num_queries": "50000", "parsing_ns_per_query": "2375", "dictionary_search_ns_per_query": "6", "conjunctive_search_ns_per_query": "9516", "reporting_ns_per_query": "237"}
+	{"num_terms_per_query": "7", "num_queries": "50000", "parsing_ns_per_query": "2977", "dictionary_search_ns_per_query": "6", "conjunctive_search_ns_per_query": "8035", "reporting_ns_per_query": "296"}
+	{"num_terms_per_query": "8+", "num_queries": "50000", "parsing_ns_per_query": "3745", "dictionary_search_ns_per_query": "5", "conjunctive_search_ns_per_query": "6139", "reporting_ns_per_query": "684"}
