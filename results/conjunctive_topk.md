@@ -5,6 +5,10 @@ Executing queries shuffled at random, for k = 7.
 
 Average among 10 runs.
 
+From the last token of the query, we only retain the first character. This means that we spend less in obtaining the lexicographic range of the character (string comparisons are
+very fast), but we spend more on the RMQ phase, because the
+range obtained from the completion trie can be very large.
+
 ### AOL
 
     {"num_terms_per_query": "1", "num_queries": "50000", "parsing_ns_per_query": "0", "dictionary_search_ns_per_query": "1", "conjunctive_search_ns_per_query": "2718", "reporting_ns_per_query": "328"}
