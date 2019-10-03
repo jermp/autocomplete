@@ -161,6 +161,7 @@ struct completion_trie {
 
     completion_trie() {}
 
+    // NOTE: return [a,b)
     range prefix_range(completion_type const& c) const {
         assert(c.size() > 0);
         range r{global::not_found, global::not_found};

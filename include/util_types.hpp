@@ -13,11 +13,6 @@ typedef std::vector<id_type> completion_type;
 struct range {
     uint64_t begin;
     uint64_t end;
-
-    // friend std::ostream& operator<<(std::ostream& os, range const& rhs) {
-    //     os << "[" << rhs.begin << "," << rhs.end << "]";
-    //     return os;
-    // }
 };
 
 struct scored_range {
@@ -38,6 +33,11 @@ struct byte_range {
     uint8_t const* end;
 };
 
+struct uint32_range {
+    uint32_t const* begin;
+    uint32_t const* end;
+};
+
 struct scored_byte_range {
     byte_range string;
     id_type score;
@@ -49,10 +49,21 @@ byte_range string_to_byte_range(std::string const& s) {
     return {begin, end};
 }
 
+uint32_range completion_to_uint32_range(completion_type const& c) {
+    return {c.data(), c.data() + c.size()};
+}
+
 void print(byte_range br) {
     uint32_t size = br.end - br.begin;
     for (uint32_t i = 0; i != size; ++i) {
         std::cout << br.begin[i];
+    }
+}
+
+void print(uint32_range r) {
+    uint32_t size = r.end - r.begin;
+    for (uint32_t i = 0; i != size; ++i) {
+        std::cout << r.begin[i] << " ";
     }
 }
 
@@ -64,6 +75,34 @@ inline int byte_range_compare(byte_range l, byte_range r) {
 inline int byte_range_compare(byte_range l, byte_range r, uint32_t n) {
     return strncmp(reinterpret_cast<const char*>(l.begin),
                    reinterpret_cast<const char*>(r.begin), n);
+}
+
+inline int uint32_range_compare(uint32_range l, uint32_range r) {
+    while (l.begin != l.end and r.begin != r.end) {
+        uint32_t x = *(l.begin);
+        uint32_t y = *(r.begin);
+        if (x < y) return -1;
+        if (x > y) return 1;
+        l.begin += 1;
+        r.begin += 1;
+    }
+    return int(l.end - l.begin) - int(r.end - r.begin);
+}
+
+inline int uint32_range_compare(uint32_range l, uint32_range r, uint32_t n) {
+    assert(n > 0 and n <= r.end - r.begin);
+    uint32_t i = 0;
+    while (l.begin != l.end and i != n) {
+        uint32_t x = *(l.begin);
+        uint32_t y = *(r.begin);
+        if (x < y) return -1;
+        if (x > y) return 1;
+        l.begin += 1;
+        r.begin += 1;
+        i += 1;
+    }
+    if (i == n) return 0;
+    return -1;
 }
 
 void print_completion(completion_type const& c) {

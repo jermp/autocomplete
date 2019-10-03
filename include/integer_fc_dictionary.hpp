@@ -8,14 +8,15 @@
 namespace autocomplete {
 
 template <uint32_t BucketSize, typename Pointers>
-struct fc_dictionary {
+struct integer_fc_dictionary {
     struct builder {
         builder() {}
 
         builder(parameters const& params)
-            : m_size(params.num_terms) {
-            essentials::logger("building fc_dictionary with bucket size " +
-                               std::to_string(BucketSize) + "...");
+            : m_size(params.num_completions) {
+            essentials::logger(
+                "building integer_fc_dictionary with bucket size " +
+                std::to_string(BucketSize) + "...");
 
             uint32_t buckets = std::ceil(double(m_size) / (BucketSize + 1));
             m_pointers_to_buckets.reserve(buckets + 1);
@@ -25,39 +26,33 @@ struct fc_dictionary {
             m_pointers_to_headers.push_back(0);
             m_pointers_to_buckets.push_back(0);
 
-            std::ifstream input((params.collection_basename + ".dict").c_str(),
-                                std::ios_base::in);
-            if (!input.good()) {
-                throw std::runtime_error("Dictionary file not found");
-            }
-            std::string prev = "";
-            std::string curr;
-            std::string header;
+            std::ifstream input(
+                (params.collection_basename + ".mapped").c_str(),
+                std::ios_base::in);
+            completion_iterator it(params, input);
 
             for (uint32_t b = 0; b != buckets; ++b) {
-                input >> header;
-                m_headers.insert(m_headers.end(), header.begin(), header.end());
-                m_headers.push_back('\0');
+                auto& header = (*it).completion;
+                write_header(header);
                 m_pointers_to_headers.push_back(m_headers.size());
+                completion_type prev;
                 prev.swap(header);
+                ++it;
                 uint32_t size = b != buckets - 1 ? BucketSize : tail;
-                for (uint32_t i = 0; i != size; ++i) {
-                    input >> curr;
+                for (uint32_t i = 0; i != size; ++i, ++it) {
+                    auto& curr = (*it).completion;
                     uint32_t l = 0;  // |lcp(curr,prev)|
                     while (l != curr.size() and l != prev.size() and
                            curr[l] == prev[l]) {
                         ++l;
                     }
-                    assert(l < 256);  // 1 byte is enough
-                    m_buckets.push_back(l);
-                    m_buckets.insert(m_buckets.end(), curr.begin() + l,
-                                     curr.end());
-                    m_buckets.push_back('\0');
+                    write(curr, l);
                     prev.swap(curr);
                 }
                 m_pointers_to_buckets.push_back(m_buckets.size());
             }
 
+            input.close();
             essentials::logger("DONE");
         }
 
@@ -69,7 +64,7 @@ struct fc_dictionary {
             other.m_buckets.swap(m_buckets);
         }
 
-        void build(fc_dictionary<BucketSize, Pointers>& d) {
+        void build(integer_fc_dictionary<BucketSize, Pointers>& d) {
             d.m_size = m_size;
             d.m_pointers_to_headers.build(m_pointers_to_headers);
             d.m_pointers_to_buckets.build(m_pointers_to_buckets);
@@ -80,51 +75,67 @@ struct fc_dictionary {
 
     private:
         size_t m_size;
-        std::vector<uint32_t> m_pointers_to_headers;
-        std::vector<uint32_t> m_pointers_to_buckets;
-        std::vector<uint8_t> m_headers;
+        std::vector<uint64_t> m_pointers_to_headers;
+        std::vector<uint64_t> m_pointers_to_buckets;
+        std::vector<uint32_t> m_headers;
         std::vector<uint8_t> m_buckets;
+
+        void write_header(completion_type const& c) {
+            assert(c.size() > 0 and c.size() < 256);
+            assert(c.back() == global::terminator);
+            m_headers.insert(m_headers.end(), c.begin(),
+                             c.begin() + c.size() - 1);
+        }
+
+        void write(completion_type const& c, uint32_t lcp) {
+            assert(c.size() > 0 and c.size() < 256);
+            assert(c.back() == global::terminator);
+            assert(lcp < 256);  // 1 byte is enough
+            m_buckets.push_back(lcp);
+            uint8_t size = c.size() - 1;  // discard terminator
+            assert(size >= lcp);
+            m_buckets.push_back(size - lcp);
+            uint8_t const* begin = reinterpret_cast<uint8_t const*>(c.data());
+            m_buckets.insert(m_buckets.end(), begin + lcp * sizeof(id_type),
+                             begin + size * sizeof(c.front()));
+        }
     };
 
-    fc_dictionary() {}
+    integer_fc_dictionary() {}
 
-    // NOTE: return inclusive ranges, i.e., [a,b]
-    range locate_prefix(byte_range p) const {
-        auto bucket_id = locate_buckets(p);
-        byte_range h_begin = header(bucket_id.begin);
-        byte_range h_end = header(bucket_id.end);
-        uint32_t p_begin = bucket_id.begin * (BucketSize + 1);
-        uint32_t p_end = bucket_id.end * (BucketSize + 1);
-        if (byte_range_compare(h_begin, p) != 0) {
-            p_begin += left_locate(p, h_begin, bucket_id.begin);
-        }
-        p_end += right_locate(p, h_end, bucket_id.end);
-        return {p_begin, p_end};
-    }
-
-    // NOTE: the dictionary returns
-    // 1-based ids because the id 0 is reserved
-    // to mark the end of a string
-    id_type locate(byte_range t) const {
-        byte_range h;
+    // NOTE: return 0-based ids
+    id_type locate(uint32_range c) const {
+        uint32_range h;
         id_type bucket_id;
-        bool is_header = locate_bucket(t, h, bucket_id);
-        id_type base_id = bucket_id * (BucketSize + 1) + 1;
+        bool is_header = locate_bucket(c, h, bucket_id);
+        id_type base_id = bucket_id * (BucketSize + 1);
         if (is_header) return base_id;
-        id_type offset_id = locate(t, h, bucket_id);
+        id_type offset_id = locate(c, h, bucket_id);
         if (offset_id == global::invalid_term_id) {
             return global::invalid_term_id;
         }
         return base_id + offset_id;
     }
 
-    // return the length of the extracted string
-    uint8_t extract(id_type id, uint8_t* out) const {
-        assert(id > 0);
-        id -= 1;
+    // NOTE: return inclusive ranges, i.e., [a,b]
+    range locate_prefix(uint32_range c) const {
+        auto bucket_id = locate_buckets(c);
+        auto h_begin = header(bucket_id.begin);
+        auto h_end = header(bucket_id.end);
+        uint32_t p_begin = bucket_id.begin * (BucketSize + 1);
+        uint32_t p_end = bucket_id.end * (BucketSize + 1);
+        if (uint32_range_compare(h_begin, c) != 0) {
+            p_begin += left_locate(c, h_begin, bucket_id.begin);
+        }
+        p_end += right_locate(c, h_end, bucket_id.end);
+        return {p_begin, p_end};
+    }
+
+    // NOTE: 0-based ids
+    uint8_t extract(id_type id, completion_type& c) const {
         uint32_t bucket_id = id / (BucketSize + 1);
         uint32_t k = id % (BucketSize + 1);
-        return extract(k, bucket_id, out);
+        return extract(k, bucket_id, c);
     }
 
     size_t size() const {
@@ -142,12 +153,11 @@ struct fc_dictionary {
         return m_pointers_to_headers.size() - 1;
     }
 
-    byte_range header(uint32_t i) const {
+    uint32_range header(uint32_t i) const {
         assert(i < buckets());
         range pointer = m_pointers_to_headers[i];
-        assert(m_headers[pointer.end - 1] == '\0');
         return {m_headers.data() + pointer.begin,
-                m_headers.data() + pointer.end - 1};
+                m_headers.data() + pointer.end};
     }
 
     size_t bytes() const {
@@ -170,16 +180,19 @@ private:
     size_t m_size;
     Pointers m_pointers_to_headers;
     Pointers m_pointers_to_buckets;
-    std::vector<uint8_t> m_headers;
+    std::vector<uint32_t> m_headers;
     std::vector<uint8_t> m_buckets;
 
-    bool locate_bucket(byte_range t, byte_range& h, id_type& bucket_id) const {
+    // TODO: share code with fc_dictionary.hpp
+
+    bool locate_bucket(uint32_range t, uint32_range& h,
+                       id_type& bucket_id) const {
         int lo = 0, hi = buckets() - 1, mi = 0, cmp = 0;
 
         while (lo <= hi) {
             mi = (lo + hi) / 2;
             h = header(mi);
-            cmp = byte_range_compare(h, t);
+            cmp = uint32_range_compare(h, t);
             if (cmp > 0) {
                 hi = mi - 1;
             } else if (cmp < 0) {
@@ -200,9 +213,9 @@ private:
         return false;
     }
 
-    range locate_buckets(byte_range p) const {
+    range locate_buckets(uint32_range p) const {
         range r;
-        uint32_t n = p.end - p.begin - 1;
+        uint32_t n = p.end - p.begin;
         int lo, hi, left, right;
 
         // 1. locate left bucket
@@ -210,8 +223,8 @@ private:
         hi = buckets() - 1;
         while (lo <= hi) {
             int mi = (lo + hi) / 2;
-            byte_range h = header(mi);
-            int cmp = byte_range_compare(h, p, n);
+            auto h = header(mi);
+            int cmp = uint32_range_compare(h, p, n);
             if (cmp >= 0) {
                 hi = mi - 1;
             } else {
@@ -228,14 +241,14 @@ private:
         if (lo == 0) {
             left = 0;
         } else {
-            left = byte_range_compare(header(lo), p) == 0 ? lo : lo - 1;
+            left = uint32_range_compare(header(lo), p) == 0 ? lo : lo - 1;
         }
 
         // 2. if the left + 1 bucket's header has a prefix of size n that is
         //    larger than p, then all strings prefixed by p are in the same
         //    bucket (or if we are in the last bucket)
         if (uint32_t(left) == buckets() - 1 or
-            byte_range_compare(header(left + 1), p, n) > 0) {
+            uint32_range_compare(header(left + 1), p, n) > 0) {
             r.begin = left;
             r.end = left;
             return r;
@@ -246,8 +259,8 @@ private:
         hi = buckets() - 1;
         while (lo <= hi) {
             int mi = (lo + hi) / 2;
-            byte_range h = header(mi);
-            int cmp = byte_range_compare(h, p, n);
+            auto h = header(mi);
+            int cmp = uint32_range_compare(h, p, n);
             if (cmp <= 0) {
                 lo = mi + 1;
             } else {
@@ -262,70 +275,74 @@ private:
         return r;
     }
 
-#define FC_DICT_LOCATE_INIT                         \
-    static uint8_t* decoded = new uint8_t[256 + 1]; \
-    memcpy(decoded, h.begin, h.end - h.begin + 1);  \
-    uint8_t lcp_len;                                \
-    uint32_t n = bucket_size(bucket_id);            \
-    uint8_t const* curr =                           \
+#define INT_FC_DICT_LOCATE_INIT                                     \
+    static uint32_t* decoded = new uint32_t[64];                    \
+    memcpy(decoded, h.begin, (h.end - h.begin) * sizeof(uint32_t)); \
+    uint8_t lcp_len;                                                \
+    uint32_t n = bucket_size(bucket_id);                            \
+    uint8_t const* curr =                                           \
         m_buckets.data() + m_pointers_to_buckets[bucket_id].begin;
 
-    uint8_t decode(uint8_t const* in, uint8_t* out, uint8_t* lcp_len) const {
+    // return the length of the decoded string
+    uint8_t decode(uint8_t const* in, uint32_t* out, uint8_t* lcp_len) const {
         *lcp_len = *in++;  // |lcp|
         uint8_t l = *lcp_len;
-        while (*in) out[l++] = *in++;
-        out[l] = '\0';
-        return l;
+        uint8_t suffix_len = *in++;
+        memcpy(out + l, reinterpret_cast<uint32_t const*>(in),
+               suffix_len * sizeof(uint32_t));
+        return l + suffix_len;
     }
 
-    uint8_t extract(id_type id, id_type bucket_id, uint8_t* out) const {
-        byte_range h = header(bucket_id);
-        memcpy(out, h.begin, h.end - h.begin + 1);
+    uint8_t extract(id_type id, id_type bucket_id, completion_type& c) const {
+        auto h = header(bucket_id);
+        memcpy(c.data(), h.begin, (h.end - h.begin) * sizeof(uint32_t));
         uint8_t lcp_len;
         assert(id <= bucket_size(bucket_id));
         uint8_t const* curr =
             m_buckets.data() + m_pointers_to_buckets[bucket_id].begin;
         uint8_t string_len = h.end - h.begin;
         for (id_type i = 1; i <= id; ++i) {
-            string_len = decode(curr, out, &lcp_len);
-            curr += string_len - lcp_len + 2;
+            string_len = decode(curr, c.data(), &lcp_len);
+            curr += (string_len - lcp_len) * sizeof(uint32_t) + 2;
         }
         return string_len;
     }
 
-    id_type locate(byte_range t, byte_range h, id_type bucket_id) const {
-        FC_DICT_LOCATE_INIT
+    id_type locate(uint32_range t, uint32_range h, id_type bucket_id) const {
+        INT_FC_DICT_LOCATE_INIT
         for (id_type i = 1; i <= n; ++i) {
             uint8_t l = decode(curr, decoded, &lcp_len);
-            int cmp = byte_range_compare(t, {decoded, decoded + l});
+            int cmp = uint32_range_compare(t, {decoded, decoded + l});
             if (cmp == 0) return i;
             if (cmp < 0) return global::invalid_term_id;
-            curr += l - lcp_len + 2;
+            curr += (l - lcp_len) * sizeof(uint32_t) + 2;
         }
         assert(false);
         __builtin_unreachable();
     }
 
-    id_type left_locate(byte_range p, byte_range h, id_type bucket_id) const {
-        FC_DICT_LOCATE_INIT
-        uint32_t len = p.end - p.begin - 1;
+    id_type left_locate(uint32_range p, uint32_range h,
+                        id_type bucket_id) const {
+        INT_FC_DICT_LOCATE_INIT
+        uint32_t len = p.end - p.begin;
         for (id_type i = 1; i <= n; ++i) {
             uint8_t l = decode(curr, decoded, &lcp_len);
-            int cmp = byte_range_compare({decoded, decoded + l}, p, len);
+            int cmp = uint32_range_compare({decoded, decoded + l}, p, len);
             if (cmp == 0) return i;
-            curr += l - lcp_len + 2;
+            curr += (l - lcp_len) * sizeof(uint32_t) + 2;
         }
         return n + 1;
     }
 
-    id_type right_locate(byte_range p, byte_range h, id_type bucket_id) const {
-        FC_DICT_LOCATE_INIT
-        uint32_t len = p.end - p.begin - 1;
+    id_type right_locate(uint32_range p, uint32_range h,
+                         id_type bucket_id) const {
+        INT_FC_DICT_LOCATE_INIT
+        uint32_t len = p.end - p.begin;
         for (id_type i = 1; i <= n; ++i) {
             uint8_t l = decode(curr, decoded, &lcp_len);
-            int cmp = byte_range_compare({decoded, decoded + l}, p, len);
+            int cmp = uint32_range_compare({decoded, decoded + l}, p, len);
             if (cmp > 0) return i - 1;
-            curr += l - lcp_len + 2;
+            curr += (l - lcp_len) * sizeof(uint32_t) + 2;
         }
         return n;
     }

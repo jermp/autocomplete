@@ -2,6 +2,7 @@
 
 #include "completion_trie.hpp"
 #include "fc_dictionary.hpp"
+#include "integer_fc_dictionary.hpp"
 #include "uint_vec.hpp"
 #include "unsorted_list.hpp"
 #include "uncompressed_list.hpp"
@@ -21,6 +22,7 @@ typedef completion_trie<uint64_vec, uint32_vec, uint32_vec, uint32_vec>
 
 static const uint32_t BucketSize = 16;
 typedef fc_dictionary<BucketSize, uint32_vec> fc_dictionary_B16;
+typedef integer_fc_dictionary<BucketSize, uint64_vec> integer_fc_dictionary_B16;
 
 typedef unsorted_list<uint32_vec, cartesian_tree> unsorted_list_succinct_rmq;
 
