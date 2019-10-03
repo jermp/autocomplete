@@ -69,15 +69,32 @@ struct uint_vec {
     }
 
     UintType access(uint64_t i) const {
-        assert(i < size());
         return m_data[i];
     }
 
-    uint64_t find(range const& r, UintType id) const {
+    uint64_t find(range r, UintType id) const {
         assert(r.end > r.begin);
         assert(r.end <= size());
         UintType prev_upper = previous_range_upperbound(r);
-        return scan_binary_search(*this, id + prev_upper, r.begin, r.end - 1);
+        return util::find(*this, id + prev_upper, r.begin, r.end - 1);
+    }
+
+    range find(range r, range lex) const {
+        assert(r.end > r.begin);
+        assert(r.end <= size());
+        UintType prev_upper = previous_range_upperbound(r);
+
+        uint64_t id_begin = lex.begin + prev_upper;
+        uint64_t begin = util::next_geq(*this, id_begin, r.begin, r.end - 1);
+
+        if (lex.begin == lex.end) {
+            return {begin, begin + 1};
+        }
+
+        uint64_t id_end = lex.end + prev_upper;
+        uint64_t end = util::next_geq(*this, id_end, begin, r.end - 1);
+
+        return {begin, begin != end ? end : end + 1};
     }
 
     inline range operator[](uint64_t i) const {
@@ -106,9 +123,9 @@ struct uint_vec {
 private:
     std::vector<UintType> m_data;
 
-    UintType previous_range_upperbound(range const& r) const {
+    UintType previous_range_upperbound(range r) const {
         return r.begin ? access(r.begin - 1) : 0;
     }
-};
+};  // namespace autocomplete
 
 }  // namespace autocomplete

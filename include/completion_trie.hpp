@@ -185,6 +185,44 @@ struct completion_trie {
         return r;
     }
 
+    // If the last token of the query is not completely specified,
+    // then we search for its lexicographic range among the children of c.
+    range prefix_range(completion_type const& c, range suffix_lex_range) const {
+        range r{global::not_found, global::not_found};
+        range pointer{0, m_nodes.front().size()};
+        uint32_t i = 0;
+
+        if (c.size() > 0) {
+            uint32_t levels = c.size() - 1;
+            for (; i <= levels; ++i) {
+                uint64_t pos = m_nodes[i].find(pointer, c[i]);
+                if (pos == global::not_found) return r;
+                r.begin = m_left_extremes[i].access(pos) + pos;
+                uint64_t size = m_sizes[i].access(pos) -
+                                (pos ? m_sizes[i].access(pos - 1) : 0) + 1;
+                r.end = r.begin + size;
+                pointer = m_pointers[i][pos];
+            }
+            assert(i == levels + 1);
+        }
+
+        if (i < m_nodes.size()) {
+            range q = m_nodes[i].find(pointer, suffix_lex_range);
+            assert(q.end > q.begin);
+            uint64_t begin = q.begin;
+            uint64_t end = q.end - 1;
+            r.begin = m_left_extremes[i].access(begin) + begin;
+            r.end =
+                end != begin ? m_left_extremes[i].access(end) + end : r.begin;
+            uint64_t size = m_sizes[i].access(end) -
+                            (end ? m_sizes[i].access(end - 1) : 0) + 1;
+            r.end += size;
+        }
+
+        assert(r.end > r.begin);
+        return r;
+    }
+
     bool is_member(completion_type const& c) const {
         assert(c.size() > 0);
         range pointer{0, m_nodes.front().size()};
@@ -211,30 +249,30 @@ struct completion_trie {
         return bytes;
     }
 
-    void print() const {
-        uint32_t levels = m_nodes.size();
-        for (uint32_t i = 0; i != levels; ++i) {
-            std::cout << "level-" << i << "\n";
+    // void print() const {
+    //     uint32_t levels = m_nodes.size();
+    //     for (uint32_t i = 0; i != levels; ++i) {
+    //         std::cout << "level-" << i << "\n";
 
-            std::cout << "\t nodes: ";
-            m_nodes[i].print();
-            std::cout << std::endl;
+    //         std::cout << "\t nodes: ";
+    //         m_nodes[i].print();
+    //         std::cout << std::endl;
 
-            if (i != levels - 1) {
-                std::cout << "\t pointers: ";
-                m_pointers[i].print();
-                std::cout << std::endl;
-            }
+    //         if (i != levels - 1) {
+    //             std::cout << "\t pointers: ";
+    //             m_pointers[i].print();
+    //             std::cout << std::endl;
+    //         }
 
-            std::cout << "\t left_extremes: ";
-            m_left_extremes[i].print();
-            std::cout << std::endl;
+    //         std::cout << "\t left_extremes: ";
+    //         m_left_extremes[i].print();
+    //         std::cout << std::endl;
 
-            std::cout << "\t sizes: ";
-            m_sizes[i].print();
-            std::cout << std::endl;
-        }
-    }
+    //         std::cout << "\t sizes: ";
+    //         m_sizes[i].print();
+    //         std::cout << std::endl;
+    //     }
+    // }
 
     template <typename Visitor>
     void visit(Visitor& visitor) {

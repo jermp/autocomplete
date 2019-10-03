@@ -44,15 +44,21 @@ int main(int argc, char** argv) {
             essentials::logger("DONE");
             autocomp.print_stats();
 
-            // test prefix_topk()
             {
+                essentials::logger("testing prefix_topk()...");
                 uint32_t k = 7;
                 std::vector<std::string> queries = {
                     "a",        "10",          "african",
                     "air",      "commercial",  "internet",
                     "paris",    "somerset",    "the",
                     "the new",  "the perfect", "the starting line",
-                    "yu gi oh", "for sale"};
+                    "yu gi oh", "for sale",    "dave mat",
+                    "florence", "florida be",  "for s",
+                    "for sa",   "for sal",     "for sale",
+                    "ford a",   "ford au",     "ford m",
+                    "ford mu",  "for",         "fo",
+                    "f",        "matt",        "fl",
+                    "flor",     "fly",         "the starting l"};
 
                 for (auto& query : queries) {
                     auto it = autocomp.prefix_topk(query, k);
@@ -65,10 +71,12 @@ int main(int argc, char** argv) {
                         std::cout << "')" << std::endl;
                     }
                 }
+
+                essentials::logger("DONE");
             }
 
-            // test conjunctive_topk()
             {
+                essentials::logger("testing conjunctive_topk()...");
                 uint32_t k = 7;
                 std::vector<std::string> queries = {
                     "dave mat", "florence", "florida be",    "for s",
@@ -88,6 +96,8 @@ int main(int argc, char** argv) {
                         std::cout << "')" << std::endl;
                     }
                 }
+
+                essentials::logger("DONE");
             }
         }
     }

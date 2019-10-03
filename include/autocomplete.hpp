@@ -36,9 +36,19 @@ struct autocomplete {
         assert(k <= MAX_K);
         completion_type prefix;
         byte_range suffix;
-        parse(query, prefix, suffix);
+        uint32_t num_terms = parse(query, prefix, suffix);
+        assert(num_terms > 0);
+
+        suffix.end += 1;  // include null terminator
+        range suffix_lex_range = m_dictionary.locate_prefix(suffix);
+
+        // NOTE: because the completion_trie works with 1-based ids
+        // (id 0 is reserved for null terminator)
+        suffix_lex_range.begin += 1;
+        suffix_lex_range.end += 1;
+
+        range r = m_completion_trie.prefix_range(prefix, suffix_lex_range);
         auto& topk = m_pool.scores();
-        range r = m_completion_trie.prefix_range(prefix);
         uint32_t num_completions = m_unsorted_docs_list.topk(r, k, topk);
         return extract_strings(num_completions, topk);
     }
@@ -58,13 +68,13 @@ struct autocomplete {
 
         if (num_terms == 1) {  // special case
 
+            suffix_lex_range.end += 1;
             num_completions = m_unsorted_minimal_docs_list.topk(
                 suffix_lex_range, k, topk,
                 true  // must return unique results
             );
 
         } else {
-            prefix.pop_back();
             if (prefix.size() == 1) {  // we've got nothing to intersect
                 auto it = m_inverted_index.iterator(prefix.front() - 1);
                 num_completions =
@@ -87,12 +97,17 @@ struct autocomplete {
         assert(k <= MAX_K);
         completion_type prefix;
         byte_range suffix;
-        parse(query, prefix, suffix);
+        uint32_t num_terms = parse(query, prefix, suffix);
+        assert(num_terms > 0);
         timers[0].stop();
 
         // step 1
         timers[1].start();
-        range r = m_completion_trie.prefix_range(prefix);
+        suffix.end += 1;  // include null terminator
+        range suffix_lex_range = m_dictionary.locate_prefix(suffix);
+        suffix_lex_range.begin += 1;
+        suffix_lex_range.end += 1;
+        range r = m_completion_trie.prefix_range(prefix, suffix_lex_range);
         timers[1].stop();
 
         // step 2
@@ -134,13 +149,13 @@ struct autocomplete {
         timers[2].start();
         if (num_terms == 1) {  // special case
 
+            suffix_lex_range.end += 1;
             num_completions = m_unsorted_minimal_docs_list.topk(
                 suffix_lex_range, k, topk,
                 true  // must return unique results
             );
 
         } else {
-            prefix.pop_back();
             if (prefix.size() == 1) {  // we've got nothing to intersect
                 auto it = m_inverted_index.iterator(prefix.front() - 1);
                 num_completions =
@@ -193,10 +208,12 @@ private:
         m_pool.clear();
         m_pool.init();
         uint32_t num_terms = parse_query(query);
+        assert(num_terms > 0);
         prefix.reserve(num_terms);
         forward_byte_range_iterator it(string_to_byte_range(query));
         for (uint32_t i = 0; i != num_terms; ++i) {
             suffix = it.next();
+            if (i == num_terms - 1) break;
             id_type term_id = m_dictionary.locate(suffix);
             prefix.push_back(term_id);
         }

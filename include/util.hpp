@@ -34,9 +34,9 @@ static const uint64_t not_found = uint64_t(-1);
 static const uint64_t linear_scan_threshold = 8;
 }  // namespace global
 
+namespace util {
 template <typename S>
-inline uint64_t scan_binary_search(S const& sequence, uint64_t id, uint64_t lo,
-                                   uint64_t hi) {
+uint64_t find(S const& sequence, uint64_t id, uint64_t lo, uint64_t hi) {
     while (lo <= hi) {
         if (hi - lo <= global::linear_scan_threshold) {
             auto it = sequence.at(lo);
@@ -58,6 +58,39 @@ inline uint64_t scan_binary_search(S const& sequence, uint64_t id, uint64_t lo,
     }
     return global::not_found;
 }
+
+template <typename S>
+uint64_t next_geq(S const& sequence, uint64_t lower_bound, uint64_t lo,
+                  uint64_t hi) {
+    while (lo <= hi) {
+        if (hi - lo <= global::linear_scan_threshold) {
+            auto it = sequence.at(lo);
+            for (uint64_t pos = lo; pos <= hi; ++pos, ++it) {
+                if (*it >= lower_bound) {
+                    return pos;
+                }
+            }
+            break;
+        }
+
+        uint64_t pos = (lo + hi) / 2;
+        uint64_t val = sequence.access(pos);
+
+        if (val > lower_bound) {
+            hi = pos != 0 ? pos - 1 : 0;
+            if (lower_bound > sequence.access(hi)) {
+                return pos;
+            }
+        } else if (val < lower_bound) {
+            lo = pos + 1;
+        } else {
+            return pos;
+        }
+    }
+
+    return hi;
+}
+}  // namespace util
 
 namespace tables {
 const uint8_t select_in_byte[2048] = {
