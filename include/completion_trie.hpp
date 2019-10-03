@@ -196,7 +196,11 @@ struct completion_trie {
             uint32_t levels = c.size() - 1;
             for (; i <= levels; ++i) {
                 uint64_t pos = m_nodes[i].find(pointer, c[i]);
+
+                // NOTE: if c is not stored in the trie but only
+                // a prefix p of c, then return the range of p
                 if (pos == global::not_found) return r;
+
                 r.begin = m_left_extremes[i].access(pos) + pos;
                 uint64_t size = m_sizes[i].access(pos) -
                                 (pos ? m_sizes[i].access(pos - 1) : 0) + 1;

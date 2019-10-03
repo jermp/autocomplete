@@ -29,7 +29,8 @@ int main(int argc, char** argv) {
 
     std::vector<std::string> queries;
     essentials::logger("loading queries...");
-    uint32_t num_queries = load_queries(queries, max_num_queries);
+    uint32_t num_queries =
+        load_queries(queries, max_num_queries, true, std::cin);
     essentials::logger("loaded " + std::to_string(num_queries) + " queries");
 
     essentials::logger("benchmarking prefix_topk queries...");

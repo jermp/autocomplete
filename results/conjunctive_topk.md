@@ -1,7 +1,8 @@
 Conjunctive top-k
 -----------------
 
-Executing queries shuffled at random, for k = 7 (as Google).
+Executing queries shuffled at random, for k = 7.
+
 Average among 10 runs.
 
 ### AOL

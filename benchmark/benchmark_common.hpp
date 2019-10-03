@@ -12,7 +12,7 @@ size_t load_queries(std::vector<std::string>& queries, uint32_t max_num_queries,
         if (!std::getline(is, line)) break;
         auto query = line.substr(line.find(' ') + 1, line.size());
 
-        if (truncate_last) {
+        if (truncate_last) {  // retain only first character
             char last = 0;
             while (query.size() and query.back() != ' ') {
                 last = query.back();

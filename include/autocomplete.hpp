@@ -36,8 +36,7 @@ struct autocomplete {
         assert(k <= MAX_K);
         completion_type prefix;
         byte_range suffix;
-        uint32_t num_terms = parse(query, prefix, suffix);
-        assert(num_terms > 0);
+        parse(query, prefix, suffix);
 
         suffix.end += 1;  // include null terminator
         range suffix_lex_range = m_dictionary.locate_prefix(suffix);
@@ -96,9 +95,8 @@ struct autocomplete {
         timers[0].start();
         assert(k <= MAX_K);
         completion_type prefix;
-        byte_range suffix;
-        uint32_t num_terms = parse(query, prefix, suffix);
-        assert(num_terms > 0);
+        byte_range suffix{0, 0};
+        parse(query, prefix, suffix);
         timers[0].stop();
 
         // step 1
