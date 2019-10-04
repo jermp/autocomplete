@@ -18,6 +18,7 @@ struct completion_trie {
             , m_sizes(params.num_levels) {
             essentials::logger("building completion_trie...");
 
+            m_doc_ids.reserve(params.num_completions);
             uint32_t levels = params.num_levels;
             for (uint32_t i = 0; i != levels; ++i) {
                 m_nodes[i].reserve(params.nodes_per_level[i]);

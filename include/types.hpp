@@ -9,6 +9,7 @@
 #include "forward_index.hpp"
 #include "inverted_index.hpp"
 #include "autocomplete.hpp"
+#include "autocomplete2.hpp"
 
 #include "succinct_rmq/cartesian_tree.hpp"
 
@@ -37,5 +38,9 @@ typedef autocomplete<uint64_completion_trie, unsorted_list_succinct_rmq,
                      fc_dictionary_B16, uncompressed_inverted_index,
                      uncompressed_forward_index>
     uncompressed_autocomplete_type;
+
+typedef autocomplete2<integer_fc_dictionary_B16, unsorted_list_succinct_rmq,
+                      fc_dictionary_B16, uncompressed_inverted_index>
+    uncompressed_autocomplete_type2;
 
 }  // namespace autocomplete

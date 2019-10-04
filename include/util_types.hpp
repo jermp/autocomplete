@@ -105,6 +105,23 @@ inline int uint32_range_compare(uint32_range l, uint32_range r, uint32_t n) {
     return -1;
 }
 
+inline int uint32_range_compare(uint32_range l, uint32_range r, uint32_t n,
+                                range suffix_lex_range) {
+    assert(n > 0 and n <= r.end - r.begin);
+    uint32_t i = 0;
+    while (l.begin != l.end and i != n) {
+        uint32_t x = *(l.begin);
+        uint32_t y = *(r.begin);
+        if (x < y) return -1;
+        if (x > y) return 1;
+        l.begin += 1;
+        r.begin += 1;
+        i += 1;
+    }
+    if (i == n) return int(*(l.begin)) - int(suffix_lex_range.begin);
+    return -1;
+}
+
 void print_completion(completion_type const& c) {
     for (auto x : c) {
         std::cout << x << " ";

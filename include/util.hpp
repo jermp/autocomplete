@@ -35,6 +35,7 @@ static const uint64_t linear_scan_threshold = 8;
 }  // namespace global
 
 namespace util {
+
 template <typename S>
 uint64_t find(S const& sequence, uint64_t id, uint64_t lo, uint64_t hi) {
     while (lo <= hi) {
@@ -90,6 +91,7 @@ uint64_t next_geq(S const& sequence, uint64_t lower_bound, uint64_t lo,
 
     return global::not_found;
 }
+
 }  // namespace util
 
 namespace tables {

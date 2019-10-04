@@ -6,28 +6,43 @@
 namespace autocomplete {
 
 template <typename Completions, typename UnsortedDocsList, typename Dictionary,
-          typename InvertedIndex, typename ForwardIndex>
-struct autocomplete {
+          typename InvertedIndex>
+struct autocomplete2 {
     typedef scored_string_pool::iterator iterator_type;
 
-    autocomplete() {
+    autocomplete2() {
         m_pool.resize(POOL_SIZE, MAX_K);
     }
 
-    autocomplete(parameters const& params)
-        : autocomplete() {
+    autocomplete2(parameters const& params)
+        : autocomplete2() {
         typename Completions::builder cm_builder(params);
         typename Dictionary::builder di_builder(params);
         typename InvertedIndex::builder ii_builder(params);
-        typename ForwardIndex::builder fi_builder(params);
 
-        m_unsorted_docs_list.build(cm_builder.doc_ids());
+        auto const& doc_ids = cm_builder.doc_ids();
+        m_unsorted_docs_list.build(doc_ids);
         m_unsorted_minimal_docs_list.build(ii_builder.minimal_doc_ids());
+
+        {
+            uint64_t n = doc_ids.size();
+            std::vector<std::pair<id_type, id_type>> ids;
+            ids.reserve(n);
+            m_docid_to_lexid.reserve(n);
+            for (id_type lex_id = 0; lex_id != n; ++lex_id) {
+                ids.emplace_back(lex_id, doc_ids[lex_id]);
+            }
+            std::sort(ids.begin(), ids.end(), [](auto const& l, auto const& r) {
+                return l.second < r.second;
+            });
+            for (id_type doc_id = 0; doc_id != n; ++doc_id) {
+                m_docid_to_lexid.push_back(ids[doc_id].first);
+            }
+        }
 
         cm_builder.build(m_completions);
         di_builder.build(m_dictionary);
         ii_builder.build(m_inverted_index);
-        fi_builder.build(m_forward_index);
     }
 
     iterator_type prefix_topk(std::string& query, uint32_t k) {
@@ -39,15 +54,15 @@ struct autocomplete {
 
         suffix.end += 1;  // include null terminator
         range suffix_lex_range = m_dictionary.locate_prefix(suffix);
-
-        // NOTE: because the completion_trie works with 1-based ids
-        // (id 0 is reserved for null terminator)
         suffix_lex_range.begin += 1;
         suffix_lex_range.end += 1;
 
         range r = m_completions.locate_prefix(prefix, suffix_lex_range);
         uint32_t num_completions =
             m_unsorted_docs_list.topk(r, k, m_pool.scores());
+
+        extract_completions(num_completions);
+
         return extract_strings(num_completions);
     }
 
@@ -114,6 +129,7 @@ struct autocomplete {
 
         // step 3
         timers[3].start();
+        extract_completions(num_completions);
         auto it = extract_strings(num_completions);
         timers[3].stop();
 
@@ -173,7 +189,8 @@ struct autocomplete {
     size_t bytes() const {
         return m_completions.bytes() + m_unsorted_docs_list.bytes() +
                m_unsorted_minimal_docs_list.bytes() + m_dictionary.bytes() +
-               m_inverted_index.bytes() + m_forward_index.bytes();
+               essentials::vec_bytes(m_docid_to_lexid) +
+               m_inverted_index.bytes();
     }
 
     void print_stats() const;
@@ -185,7 +202,7 @@ struct autocomplete {
         visitor.visit(m_unsorted_minimal_docs_list);
         visitor.visit(m_dictionary);
         visitor.visit(m_inverted_index);
-        visitor.visit(m_forward_index);
+        visitor.visit(m_docid_to_lexid);
     }
 
 private:
@@ -194,7 +211,7 @@ private:
     UnsortedDocsList m_unsorted_minimal_docs_list;
     Dictionary m_dictionary;
     InvertedIndex m_inverted_index;
-    ForwardIndex m_forward_index;
+    std::vector<uint32_t> m_docid_to_lexid;
     scored_string_pool m_pool;
 
     void init() {
@@ -202,14 +219,48 @@ private:
         m_pool.init();
     }
 
+    void extract_completions(uint32_t num_completions) {
+        auto& topk = m_pool.scores();
+        auto& completions = m_pool.completions();
+        for (uint32_t i = 0; i != num_completions; ++i) {
+            id_type doc_id = topk[i];
+            static completion_type c(128);
+            id_type lex_id = m_docid_to_lexid[doc_id];
+            uint32_t size = m_completions.extract(lex_id, c);
+
+            // is this expensive? is memcpy faster (with prior resizing)?
+            for (uint32_t k = 0; k != size; ++k) {
+                completions[i].push_back(c[k]);
+            }
+        }
+    }
+
     template <typename Iterator>
     uint32_t conjunctive_topk(Iterator& it, range r, uint32_t k) {
         auto& topk = m_pool.scores();
+        auto& completions = m_pool.completions();
         uint32_t i = 0;
+        static completion_type c(128);
+
         while (it.has_next()) {
             id_type doc_id = *it;
-            if (m_forward_index.contains(doc_id, r)) {
-                topk[i++] = doc_id;
+
+            bool match = false;
+            id_type lex_id = m_docid_to_lexid[doc_id];
+            uint32_t size = m_completions.extract(lex_id, c);
+            for (uint32_t j = 0; j != size; ++j) {
+                if (c[j] >= r.begin and c[j] <= r.end) match = true;
+            }
+
+            if (match) {
+                topk[i] = doc_id;
+
+                // is this expensive? is memcpy faster (with prior resizing)?
+                for (uint32_t k = 0; k != size; ++k) {
+                    completions[i].push_back(c[k]);
+                }
+
+                ++i;
                 if (i == k) break;
             }
             ++it;
@@ -218,18 +269,17 @@ private:
     }
 
     iterator_type extract_strings(uint32_t num_completions) {
-        auto const& topk = m_pool.scores();
+        auto const& completions = m_pool.completions();
         for (uint32_t i = 0; i != num_completions; ++i) {
-            id_type doc_id = topk[i];
-            auto it = m_forward_index.permuting_iterator(doc_id);
+            auto const& c = completions[i];
             uint64_t offset = m_pool.bytes();
             uint8_t* decoded = m_pool.data() + offset;
-            for (uint32_t j = 0; j != it.size(); ++j, ++it) {
-                id_type term_id = *it;
+            for (uint32_t j = 0; j != c.size(); ++j) {
+                id_type term_id = c[j];
                 uint8_t len = m_dictionary.extract(term_id, decoded);
                 decoded += len;
                 offset += len;
-                if (j != it.size() - 1) {
+                if (j != c.size() - 1) {
                     *decoded++ = ' ';
                     offset++;
                 }

@@ -32,22 +32,6 @@ range locate_prefix(std::vector<std::string> const& strings,
     return r;
 }
 
-template <typename Dictionary>
-uint32_t parse(Dictionary const& dict, std::string& query,
-               completion_type& prefix, byte_range& suffix) {
-    uint32_t num_terms = parse_query(query);
-    assert(num_terms > 0);
-    prefix.reserve(num_terms);
-    forward_byte_range_iterator it(string_to_byte_range(query));
-    for (uint32_t i = 0; i != num_terms; ++i) {
-        suffix = it.next();
-        if (i == num_terms - 1) break;
-        id_type term_id = dict.locate(suffix);
-        prefix.push_back(term_id);
-    }
-    return num_terms;
-}
-
 template <typename Dictionary, typename Index>
 int test_locate_prefix(Dictionary const& dict, Index const& index,
                        std::vector<std::string> const& queries,
@@ -87,18 +71,9 @@ int test_locate_prefix(Dictionary const& dict, Index const& index,
 int main(int argc, char** argv) {
     int mandatory = 2;
     if (argc < mandatory) {
-        std::cout << argv[0] << " <collection_basename> [-o output_filename]"
-                  << std::endl;
+        std::cout << argv[0] << " <collection_basename>" << std::endl;
         return 1;
     }
-
-    // char const* output_filename = nullptr;
-    // for (int i = mandatory; i != argc; ++i) {
-    //     if (std::string(argv[i]) == "-o") {
-    //         ++i;
-    //         output_filename = argv[i];
-    //     }
-    // }
 
     parameters params;
     params.collection_basename = argv[1];
@@ -147,18 +122,18 @@ int main(int argc, char** argv) {
         essentials::logger("it's all good");
     }
 
-    // {
-    //     integer_fc_dictionary_B16 index;
-    //     {
-    //         integer_fc_dictionary_B16::builder builder(params);
-    //         builder.build(index);
-    //     }
-    //     essentials::logger(
-    //         "testing locate_prefix() for integer_fc_dictionary...");
-    //     int ret = test_locate_prefix(dict, index, queries, strings);
-    //     if (ret) return 1;
-    //     essentials::logger("it's all good");
-    // }
+    {
+        integer_fc_dictionary_B16 index;
+        {
+            integer_fc_dictionary_B16::builder builder(params);
+            builder.build(index);
+        }
+        essentials::logger(
+            "testing locate_prefix() for integer_fc_dictionary...");
+        int ret = test_locate_prefix(dict, index, queries, strings);
+        if (ret) return 1;
+        essentials::logger("it's all good");
+    }
 
     return 0;
 }

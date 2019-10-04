@@ -17,6 +17,7 @@ struct integer_fc_dictionary {
             essentials::logger(
                 "building integer_fc_dictionary with bucket size " +
                 std::to_string(BucketSize) + "...");
+            m_doc_ids.reserve(params.num_completions);
 
             uint32_t buckets = std::ceil(double(m_size) / (BucketSize + 1));
             m_pointers_to_buckets.reserve(buckets + 1);
@@ -32,15 +33,18 @@ struct integer_fc_dictionary {
             completion_iterator it(params, input);
 
             for (uint32_t b = 0; b != buckets; ++b) {
-                auto& header = (*it).completion;
-                write_header(header);
+                auto& header = *it;
+                m_doc_ids.push_back(header.doc_id);
+                write_header(header.completion);
                 m_pointers_to_headers.push_back(m_headers.size());
                 completion_type prev;
-                prev.swap(header);
+                prev.swap(header.completion);
                 ++it;
                 uint32_t size = b != buckets - 1 ? BucketSize : tail;
                 for (uint32_t i = 0; i != size; ++i, ++it) {
-                    auto& curr = (*it).completion;
+                    auto& record = *it;
+                    auto& curr = record.completion;
+                    m_doc_ids.push_back(record.doc_id);
                     uint32_t l = 0;  // |lcp(curr,prev)|
                     while (l != curr.size() and l != prev.size() and
                            curr[l] == prev[l]) {
@@ -62,6 +66,7 @@ struct integer_fc_dictionary {
             other.m_pointers_to_buckets.swap(m_pointers_to_buckets);
             other.m_headers.swap(m_headers);
             other.m_buckets.swap(m_buckets);
+            other.m_doc_ids.swap(m_doc_ids);
         }
 
         void build(integer_fc_dictionary<BucketSize, Pointers>& d) {
@@ -73,12 +78,17 @@ struct integer_fc_dictionary {
             builder().swap(*this);
         }
 
+        std::vector<id_type>& doc_ids() {
+            return m_doc_ids;
+        }
+
     private:
         size_t m_size;
         std::vector<uint64_t> m_pointers_to_headers;
         std::vector<uint64_t> m_pointers_to_buckets;
         std::vector<uint32_t> m_headers;
         std::vector<uint8_t> m_buckets;
+        std::vector<id_type> m_doc_ids;
 
         void write_header(completion_type const& c) {
             assert(c.size() > 0 and c.size() < 256);
@@ -133,13 +143,34 @@ struct integer_fc_dictionary {
 
     // If the last token of the query is not completely specified,
     // then we search for its lexicographic range among the children of c.
-    // Return [a,b]
-    range locate_prefix(completion_type const& c,
-                        range suffix_lex_range) const {
-        // todo
+    // Return [a,b)
+    range locate_prefix(completion_type& prefix, range suffix_lex_range) const {
+        prefix.push_back(suffix_lex_range.begin);
+        uint32_range h_begin;
+        id_type bucket_id_begin;
+        bool is_header_begin = locate_bucket(completion_to_uint32_range(prefix),
+                                             h_begin, bucket_id_begin);
+        uint32_t p_begin = bucket_id_begin * (BucketSize + 1);
+        if (!is_header_begin) {
+            p_begin += left_locate2(completion_to_uint32_range(prefix), h_begin,
+                                    bucket_id_begin);
+        }
+
+        prefix.pop_back();
+
+        uint32_range h_end;
+        id_type bucket_id_end;
+        prefix.push_back(suffix_lex_range.end);
+        locate_bucket(completion_to_uint32_range(prefix), h_end, bucket_id_end);
+        uint32_t p_end = bucket_id_end * (BucketSize + 1);
+        p_end += right_locate(completion_to_uint32_range(prefix), h_end,
+                              bucket_id_end);
+
+        return {p_begin, p_end + 1};
     }
 
     // NOTE: 0-based ids
+    // returns the length of the extracted string (in num of terms)
     uint8_t extract(id_type id, completion_type& c) const {
         uint32_t bucket_id = id / (BucketSize + 1);
         uint32_t k = id % (BucketSize + 1);
@@ -353,6 +384,19 @@ private:
             curr += (l - lcp_len) * sizeof(uint32_t) + 2;
         }
         return n;
+    }
+
+    id_type left_locate2(uint32_range p, uint32_range h,
+                         id_type bucket_id) const {
+        INT_FC_DICT_LOCATE_INIT
+        uint32_t len = p.end - p.begin;
+        for (id_type i = 1; i <= n; ++i) {
+            uint8_t l = decode(curr, decoded, &lcp_len);
+            int cmp = uint32_range_compare({decoded, decoded + l}, p, len);
+            if (cmp >= 0) return i;
+            curr += (l - lcp_len) * sizeof(uint32_t) + 2;
+        }
+        return n + 1;
     }
 };
 

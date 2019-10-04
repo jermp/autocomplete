@@ -11,11 +11,13 @@ struct scored_string_pool {
 
     void resize(size_t num_bytes, uint32_t k) {
         m_scores.resize(k);
+        m_completions.resize(k);
         m_data.resize(num_bytes);
     }
 
     void clear() {
         m_offsets.clear();
+        for (auto& c : m_completions) c.clear();
     }
 
     size_t size() const {
@@ -37,6 +39,10 @@ struct scored_string_pool {
 
     std::vector<id_type>& scores() {
         return m_scores;
+    }
+
+    std::vector<completion_type>& completions() {
+        return m_completions;
     }
 
     scored_byte_range operator[](size_t i) const {
@@ -76,6 +82,7 @@ struct scored_string_pool {
 
 private:
     std::vector<id_type> m_scores;
+    std::vector<completion_type> m_completions;
     std::vector<size_t> m_offsets;
     std::vector<uint8_t> m_data;
 };
