@@ -131,6 +131,14 @@ struct integer_fc_dictionary {
         return {p_begin, p_end};
     }
 
+    // If the last token of the query is not completely specified,
+    // then we search for its lexicographic range among the children of c.
+    // Return [a,b]
+    range locate_prefix(completion_type const& c,
+                        range suffix_lex_range) const {
+        // todo
+    }
+
     // NOTE: 0-based ids
     uint8_t extract(id_type id, completion_type& c) const {
         uint32_t bucket_id = id / (BucketSize + 1);

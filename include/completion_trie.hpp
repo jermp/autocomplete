@@ -36,7 +36,7 @@ struct completion_trie {
             completion_iterator it(params, input);
             completion_type prev;
             prev.push_back(global::terminator);
-            range r = {0, 0};
+            range r{0, 0};
 
             while (input) {
                 auto& record = *it;
@@ -162,7 +162,7 @@ struct completion_trie {
     completion_trie() {}
 
     // NOTE: return [a,b)
-    range prefix_range(completion_type const& c) const {
+    range locate_prefix(completion_type const& c) const {
         assert(c.size() > 0);
         range r{global::not_found, global::not_found};
         range pointer{0, m_nodes.front().size()};
@@ -188,7 +188,9 @@ struct completion_trie {
 
     // If the last token of the query is not completely specified,
     // then we search for its lexicographic range among the children of c.
-    range prefix_range(completion_type const& c, range suffix_lex_range) const {
+    // Return [a,b)
+    range locate_prefix(completion_type const& c,
+                        range suffix_lex_range) const {
         range r{global::not_found, global::not_found};
         range pointer{0, m_nodes.front().size()};
         uint32_t i = 0;

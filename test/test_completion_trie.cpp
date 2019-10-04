@@ -15,8 +15,8 @@ struct completion_comparator {
     }
 };
 
-range prefix_range(std::vector<completion_type> const& completions,
-                   completion_type const& c) {
+range locate_prefix(std::vector<completion_type> const& completions,
+                    completion_type const& c) {
     completion_comparator comp;
     auto b = std::lower_bound(completions.begin(), completions.end(), c, comp);
     uint64_t begin = std::distance(completions.begin(), b);
@@ -100,7 +100,7 @@ int main(int argc, char** argv) {
                 std::min<uint32_t>(params.num_completions, 30000);
             uint32_t check = 0;
 
-            essentials::logger("testing prefix_range()...");
+            essentials::logger("testing locate_prefix()...");
             completion_type prefix;
             for (auto const& c : completions) {
                 for (uint32_t len = 1; len < c.size(); ++len) {
@@ -113,12 +113,12 @@ int main(int argc, char** argv) {
                     // std::cout << "prefix range of ";
                     // print_completion(prefix);
 
-                    range got = ct.prefix_range(prefix);
+                    range got = ct.locate_prefix(prefix);
 
                     // std::cout << "is [" << got.begin << "," << got.end << ")"
                     //           << std::endl;
 
-                    range expected = prefix_range(completions, prefix);
+                    range expected = locate_prefix(completions, prefix);
 
                     if ((got.begin != expected.begin) or
                         (got.end != expected.end)) {

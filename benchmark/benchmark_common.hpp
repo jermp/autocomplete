@@ -6,7 +6,7 @@ static const uint32_t runs = 10;
 
 size_t load_queries(std::vector<std::string>& queries, uint32_t max_num_queries,
                     bool truncate_last = false, std::istream& is = std::cin) {
-    std::string line, query;
+    std::string line;
     queries.reserve(max_num_queries);
     for (uint32_t i = 0; i != max_num_queries; ++i) {
         if (!std::getline(is, line)) break;

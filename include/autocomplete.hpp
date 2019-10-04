@@ -46,7 +46,7 @@ struct autocomplete {
         suffix_lex_range.begin += 1;
         suffix_lex_range.end += 1;
 
-        range r = m_completion_trie.prefix_range(prefix, suffix_lex_range);
+        range r = m_completion_trie.locate_prefix(prefix, suffix_lex_range);
         auto& topk = m_pool.scores();
         uint32_t num_completions = m_unsorted_docs_list.topk(r, k, topk);
         return extract_strings(num_completions, topk);
@@ -105,7 +105,7 @@ struct autocomplete {
         range suffix_lex_range = m_dictionary.locate_prefix(suffix);
         suffix_lex_range.begin += 1;
         suffix_lex_range.end += 1;
-        range r = m_completion_trie.prefix_range(prefix, suffix_lex_range);
+        range r = m_completion_trie.locate_prefix(prefix, suffix_lex_range);
         timers[1].stop();
 
         // step 2

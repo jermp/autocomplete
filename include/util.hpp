@@ -88,7 +88,7 @@ uint64_t next_geq(S const& sequence, uint64_t lower_bound, uint64_t lo,
         }
     }
 
-    return hi;
+    return global::not_found;
 }
 }  // namespace util
 

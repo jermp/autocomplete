@@ -84,17 +84,20 @@ struct uint_vec {
         assert(r.end <= size());
         UintType prev_upper = previous_range_upperbound(r);
 
-        uint64_t id_begin = lex.begin + prev_upper;
-        uint64_t begin = util::next_geq(*this, id_begin, r.begin, r.end - 1);
-
+        uint64_t begin =
+            util::next_geq(*this, lex.begin + prev_upper, r.begin, r.end - 1);
+        assert(begin != global::not_found);
         if (lex.begin == lex.end) {
             return {begin, begin + 1};
         }
 
         uint64_t id_end = lex.end + prev_upper;
         uint64_t end = util::next_geq(*this, id_end, begin, r.end - 1);
+        if (end == global::not_found) {
+            return {begin, r.end};
+        }
 
-        return {begin, begin != end ? end : end + 1};
+        return {begin, m_data[end] != id_end ? end : end + 1};
     }
 
     inline range operator[](uint64_t i) const {

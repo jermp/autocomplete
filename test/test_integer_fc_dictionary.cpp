@@ -96,6 +96,7 @@ int main(int argc, char** argv) {
                 uint64_completion_trie::builder builder(params);
                 uint64_completion_trie ct;
                 builder.build(ct);
+                std::cout << "using " << ct.bytes() << " bytes" << std::endl;
 
                 essentials::logger("testing locate_prefix()...");
 
@@ -104,8 +105,11 @@ int main(int argc, char** argv) {
                     std::ios_base::in);
                 completion_iterator it(params, input);
 
+                uint32_t num_checks =
+                    std::min<uint32_t>(params.num_completions, 30000);
+
                 completion_type prefix;
-                for (id_type id = 0; id != params.num_completions; ++id, ++it) {
+                for (uint32_t i = 0; i != num_checks; ++i, ++it) {
                     auto const& expected = (*it).completion;
                     assert(expected.size() > 0);
 
@@ -116,8 +120,7 @@ int main(int argc, char** argv) {
                             prefix.push_back(expected[i]);
                         }
 
-                        range expected = ct.prefix_range(prefix);
-
+                        range expected = ct.locate_prefix(prefix);
                         range got = dict.locate_prefix(
                             completion_to_uint32_range(prefix));
 
@@ -140,6 +143,7 @@ int main(int argc, char** argv) {
                 }
 
                 input.close();
+                essentials::logger("it's all good");
             }
         }
     }
