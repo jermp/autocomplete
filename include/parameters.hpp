@@ -4,6 +4,8 @@
 #include <vector>
 #include <cassert>
 
+#include "constants.hpp"
+
 namespace autocomplete {
 
 struct parameters {
@@ -24,6 +26,12 @@ struct parameters {
         assert(num_terms > 0);
         assert(num_completions > 0);
         assert(num_levels > 0);
+
+        if (num_levels > constants::MAX_NUM_TERMS_PER_QUERY) {
+            throw std::runtime_error(
+                "Enlarge constants::MAX_NUM_TERMS_PER_QUERY");
+        }
+
         nodes_per_level.resize(num_levels, 0);
         for (uint32_t i = 0; i != num_levels; ++i) {
             input >> nodes_per_level[i];
