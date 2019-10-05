@@ -162,13 +162,23 @@ struct integer_fc_dictionary {
 
         uint32_range h_end;
         id_type bucket_id_end;
+
         prefix.push_back(suffix_lex_range.end);
+
+        if (suffix_lex_range.begin ==
+            suffix_lex_range.end) {  // trick to force a right search
+            prefix.push_back(global::invalid_term_id);
+        }
+
         locate_bucket(completion_to_uint32_range(prefix), h_end, bucket_id_end);
         uint32_t p_end = bucket_id_end * (BucketSize + 1);
         p_end += right_locate(completion_to_uint32_range(prefix), h_end,
                               bucket_id_end);
 
         prefix.pop_back();
+        if (suffix_lex_range.begin == suffix_lex_range.end) {
+            prefix.pop_back();
+        }
 
         return {p_begin, p_end + 1};
     }
