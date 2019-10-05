@@ -69,6 +69,7 @@ struct uint_vec {
     }
 
     UintType access(uint64_t i) const {
+        assert(i < size());
         return m_data[i];
     }
 

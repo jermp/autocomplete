@@ -13,15 +13,14 @@ range obtained from the completion trie can be very large.
 
 #### Solution 1
 
-    {"num_terms_per_query": "1", "num_queries": "50000", "parsing_ns_per_query": "0", "dictionary_search_ns_per_query": "1", "conjunctive_search_ns_per_query": "2718", "reporting_ns_per_query": "328"}
-    {"num_terms_per_query": "2", "num_queries": "50000", "parsing_ns_per_query": "537", "dictionary_search_ns_per_query": "4", "conjunctive_search_ns_per_query": "2336", "reporting_ns_per_query": "2270"}
-    {"num_terms_per_query": "3", "num_queries": "50000", "parsing_ns_per_query": "1157", "dictionary_search_ns_per_query": "12", "conjunctive_search_ns_per_query": "21008", "reporting_ns_per_query": "1729"}
-    {"num_terms_per_query": "4", "num_queries": "50000", "parsing_ns_per_query": "1807", "dictionary_search_ns_per_query": "16", "conjunctive_search_ns_per_query": "27837", "reporting_ns_per_query": "944"}
-    {"num_terms_per_query": "5", "num_queries": "50000", "parsing_ns_per_query": "2237", "dictionary_search_ns_per_query": "9", "conjunctive_search_ns_per_query": "25749", "reporting_ns_per_query": "531"}
-    {"num_terms_per_query": "6", "num_queries": "50000", "parsing_ns_per_query": "2656", "dictionary_search_ns_per_query": "10", "conjunctive_search_ns_per_query": "22094", "reporting_ns_per_query": "412"}
-    {"num_terms_per_query": "7", "num_queries": "50000", "parsing_ns_per_query": "3152", "dictionary_search_ns_per_query": "9", "conjunctive_search_ns_per_query": "18857", "reporting_ns_per_query": "429"}
-    {"num_terms_per_query": "8+", "num_queries": "50000", "parsing_ns_per_query": "4121", "dictionary_search_ns_per_query": "6", "conjunctive_search_ns_per_query": "13913", "reporting_ns_per_query": "789"}
-
+	{"num_terms_per_query": "1", "num_queries": "50000", "parsing_ns_per_query": "0", "dictionary_search_ns_per_query": "3", "conjunctive_search_ns_per_query": "2896", "reporting_ns_per_query": "352"}
+	{"num_terms_per_query": "2", "num_queries": "50000", "parsing_ns_per_query": "52", "dictionary_search_ns_per_query": "10", "conjunctive_search_ns_per_query": "2273", "reporting_ns_per_query": "2333"}
+	{"num_terms_per_query": "3", "num_queries": "50000", "parsing_ns_per_query": "919", "dictionary_search_ns_per_query": "39", "conjunctive_search_ns_per_query": "20478", "reporting_ns_per_query": "1772"}
+	{"num_terms_per_query": "4", "num_queries": "50000", "parsing_ns_per_query": "1298", "dictionary_search_ns_per_query": "49", "conjunctive_search_ns_per_query": "27363", "reporting_ns_per_query": "974"}
+	{"num_terms_per_query": "5", "num_queries": "50000", "parsing_ns_per_query": "1857", "dictionary_search_ns_per_query": "42", "conjunctive_search_ns_per_query": "25484", "reporting_ns_per_query": "556"}
+	{"num_terms_per_query": "6", "num_queries": "50000", "parsing_ns_per_query": "2239", "dictionary_search_ns_per_query": "34", "conjunctive_search_ns_per_query": "22070", "reporting_ns_per_query": "438"}
+	{"num_terms_per_query": "7", "num_queries": "50000", "parsing_ns_per_query": "2871", "dictionary_search_ns_per_query": "32", "conjunctive_search_ns_per_query": "18657", "reporting_ns_per_query": "465"}
+	{"num_terms_per_query": "8+", "num_queries": "50000", "parsing_ns_per_query": "3774", "dictionary_search_ns_per_query": "30", "conjunctive_search_ns_per_query": "13967", "reporting_ns_per_query": "844"}
 
 If we do not check the forward index (thus erronously reporting the first k docids of the intersection), we have:
 
@@ -38,36 +37,35 @@ needed to produce the intersection. This can also be observed considering that t
 
 #### Solution 2
 
-	{"num_terms_per_query": "1", "num_queries": "50000", "parsing_ns_per_query": "0", "dictionary_search_ns_per_query": "495", "conjunctive_search_ns_per_query": "3082", "reporting_ns_per_query": "632"}
-	{"num_terms_per_query": "2", "num_queries": "50000", "parsing_ns_per_query": "60", "dictionary_search_ns_per_query": "1088", "conjunctive_search_ns_per_query": "592", "reporting_ns_per_query": "1912"}
-	{"num_terms_per_query": "3", "num_queries": "50000", "parsing_ns_per_query": "651", "dictionary_search_ns_per_query": "1063", "conjunctive_search_ns_per_query": "96", "reporting_ns_per_query": "724"}
-	{"num_terms_per_query": "4", "num_queries": "50000", "parsing_ns_per_query": "1054", "dictionary_search_ns_per_query": "1085", "conjunctive_search_ns_per_query": "21", "reporting_ns_per_query": "321"}
-	{"num_terms_per_query": "5", "num_queries": "50000", "parsing_ns_per_query": "1373", "dictionary_search_ns_per_query": "1115", "conjunctive_search_ns_per_query": "8", "reporting_ns_per_query": "244"}
-	{"num_terms_per_query": "6", "num_queries": "50000", "parsing_ns_per_query": "1911", "dictionary_search_ns_per_query": "1151", "conjunctive_search_ns_per_query": "3", "reporting_ns_per_query": "303"}
-	{"num_terms_per_query": "7", "num_queries": "50000", "parsing_ns_per_query": "2260", "dictionary_search_ns_per_query": "1173", "conjunctive_search_ns_per_query": "3", "reporting_ns_per_query": "467"}
-	{"num_terms_per_query": "8+", "num_queries": "50000", "parsing_ns_per_query": "3222", "dictionary_search_ns_per_query": "1213", "conjunctive_search_ns_per_query": "2", "reporting_ns_per_query": "816"}
-
+	{"num_terms_per_query": "1", "num_queries": "50000", "parsing_ns_per_query": "0", "dictionary_search_ns_per_query": "6", "conjunctive_search_ns_per_query": "3275", "reporting_ns_per_query": "330"}
+	{"num_terms_per_query": "2", "num_queries": "50000", "parsing_ns_per_query": "109", "dictionary_search_ns_per_query": "36", "conjunctive_search_ns_per_query": "15770", "reporting_ns_per_query": "2485"}
+	{"num_terms_per_query": "3", "num_queries": "50000", "parsing_ns_per_query": "932", "dictionary_search_ns_per_query": "52", "conjunctive_search_ns_per_query": "24290", "reporting_ns_per_query": "1780"}
+	{"num_terms_per_query": "4", "num_queries": "50000", "parsing_ns_per_query": "1388", "dictionary_search_ns_per_query": "55", "conjunctive_search_ns_per_query": "29056", "reporting_ns_per_query": "953"}
+	{"num_terms_per_query": "5", "num_queries": "50000", "parsing_ns_per_query": "1880", "dictionary_search_ns_per_query": "41", "conjunctive_search_ns_per_query": "26675", "reporting_ns_per_query": "541"}
+	{"num_terms_per_query": "6", "num_queries": "50000", "parsing_ns_per_query": "2277", "dictionary_search_ns_per_query": "43", "conjunctive_search_ns_per_query": "22955", "reporting_ns_per_query": "421"}
+	{"num_terms_per_query": "7", "num_queries": "50000", "parsing_ns_per_query": "2762", "dictionary_search_ns_per_query": "37", "conjunctive_search_ns_per_query": "19437", "reporting_ns_per_query": "443"}
+	{"num_terms_per_query": "8+", "num_queries": "50000", "parsing_ns_per_query": "3878", "dictionary_search_ns_per_query": "40", "conjunctive_search_ns_per_query": "14657", "reporting_ns_per_query": "814"}
 
 ### MSN
 
 #### Solution 1
 
-	{"num_terms_per_query": "1", "num_queries": "50000", "parsing_ns_per_query": "2", "dictionary_search_ns_per_query": "3", "conjunctive_search_ns_per_query": "2814", "reporting_ns_per_query": "540"}
-	{"num_terms_per_query": "2", "num_queries": "50000", "parsing_ns_per_query": "438", "dictionary_search_ns_per_query": "5", "conjunctive_search_ns_per_query": "2209", "reporting_ns_per_query": "1872"}
-	{"num_terms_per_query": "3", "num_queries": "50000", "parsing_ns_per_query": "1044", "dictionary_search_ns_per_query": "7", "conjunctive_search_ns_per_query": "12351", "reporting_ns_per_query": "1040"}
-	{"num_terms_per_query": "4", "num_queries": "50000", "parsing_ns_per_query": "1558", "dictionary_search_ns_per_query": "8", "conjunctive_search_ns_per_query": "13431", "reporting_ns_per_query": "505"}
-	{"num_terms_per_query": "5", "num_queries": "50000", "parsing_ns_per_query": "2054", "dictionary_search_ns_per_query": "7", "conjunctive_search_ns_per_query": "11448", "reporting_ns_per_query": "295"}
-	{"num_terms_per_query": "6", "num_queries": "50000", "parsing_ns_per_query": "2375", "dictionary_search_ns_per_query": "6", "conjunctive_search_ns_per_query": "9516", "reporting_ns_per_query": "237"}
-	{"num_terms_per_query": "7", "num_queries": "50000", "parsing_ns_per_query": "2977", "dictionary_search_ns_per_query": "6", "conjunctive_search_ns_per_query": "8035", "reporting_ns_per_query": "296"}
-	{"num_terms_per_query": "8+", "num_queries": "50000", "parsing_ns_per_query": "3745", "dictionary_search_ns_per_query": "5", "conjunctive_search_ns_per_query": "6139", "reporting_ns_per_query": "684"}
+	{"num_terms_per_query": "1", "num_queries": "50000", "parsing_ns_per_query": "0", "dictionary_search_ns_per_query": "6", "conjunctive_search_ns_per_query": "3021", "reporting_ns_per_query": "576"}
+	{"num_terms_per_query": "2", "num_queries": "50000", "parsing_ns_per_query": "39", "dictionary_search_ns_per_query": "7", "conjunctive_search_ns_per_query": "2279", "reporting_ns_per_query": "1926"}
+	{"num_terms_per_query": "3", "num_queries": "50000", "parsing_ns_per_query": "810", "dictionary_search_ns_per_query": "15", "conjunctive_search_ns_per_query": "12382", "reporting_ns_per_query": "1078"}
+	{"num_terms_per_query": "4", "num_queries": "50000", "parsing_ns_per_query": "1104", "dictionary_search_ns_per_query": "15", "conjunctive_search_ns_per_query": "13534", "reporting_ns_per_query": "526"}
+	{"num_terms_per_query": "5", "num_queries": "50000", "parsing_ns_per_query": "1737", "dictionary_search_ns_per_query": "11", "conjunctive_search_ns_per_query": "11424", "reporting_ns_per_query": "305"}
+	{"num_terms_per_query": "6", "num_queries": "50000", "parsing_ns_per_query": "2049", "dictionary_search_ns_per_query": "10", "conjunctive_search_ns_per_query": "9565", "reporting_ns_per_query": "252"}
+	{"num_terms_per_query": "7", "num_queries": "50000", "parsing_ns_per_query": "2396", "dictionary_search_ns_per_query": "9", "conjunctive_search_ns_per_query": "8020", "reporting_ns_per_query": "324"}
+	{"num_terms_per_query": "8+", "num_queries": "50000", "parsing_ns_per_query": "3431", "dictionary_search_ns_per_query": "9", "conjunctive_search_ns_per_query": "6199", "reporting_ns_per_query": "738"}
 	
 #### Solution 2
 
-	{"num_terms_per_query": "1", "num_queries": "50000", "parsing_ns_per_query": "0", "dictionary_search_ns_per_query": "703", "conjunctive_search_ns_per_query": "3510", "reporting_ns_per_query": "1117"}
-	{"num_terms_per_query": "2", "num_queries": "50000", "parsing_ns_per_query": "32", "dictionary_search_ns_per_query": "1034", "conjunctive_search_ns_per_query": "321", "reporting_ns_per_query": "1370"}
-	{"num_terms_per_query": "3", "num_queries": "50000", "parsing_ns_per_query": "594", "dictionary_search_ns_per_query": "1030", "conjunctive_search_ns_per_query": "51", "reporting_ns_per_query": "459"}
-	{"num_terms_per_query": "4", "num_queries": "50000", "parsing_ns_per_query": "1012", "dictionary_search_ns_per_query": "1039", "conjunctive_search_ns_per_query": "10", "reporting_ns_per_query": "208"}
-	{"num_terms_per_query": "5", "num_queries": "50000", "parsing_ns_per_query": "1314", "dictionary_search_ns_per_query": "1065", "conjunctive_search_ns_per_query": "4", "reporting_ns_per_query": "170"}
-	{"num_terms_per_query": "6", "num_queries": "50000", "parsing_ns_per_query": "1918", "dictionary_search_ns_per_query": "1077", "conjunctive_search_ns_per_query": "1", "reporting_ns_per_query": "241"}
-	{"num_terms_per_query": "7", "num_queries": "50000", "parsing_ns_per_query": "2199", "dictionary_search_ns_per_query": "1098", "conjunctive_search_ns_per_query": "1", "reporting_ns_per_query": "410"}
-	{"num_terms_per_query": "8+", "num_queries": "50000", "parsing_ns_per_query": "3228", "dictionary_search_ns_per_query": "1126", "conjunctive_search_ns_per_query": "0", "reporting_ns_per_query": "793"}
+	{"num_terms_per_query": "1", "num_queries": "50000", "parsing_ns_per_query": "0", "dictionary_search_ns_per_query": "6", "conjunctive_search_ns_per_query": "3722", "reporting_ns_per_query": "511"}
+	{"num_terms_per_query": "2", "num_queries": "50000", "parsing_ns_per_query": "56", "dictionary_search_ns_per_query": "20", "conjunctive_search_ns_per_query": "15134", "reporting_ns_per_query": "2043"}
+	{"num_terms_per_query": "3", "num_queries": "50000", "parsing_ns_per_query": "835", "dictionary_search_ns_per_query": "20", "conjunctive_search_ns_per_query": "15310", "reporting_ns_per_query": "1072"}
+	{"num_terms_per_query": "4", "num_queries": "50000", "parsing_ns_per_query": "1117", "dictionary_search_ns_per_query": "19", "conjunctive_search_ns_per_query": "14672", "reporting_ns_per_query": "517"}
+	{"num_terms_per_query": "5", "num_queries": "50000", "parsing_ns_per_query": "1704", "dictionary_search_ns_per_query": "14", "conjunctive_search_ns_per_query": "12384", "reporting_ns_per_query": "300"}
+	{"num_terms_per_query": "6", "num_queries": "50000", "parsing_ns_per_query": "2164", "dictionary_search_ns_per_query": "13", "conjunctive_search_ns_per_query": "10222", "reporting_ns_per_query": "246"}
+	{"num_terms_per_query": "7", "num_queries": "50000", "parsing_ns_per_query": "2567", "dictionary_search_ns_per_query": "12", "conjunctive_search_ns_per_query": "8579", "reporting_ns_per_query": "305"}
+	{"num_terms_per_query": "8+", "num_queries": "50000", "parsing_ns_per_query": "3670", "dictionary_search_ns_per_query": "12", "conjunctive_search_ns_per_query": "6644", "reporting_ns_per_query": "714"}

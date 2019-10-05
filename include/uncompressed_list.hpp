@@ -37,10 +37,10 @@ struct uncompressed_list {
 
         void operator++() {
             m_position += 1;
-            m_id = m_position != size() ? m_data[m_position] : m_universe;
         }
 
         UintType operator*() {
+            m_id = m_data[m_position];
             return m_id;
         }
 
@@ -93,7 +93,7 @@ struct uncompressed_list {
             return m_id;
         }
 
-        UintType next() {  // could use operator++ and operator* here...
+        UintType next() {
             m_position += 1;
             m_id = m_position != size() ? m_data[m_position] : m_universe;
             return m_id;
