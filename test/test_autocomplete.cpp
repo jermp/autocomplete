@@ -27,18 +27,18 @@ int main(int argc, char** argv) {
     params.load();
 
     {
-        uncompressed_autocomplete_type autocomp(params);
+        uncompressed_autocomplete_type2 autocomp(params);
         if (output_filename) {
             essentials::logger("saving data structure to disk...");
-            essentials::save<uncompressed_autocomplete_type>(autocomp,
-                                                             output_filename);
+            essentials::save<uncompressed_autocomplete_type2>(autocomp,
+                                                              output_filename);
             essentials::logger("DONE");
         }
     }
 
     {
         if (output_filename) {
-            uncompressed_autocomplete_type autocomp;
+            uncompressed_autocomplete_type2 autocomp;
             essentials::logger("loading data structure from disk...");
             essentials::load(autocomp, output_filename);
             essentials::logger("DONE");

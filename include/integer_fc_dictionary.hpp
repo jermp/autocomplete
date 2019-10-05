@@ -168,6 +168,8 @@ struct integer_fc_dictionary {
         p_end += right_locate(completion_to_uint32_range(prefix), h_end,
                               bucket_id_end);
 
+        prefix.pop_back();
+
         return {p_begin, p_end + 1};
     }
 

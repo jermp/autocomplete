@@ -66,7 +66,6 @@ struct autocomplete2 {
             m_unsorted_docs_list.topk(r, k, m_pool.scores());
 
         extract_completions(num_completions);
-
         return extract_strings(num_completions);
     }
 
@@ -90,6 +89,7 @@ struct autocomplete2 {
                 suffix_lex_range, k, m_pool.scores(),
                 true  // must return unique results
             );
+            extract_completions(num_completions);
 
         } else {
             if (prefix.size() == 1) {  // we've got nothing to intersect
@@ -170,6 +170,7 @@ struct autocomplete2 {
                 suffix_lex_range, k, m_pool.scores(),
                 true  // must return unique results
             );
+            extract_completions(num_completions);
 
         } else {
             if (prefix.size() == 1) {  // we've got nothing to intersect
@@ -216,7 +217,6 @@ private:
     Dictionary m_dictionary;
     InvertedIndex m_inverted_index;
     std::vector<uint32_t> m_docid_to_lexid;
-
     scored_string_pool m_pool;
     completion_set m_topk_completion_set;
 
@@ -258,6 +258,7 @@ private:
                 if (completions[i][j] >= r.begin and
                     completions[i][j] <= r.end) {
                     match = true;
+                    break;
                 }
             }
 
