@@ -92,14 +92,16 @@ struct integer_fc_dictionary {
         std::vector<id_type> m_doc_ids;
 
         void write_header(completion_type const& c) {
-            assert(c.size() > 0 and c.size() <= MAX_NUM_TERMS_PER_QUERY);
+            assert(c.size() > 0 and
+                   c.size() <= constants::MAX_NUM_TERMS_PER_QUERY);
             assert(c.back() == global::terminator);
             m_headers.insert(m_headers.end(), c.begin(),
                              c.begin() + c.size() - 1);
         }
 
         void write(completion_type const& c, uint32_t lcp) {
-            assert(c.size() > 0 and c.size() <= MAX_NUM_TERMS_PER_QUERY);
+            assert(c.size() > 0 and
+                   c.size() <= constants::MAX_NUM_TERMS_PER_QUERY);
             assert(c.back() == global::terminator);
             m_buckets.push_back(lcp);
             uint8_t size = c.size() - 1;  // discard terminator
