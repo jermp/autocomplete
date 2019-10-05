@@ -165,6 +165,6 @@ the data structures more efficiently.
 Benchmarks <a name="benchmarks"></a>
 ----------
 
-Run `benchmark/benchmark_prefix_topk` and `benchmark_conjunctive_topk`.
+Run `benchmark/benchmark_prefix_topk` and `benchmark/benchmark_conjunctive_topk`.
 
-See the directory `results` for the results on the AOL query log.
+See the directory `results` for the results on the AOL and MSN query log.
