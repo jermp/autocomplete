@@ -12,22 +12,31 @@ Query autocompletion in C++.
 Description <a name="descr"></a>
 -----------
 
-The current solution builds on two steps: (1) a prefix search (`autocomplete::prefix_topk`) and (2) a conjunctive search (`autocomplete::conjunctive_topk`).
+We designed two solutions (`autocomplete.hpp` and `autocomplete2.hpp`).
+The second solution avoids storing the forward index of the first solution.
+
+Both solution build on two steps: (1) a prefix search (`prefix_topk`) and (2) a conjunctive search (`conjunctive_topk`).
 
 Recall that each completion has an associated integer identifier (henceforth, called docID), assigned in *decreasing* score order.
 
 #### 1. Prefix search
 
 This step returns the top-k completions that are prefixed by the terms in the query.
-For this purposes, we use an integer trie data structure (`completion_trie.hpp`) that stores all completions seen as (multi-) sets of termIDs. The leaves of the trie store the docIDs.
-In practice, we materialize the list L of docIDs sorted by the lexicographical order of the completions (`unsorted_list.hpp`).
+For this purposes, we build a dictionary storing all completions seen as (multi-) sets of termIDs.
+Solution 1 uses an integer trie data structure (`completion_trie.hpp`);
+Solution 2 uses Front Coding (`integer_fc_dictionary.hpp`).
+We also materialize the list L of docIDs sorted by the lexicographical order of the completions (`unsorted_list.hpp`).
 
 During a search, we first map the query terms to their lexicographic IDs by using a string dictionary (implemented as a 2-level index with Front Coding -- `fc_dictionary.hpp`). Then, we search the mapped query, say Q, into the completion trie to obtain the lexicographic range [l,r] of all completions that are children of Q. Then we need to identify the top-k docIDs from L[l,r]. Since the range [l,r] can be very large, we use a RMQ data structure built on L.
 
-Having retrieved a list of (at most) k docIDs, we then use a forward index (`forward_index.hpp`) to materialize the identified completions into a string pool (`scored_string_pool.hpp`).
+Having retrieved a list of (at most) k docIDs, we then:
+
+1. Solution 1: use a forward index (`forward_index.hpp`) to materialize the identified completions into a string pool (`scored_string_pool.hpp`).
 The forward index stores the sorted (multi-) set of the termIDs of each completion, plus also the permutation of such termIDs in order to restore the original completion. The sets are stored in increasing-docID order.
 Specifically, we use the forward index to obtain the (permuted) set
 of termIDs and the string dictionary to extract the strings.
+
+2. Solution 2: use a map from docIDs to lexicographic IDs. For every top-k docID, we extract the corresponding completion from the FC-based dictionary.
 
 #### 2. Conjunctive search
 
