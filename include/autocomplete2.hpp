@@ -3,6 +3,7 @@
 #include "autocomplete_common.hpp"
 #include "scored_string_pool.hpp"
 #include "completion_set.hpp"
+#include "constants.hpp"
 
 namespace autocomplete {
 
@@ -12,8 +13,9 @@ struct autocomplete2 {
     typedef scored_string_pool::iterator iterator_type;
 
     autocomplete2() {
-        m_pool.resize(POOL_SIZE, MAX_K);
-        m_topk_completion_set.resize(MAX_K, MAX_NUM_TERMS_PER_QUERY);
+        m_pool.resize(constants::POOL_SIZE, constants::MAX_K);
+        m_topk_completion_set.resize(constants::MAX_K,
+                                     constants::MAX_NUM_TERMS_PER_QUERY);
     }
 
     autocomplete2(parameters const& params)
@@ -48,7 +50,7 @@ struct autocomplete2 {
     }
 
     iterator_type prefix_topk(std::string& query, uint32_t k) {
-        assert(k <= MAX_K);
+        assert(k <= constants::MAX_K);
         init();
         completion_type prefix;
         byte_range suffix;
@@ -69,7 +71,7 @@ struct autocomplete2 {
     }
 
     iterator_type conjunctive_topk(std::string& query, uint32_t k) {
-        assert(k <= MAX_K);
+        assert(k <= constants::MAX_K);
         init();
         completion_type prefix;
         byte_range suffix;
@@ -107,7 +109,7 @@ struct autocomplete2 {
                               std::vector<timer_type>& timers) {
         // step 0
         timers[0].start();
-        assert(k <= MAX_K);
+        assert(k <= constants::MAX_K);
         init();
         completion_type prefix;
         byte_range suffix{0, 0};
@@ -143,7 +145,7 @@ struct autocomplete2 {
                                    std::vector<timer_type>& timers) {
         // step 0
         timers[0].start();
-        assert(k <= MAX_K);
+        assert(k <= constants::MAX_K);
         init();
         completion_type prefix;
         byte_range suffix{0, 0};

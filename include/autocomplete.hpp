@@ -2,6 +2,7 @@
 
 #include "autocomplete_common.hpp"
 #include "scored_string_pool.hpp"
+#include "constants.hpp"
 
 namespace autocomplete {
 
@@ -11,7 +12,7 @@ struct autocomplete {
     typedef scored_string_pool::iterator iterator_type;
 
     autocomplete() {
-        m_pool.resize(POOL_SIZE, MAX_K);
+        m_pool.resize(constants::POOL_SIZE, constants::MAX_K);
     }
 
     autocomplete(parameters const& params)
@@ -31,7 +32,7 @@ struct autocomplete {
     }
 
     iterator_type prefix_topk(std::string& query, uint32_t k) {
-        assert(k <= MAX_K);
+        assert(k <= constants::MAX_K);
         init();
         completion_type prefix;
         byte_range suffix;
@@ -52,7 +53,7 @@ struct autocomplete {
     }
 
     iterator_type conjunctive_topk(std::string& query, uint32_t k) {
-        assert(k <= MAX_K);
+        assert(k <= constants::MAX_K);
         init();
         completion_type prefix;
         byte_range suffix;
@@ -90,7 +91,7 @@ struct autocomplete {
                               std::vector<timer_type>& timers) {
         // step 0
         timers[0].start();
-        assert(k <= MAX_K);
+        assert(k <= constants::MAX_K);
         init();
         completion_type prefix;
         byte_range suffix{0, 0};
@@ -125,7 +126,7 @@ struct autocomplete {
                                    std::vector<timer_type>& timers) {
         // step 0
         timers[0].start();
-        assert(k <= MAX_K);
+        assert(k <= constants::MAX_K);
         init();
         completion_type prefix;
         byte_range suffix{0, 0};

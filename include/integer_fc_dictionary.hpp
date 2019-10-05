@@ -4,6 +4,7 @@
 
 #include "parameters.hpp"
 #include "util_types.hpp"
+#include "constants.hpp"
 
 namespace autocomplete {
 
