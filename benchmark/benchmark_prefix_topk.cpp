@@ -41,7 +41,7 @@ void benchmark_prefix_topk(char const* binary_filename, uint32_t k,
     breakdowns.add("num_queries", std::to_string(num_queries));
     breakdowns.add("parsing_ns_per_query",
                    std::to_string(ns_x_query(timers[0].elapsed())));
-    breakdowns.add("completion_trie_search_ns_per_query",
+    breakdowns.add("completions_search_ns_per_query",
                    std::to_string(ns_x_query(timers[1].elapsed())));
     breakdowns.add("topk_rmq_ns_per_query",
                    std::to_string(ns_x_query(timers[2].elapsed())));

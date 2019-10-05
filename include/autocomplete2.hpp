@@ -2,6 +2,7 @@
 
 #include "autocomplete_common.hpp"
 #include "scored_string_pool.hpp"
+#include "completion_set.hpp"
 
 namespace autocomplete {
 
@@ -12,6 +13,7 @@ struct autocomplete2 {
 
     autocomplete2() {
         m_pool.resize(POOL_SIZE, MAX_K);
+        m_topk_completion_set.resize(MAX_K, MAX_NUM_TERMS_PER_QUERY);
     }
 
     autocomplete2(parameters const& params)
@@ -212,74 +214,78 @@ private:
     Dictionary m_dictionary;
     InvertedIndex m_inverted_index;
     std::vector<uint32_t> m_docid_to_lexid;
+
     scored_string_pool m_pool;
+    completion_set m_topk_completion_set;
 
     void init() {
         m_pool.clear();
         m_pool.init();
     }
 
+    // NOTE: this can be done more efficienctly exploiting
+    // the fact that the strings to be extracted share a common
+    // prefix, thus this task should be delegated to the
+    // integer_fc_dictionary... (enchance the locality of the operation)
     void extract_completions(uint32_t num_completions) {
         auto& topk = m_pool.scores();
-        auto& completions = m_pool.completions();
+        auto& completions = m_topk_completion_set.completions();
+        auto& sizes = m_topk_completion_set.sizes();
         for (uint32_t i = 0; i != num_completions; ++i) {
             id_type doc_id = topk[i];
-            static completion_type c(128);
             id_type lex_id = m_docid_to_lexid[doc_id];
-            uint32_t size = m_completions.extract(lex_id, c);
-
-            // is this expensive? is memcpy faster (with prior resizing)?
-            for (uint32_t k = 0; k != size; ++k) {
-                completions[i].push_back(c[k]);
-            }
+            uint8_t size = m_completions.extract(lex_id, completions[i]);
+            sizes[i] = size;
         }
     }
 
     template <typename Iterator>
-    uint32_t conjunctive_topk(Iterator& it, range r, uint32_t k) {
+    uint32_t conjunctive_topk(Iterator& it, const range r, const uint32_t k) {
         auto& topk = m_pool.scores();
-        auto& completions = m_pool.completions();
+        auto& completions = m_topk_completion_set.completions();
+        auto& sizes = m_topk_completion_set.sizes();
         uint32_t i = 0;
-        static completion_type c(128);
 
         while (it.has_next()) {
             id_type doc_id = *it;
 
             bool match = false;
             id_type lex_id = m_docid_to_lexid[doc_id];
-            uint32_t size = m_completions.extract(lex_id, c);
+            uint32_t size = m_completions.extract(lex_id, completions[i]);
             for (uint32_t j = 0; j != size; ++j) {
-                if (c[j] >= r.begin and c[j] <= r.end) match = true;
+                if (completions[i][j] >= r.begin and
+                    completions[i][j] <= r.end) {
+                    match = true;
+                }
             }
 
             if (match) {
                 topk[i] = doc_id;
-
-                // is this expensive? is memcpy faster (with prior resizing)?
-                for (uint32_t k = 0; k != size; ++k) {
-                    completions[i].push_back(c[k]);
-                }
-
+                sizes[i] = size;
                 ++i;
                 if (i == k) break;
             }
+
             ++it;
         }
+
         return i;
     }
 
     iterator_type extract_strings(uint32_t num_completions) {
-        auto const& completions = m_pool.completions();
+        auto const& completions = m_topk_completion_set.completions();
+        auto const& sizes = m_topk_completion_set.sizes();
         for (uint32_t i = 0; i != num_completions; ++i) {
             auto const& c = completions[i];
+            uint32_t size = sizes[i];
             uint64_t offset = m_pool.bytes();
             uint8_t* decoded = m_pool.data() + offset;
-            for (uint32_t j = 0; j != c.size(); ++j) {
+            for (uint32_t j = 0; j != size; ++j) {
                 id_type term_id = c[j];
                 uint8_t len = m_dictionary.extract(term_id, decoded);
                 decoded += len;
                 offset += len;
-                if (j != c.size() - 1) {
+                if (j != size - 1) {
                     *decoded++ = ' ';
                     offset++;
                 }
