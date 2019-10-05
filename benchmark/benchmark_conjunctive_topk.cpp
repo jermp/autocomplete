@@ -22,12 +22,12 @@ void benchmark_conjunctive_topk(char const* binary_filename, uint32_t k,
         load_queries(queries, max_num_queries, true, std::cin);
     essentials::logger("loaded " + std::to_string(num_queries) + " queries");
 
-    essentials::logger("benchmarking prefix_topk queries...");
+    essentials::logger("benchmarking conjunctive_topk queries...");
     std::vector<timer_type> timers(4);
     uint64_t reported_strings = 0;
     for (uint32_t run = 0; run != runs; ++run) {
         for (auto& query : queries) {
-            auto it = autocomp.prefix_topk(query, k, timers);
+            auto it = autocomp.conjunctive_topk(query, k, timers);
             reported_strings += it.size();
         }
     }
