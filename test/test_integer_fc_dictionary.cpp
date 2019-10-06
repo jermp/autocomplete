@@ -92,59 +92,61 @@ int main(int argc, char** argv) {
                 essentials::logger("it's all good");
             }
 
-            {
-                uint64_completion_trie::builder builder(params);
-                uint64_completion_trie ct;
-                builder.build(ct);
-                std::cout << "using " << ct.bytes() << " bytes" << std::endl;
+            // {
+            //     uint64_completion_trie::builder builder(params);
+            //     uint64_completion_trie ct;
+            //     builder.build(ct);
+            //     std::cout << "using " << ct.bytes() << " bytes" << std::endl;
 
-                essentials::logger("testing locate_prefix()...");
+            //     essentials::logger("testing locate_prefix()...");
 
-                std::ifstream input(
-                    (params.collection_basename + ".mapped").c_str(),
-                    std::ios_base::in);
-                completion_iterator it(params, input);
+            //     std::ifstream input(
+            //         (params.collection_basename + ".mapped").c_str(),
+            //         std::ios_base::in);
+            //     completion_iterator it(params, input);
 
-                uint32_t num_checks =
-                    std::min<uint32_t>(params.num_completions, 30000);
+            //     uint32_t num_checks =
+            //         std::min<uint32_t>(params.num_completions, 30000);
 
-                completion_type prefix;
-                for (uint32_t i = 0; i != num_checks; ++i, ++it) {
-                    auto const& expected = (*it).completion;
-                    assert(expected.size() > 0);
+            //     completion_type prefix;
+            //     for (uint32_t i = 0; i != num_checks; ++i, ++it) {
+            //         auto const& expected = (*it).completion;
+            //         assert(expected.size() > 0);
 
-                    for (uint32_t prefix_len = 1;
-                         prefix_len <= expected.size() - 1; ++prefix_len) {
-                        prefix.clear();
-                        for (uint32_t i = 0; i != prefix_len; ++i) {
-                            prefix.push_back(expected[i]);
-                        }
+            //         for (uint32_t prefix_len = 1;
+            //              prefix_len <= expected.size() - 1; ++prefix_len) {
+            //             prefix.clear();
+            //             for (uint32_t i = 0; i != prefix_len; ++i) {
+            //                 prefix.push_back(expected[i]);
+            //             }
 
-                        range expected = ct.locate_prefix(prefix);
-                        range got = dict.locate_prefix(
-                            completion_to_uint32_range(prefix));
+            //             range expected = ct.locate_prefix(prefix);
+            //             range got = dict.locate_prefix(
+            //                 completion_to_uint32_range(prefix));
 
-                        if ((got.begin != expected.begin) or
-                            (got.end != expected.end - 1)) {
-                            std::cout << "Error for prefix ";
-                            print_completion(prefix);
-                            std::cout << ": expected [" << expected.begin << ","
-                                      << expected.end - 1 << "] but got ["
-                                      << got.begin << "," << got.end << "]"
-                                      << std::endl;
-                            return 1;
-                        }
+            //             if ((got.begin != expected.begin) or
+            //                 (got.end != expected.end - 1)) {
+            //                 std::cout << "Error for prefix ";
+            //                 print_completion(prefix);
+            //                 std::cout << ": expected [" << expected.begin <<
+            //                 ","
+            //                           << expected.end - 1 << "] but got ["
+            //                           << got.begin << "," << got.end << "]"
+            //                           << std::endl;
+            //                 return 1;
+            //             }
 
-                        // std::cout << "prefix range of ";
-                        // print_completion(prefix);
-                        // std::cout << " is [" << got.begin << "," << got.end
-                        //           << "]" << std::endl;
-                    }
-                }
+            //             // std::cout << "prefix range of ";
+            //             // print_completion(prefix);
+            //             // std::cout << " is [" << got.begin << "," <<
+            //             got.end
+            //             //           << "]" << std::endl;
+            //         }
+            //     }
 
-                input.close();
-                essentials::logger("it's all good");
-            }
+            //     input.close();
+            //     essentials::logger("it's all good");
+            // }
         }
     }
 
