@@ -57,6 +57,10 @@ struct scored_string_pool {
             ++m_pos;
         }
 
+        bool empty() const {
+            return size() == 0;
+        }
+
         size_t size() const {
             return m_pool->size();
         }
