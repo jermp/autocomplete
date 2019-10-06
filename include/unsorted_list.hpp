@@ -6,6 +6,8 @@ namespace autocomplete {
 
 template <typename ListType, typename RMQ>
 struct unsorted_list {
+    static const uint32_t SCAN_THRESHOLD = 64;
+
     unsorted_list() {}
 
     void build(std::vector<id_type> const& list) {
@@ -15,7 +17,7 @@ struct unsorted_list {
         essentials::logger("DONE");
     }
 
-    uint32_t topk(range r, uint32_t k, std::vector<id_type>& topk,
+    uint32_t topk(const range r, const uint32_t k, std::vector<id_type>& topk,
                   bool unique = false  // return unique results
     ) {
         uint32_t range_len = r.end - r.begin;
@@ -51,9 +53,11 @@ struct unsorted_list {
             if (min.min_pos > 0 and min.min_pos - 1 >= min.r.begin) {
                 scored_range left;
                 left.r = {min.r.begin, min.min_pos - 1};
-                // TODO: optimize for small ranges
-                // compute rmq by scanning the range
-                left.min_pos = m_rmq.rmq(left.r.begin, left.r.end);
+                if (left.r.end - left.r.begin <= SCAN_THRESHOLD) {
+                    left.min_pos = rmq(left.r.begin, left.r.end);
+                } else {
+                    left.min_pos = m_rmq.rmq(left.r.begin, left.r.end);
+                }
                 left.min_val = m_list.access(left.min_pos);
                 m_q.push(left);
             }
@@ -61,9 +65,11 @@ struct unsorted_list {
             if (min.min_pos < size() - 1 and min.r.end >= min.min_pos + 1) {
                 scored_range right;
                 right.r = {min.min_pos + 1, min.r.end};
-                // TODO: optimize for small ranges
-                // compute rmq by scanning the range
-                right.min_pos = m_rmq.rmq(right.r.begin, right.r.end);
+                if (right.r.end - right.r.begin <= SCAN_THRESHOLD) {
+                    right.min_pos = rmq(right.r.begin, right.r.end);
+                } else {
+                    right.min_pos = m_rmq.rmq(right.r.begin, right.r.end);
+                }
                 right.min_val = m_list.access(right.min_pos);
                 m_q.push(right);
             }
@@ -90,6 +96,19 @@ private:
     topk_queue m_q;
     RMQ m_rmq;
     ListType m_list;
+
+    uint64_t rmq(uint64_t lo, uint64_t hi) {  // inclusive endpoints
+        uint64_t pos = lo;
+        id_type min = id_type(-1);
+        for (uint64_t i = lo; i <= hi; ++i) {
+            id_type val = m_list.access(i);
+            if (val < min) {
+                min = val;
+                pos = i;
+            }
+        }
+        return pos;
+    }
 };
 
 }  // namespace autocomplete

@@ -49,7 +49,7 @@ struct autocomplete2 {
         ii_builder.build(m_inverted_index);
     }
 
-    iterator_type prefix_topk(std::string& query, uint32_t k) {
+    iterator_type prefix_topk(std::string& query, const uint32_t k) {
         assert(k <= constants::MAX_K);
         init();
         completion_type prefix;
@@ -69,7 +69,7 @@ struct autocomplete2 {
         return extract_strings(num_completions);
     }
 
-    iterator_type conjunctive_topk(std::string& query, uint32_t k) {
+    iterator_type conjunctive_topk(std::string& query, const uint32_t k) {
         assert(k <= constants::MAX_K);
         init();
         completion_type prefix;
@@ -78,7 +78,6 @@ struct autocomplete2 {
         assert(num_terms > 0);
 
         uint32_t num_completions = 0;
-
         suffix.end += 1;  // include null terminator
         range suffix_lex_range = m_dictionary.locate_prefix(suffix);
 
@@ -105,7 +104,7 @@ struct autocomplete2 {
     }
 
     // for benchmarking
-    iterator_type prefix_topk(std::string& query, uint32_t k,
+    iterator_type prefix_topk(std::string& query, uint32_t const k,
                               std::vector<timer_type>& timers) {
         // step 0
         timers[0].start();
@@ -141,7 +140,7 @@ struct autocomplete2 {
     }
 
     // for benchmarking
-    iterator_type conjunctive_topk(std::string& query, uint32_t k,
+    iterator_type conjunctive_topk(std::string& query, uint32_t const k,
                                    std::vector<timer_type>& timers) {
         // step 0
         timers[0].start();
@@ -229,7 +228,8 @@ private:
     // the fact that the strings to be extracted share a common
     // prefix, thus this task should be delegated to the
     // integer_fc_dictionary... (enchance the locality of the operation)
-    void extract_completions(uint32_t num_completions) {
+    // NOTE: this only work when used during the prefix_topk step.
+    void extract_completions(const uint32_t num_completions) {
         auto& topk = m_pool.scores();
         auto& completions = m_topk_completion_set.completions();
         auto& sizes = m_topk_completion_set.sizes();
@@ -250,10 +250,10 @@ private:
 
         while (it.has_next()) {
             id_type doc_id = *it;
-
             bool match = false;
             id_type lex_id = m_docid_to_lexid[doc_id];
             uint32_t size = m_completions.extract(lex_id, completions[i]);
+
             for (uint32_t j = 0; j != size; ++j) {
                 if (completions[i][j] >= r.begin and
                     completions[i][j] <= r.end) {
@@ -275,7 +275,7 @@ private:
         return i;
     }
 
-    iterator_type extract_strings(uint32_t num_completions) {
+    iterator_type extract_strings(const uint32_t num_completions) {
         auto const& completions = m_topk_completion_set.completions();
         auto const& sizes = m_topk_completion_set.sizes();
         for (uint32_t i = 0; i != num_completions; ++i) {

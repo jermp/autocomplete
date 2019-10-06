@@ -31,7 +31,7 @@ struct autocomplete {
         fi_builder.build(m_forward_index);
     }
 
-    iterator_type prefix_topk(std::string& query, uint32_t k) {
+    iterator_type prefix_topk(std::string& query, const uint32_t k) {
         assert(k <= constants::MAX_K);
         init();
         completion_type prefix;
@@ -52,7 +52,7 @@ struct autocomplete {
         return extract_strings(num_completions);
     }
 
-    iterator_type conjunctive_topk(std::string& query, uint32_t k) {
+    iterator_type conjunctive_topk(std::string& query, const uint32_t k) {
         assert(k <= constants::MAX_K);
         init();
         completion_type prefix;
@@ -61,7 +61,6 @@ struct autocomplete {
         assert(num_terms > 0);
 
         uint32_t num_completions = 0;
-
         suffix.end += 1;  // include null terminator
         range suffix_lex_range = m_dictionary.locate_prefix(suffix);
 
@@ -87,7 +86,7 @@ struct autocomplete {
     }
 
     // for benchmarking
-    iterator_type prefix_topk(std::string& query, uint32_t k,
+    iterator_type prefix_topk(std::string& query, uint32_t const k,
                               std::vector<timer_type>& timers) {
         // step 0
         timers[0].start();
@@ -122,7 +121,7 @@ struct autocomplete {
     }
 
     // for benchmarking
-    iterator_type conjunctive_topk(std::string& query, uint32_t k,
+    iterator_type conjunctive_topk(std::string& query, uint32_t const k,
                                    std::vector<timer_type>& timers) {
         // step 0
         timers[0].start();
@@ -204,7 +203,7 @@ private:
     }
 
     template <typename Iterator>
-    uint32_t conjunctive_topk(Iterator& it, range r, uint32_t k) {
+    uint32_t conjunctive_topk(Iterator& it, const range r, uint32_t const k) {
         auto& topk = m_pool.scores();
         uint32_t i = 0;
         while (it.has_next()) {
@@ -218,7 +217,7 @@ private:
         return i;
     }
 
-    iterator_type extract_strings(uint32_t num_completions) {
+    iterator_type extract_strings(const uint32_t num_completions) {
         auto const& topk = m_pool.scores();
         for (uint32_t i = 0; i != num_completions; ++i) {
             id_type doc_id = topk[i];
