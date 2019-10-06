@@ -99,6 +99,7 @@ struct fc_dictionary {
             p_begin += left_locate(p, h_begin, bucket_id.begin);
         }
         p_end += right_locate(p, h_end, bucket_id.end);
+        if (p_end < p_begin) return global::invalid_range;
         return {p_begin, p_end};
     }
 

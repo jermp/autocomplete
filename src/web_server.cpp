@@ -25,7 +25,7 @@ std::string escape_json(std::string const& s) {
 
 using namespace autocomplete;
 
-typedef uncompressed_autocomplete_type topk_index_type;
+typedef uncompressed_autocomplete_type2 topk_index_type;
 
 static std::string s_http_port("8000");
 static struct mg_serve_http_opts s_http_server_opts;
@@ -52,8 +52,8 @@ static void ev_handler(struct mg_connection* nc, int ev, void* p) {
             }
 
             std::string data;
-            // auto it = topk_index.prefix_topk(prefix, k);
-            auto it = topk_index.conjunctive_topk(prefix, k);
+            auto it = topk_index.prefix_topk(prefix, k);
+            // auto it = topk_index.conjunctive_topk(prefix, k);
             if (it.empty()) {
                 data = "{\"suggestions\":[\"value\":\"\",\"data\":\"\"]}\n";
             } else {
@@ -83,9 +83,14 @@ static void ev_handler(struct mg_connection* nc, int ev, void* p) {
 }
 
 int main(int argc, char** argv) {
-    s_http_port = "8000";
+    int mandatory = 2;
+    if (argc < mandatory + 1) {
+        std::cout << argv[0] << " <port> <index_filename>" << std::endl;
+        return 1;
+    }
 
-    char const* index_filename = argv[1];
+    s_http_port = argv[1];
+    char const* index_filename = argv[2];
     essentials::load(topk_index, index_filename);
 
     struct mg_mgr mgr;

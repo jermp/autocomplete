@@ -216,6 +216,8 @@ struct completion_trie {
 
         if (i < m_nodes.size()) {
             range q = m_nodes[i].find(pointer, suffix_lex_range);
+            assert(q.begin <= q.end);
+            if (q.begin == q.end) return global::invalid_range;
             assert(q.end > q.begin);
             uint64_t begin = q.begin;
             uint64_t end = q.end - 1;
@@ -256,31 +258,6 @@ struct completion_trie {
         }
         return bytes;
     }
-
-    // void print() const {
-    //     uint32_t levels = m_nodes.size();
-    //     for (uint32_t i = 0; i != levels; ++i) {
-    //         std::cout << "level-" << i << "\n";
-
-    //         std::cout << "\t nodes: ";
-    //         m_nodes[i].print();
-    //         std::cout << std::endl;
-
-    //         if (i != levels - 1) {
-    //             std::cout << "\t pointers: ";
-    //             m_pointers[i].print();
-    //             std::cout << std::endl;
-    //         }
-
-    //         std::cout << "\t left_extremes: ";
-    //         m_left_extremes[i].print();
-    //         std::cout << std::endl;
-
-    //         std::cout << "\t sizes: ";
-    //         m_sizes[i].print();
-    //         std::cout << std::endl;
-    //     }
-    // }
 
     template <typename Visitor>
     void visit(Visitor& visitor) {

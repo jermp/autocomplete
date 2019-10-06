@@ -15,6 +15,15 @@ struct range {
     uint64_t end;
 };
 
+namespace global {
+static const range invalid_range{global::not_found, global::not_found};
+}
+
+bool is_invalid(const range r) {
+    return r.begin == global::invalid_range.begin or
+           r.end == global::invalid_range.end or r.begin > r.end;
+}
+
 struct scored_range {
     range r;
     uint32_t min_pos;

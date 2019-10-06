@@ -87,7 +87,10 @@ struct uint_vec {
 
         uint64_t begin =
             util::next_geq(*this, lex.begin + prev_upper, r.begin, r.end - 1);
-        assert(begin != global::not_found);
+        if (begin == global::not_found) {
+            return {r.end, r.end};
+        }
+
         if (lex.begin == lex.end) {
             return {begin, begin + 1};
         }

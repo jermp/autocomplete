@@ -27,18 +27,18 @@ int main(int argc, char** argv) {
     params.load();
 
     {
-        uncompressed_autocomplete_type2 autocomp(params);
+        uncompressed_autocomplete_type autocomp(params);
         if (output_filename) {
             essentials::logger("saving data structure to disk...");
-            essentials::save<uncompressed_autocomplete_type2>(autocomp,
-                                                              output_filename);
+            essentials::save<uncompressed_autocomplete_type>(autocomp,
+                                                             output_filename);
             essentials::logger("DONE");
         }
     }
 
     {
         if (output_filename) {
-            uncompressed_autocomplete_type2 autocomp;
+            uncompressed_autocomplete_type autocomp;
             essentials::logger("loading data structure from disk...");
             essentials::load(autocomp, output_filename);
             essentials::logger("DONE");
@@ -58,7 +58,8 @@ int main(int argc, char** argv) {
                     "ford a",   "ford au",     "ford m",
                     "ford mu",  "for",         "fo",
                     "f",        "matt",        "fl",
-                    "flor",     "fly",         "the starting l"};
+                    "florir",   "fly",         "the starting l",
+                    "floridaaa"};
 
                 for (auto& query : queries) {
                     auto it = autocomp.prefix_topk(query, k);

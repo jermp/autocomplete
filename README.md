@@ -8,6 +8,7 @@ Query autocompletion in C++.
 2. [Compiling the code](#compiling)
 3. [Input data format](#input)
 4. [Benchmarks](#benchmarks)
+5. [Live demo](#demo)
 
 Description <a name="descr"></a>
 -----------
@@ -168,3 +169,9 @@ Benchmarks <a name="benchmarks"></a>
 Run `benchmark/benchmark_prefix_topk` and `benchmark/benchmark_conjunctive_topk`.
 
 See the directory `results` for the results on the AOL and MSN query log.
+
+Live demo <a name="demo"></a>
+----------
+
+Start the web server with the program `./web_server <port> <index_filename>` and access the demo at
+`localhost:<port>`.

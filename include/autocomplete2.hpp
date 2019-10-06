@@ -58,13 +58,15 @@ struct autocomplete2 {
 
         suffix.end += 1;  // include null terminator
         range suffix_lex_range = m_dictionary.locate_prefix(suffix);
+        if (is_invalid(suffix_lex_range)) return m_pool.begin();
+
         suffix_lex_range.begin += 1;
         suffix_lex_range.end += 1;
-
         range r = m_completions.locate_prefix(prefix, suffix_lex_range);
+        if (is_invalid(r)) return m_pool.begin();
+
         uint32_t num_completions =
             m_unsorted_docs_list.topk(r, k, m_pool.scores());
-
         extract_completions(num_completions);
         return extract_strings(num_completions);
     }
@@ -80,6 +82,7 @@ struct autocomplete2 {
         uint32_t num_completions = 0;
         suffix.end += 1;  // include null terminator
         range suffix_lex_range = m_dictionary.locate_prefix(suffix);
+        if (is_invalid(suffix_lex_range)) return m_pool.begin();
 
         if (num_terms == 1) {  // special case
 
@@ -119,9 +122,12 @@ struct autocomplete2 {
         timers[1].start();
         suffix.end += 1;  // include null terminator
         range suffix_lex_range = m_dictionary.locate_prefix(suffix);
+        if (is_invalid(suffix_lex_range)) return m_pool.begin();
+
         suffix_lex_range.begin += 1;
         suffix_lex_range.end += 1;
         range r = m_completions.locate_prefix(prefix, suffix_lex_range);
+        if (is_invalid(r)) return m_pool.begin();
         timers[1].stop();
 
         // step 2
@@ -158,6 +164,7 @@ struct autocomplete2 {
         timers[1].start();
         suffix.end += 1;  // include null terminator
         range suffix_lex_range = m_dictionary.locate_prefix(suffix);
+        if (is_invalid(suffix_lex_range)) return m_pool.begin();
         timers[1].stop();
 
         // step 2
@@ -222,6 +229,7 @@ private:
     void init() {
         m_pool.clear();
         m_pool.init();
+        assert(m_pool.size() == 0);
     }
 
     // NOTE: this can be done more efficienctly exploiting
