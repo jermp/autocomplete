@@ -196,22 +196,10 @@ struct completion_trie {
         range pointer{0, m_nodes.front().size()};
         uint32_t i = 0;
 
-        if (c.size() > 0) {
-            uint32_t levels = c.size() - 1;
-            for (; i <= levels; ++i) {
-                uint64_t pos = m_nodes[i].find(pointer, c[i]);
-
-                // NOTE: if c is not stored in the trie but only
-                // a prefix p of c, then return the range of p
-                if (pos == global::not_found) return r;
-
-                r.begin = m_left_extremes[i].access(pos) + pos;
-                uint64_t size = m_sizes[i].access(pos) -
-                                (pos ? m_sizes[i].access(pos - 1) : 0) + 1;
-                r.end = r.begin + size;
-                pointer = m_pointers[i][pos];
-            }
-            assert(i == levels + 1);
+        for (; i < c.size(); ++i) {
+            uint64_t pos = m_nodes[i].find(pointer, c[i]);
+            if (pos == global::not_found) return global::invalid_range;
+            pointer = m_pointers[i][pos];
         }
 
         if (i < m_nodes.size()) {
