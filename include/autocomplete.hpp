@@ -13,8 +13,8 @@ struct autocomplete {
 
     autocomplete() {
         m_pool.resize(constants::POOL_SIZE, constants::MAX_K);
-        m_prefix_topk_scores.resize(constants::MAX_K);
-        m_conjunctive_topk_scores.resize(constants::MAX_K);
+        m_pref_topk_scores.resize(constants::MAX_K);
+        m_conj_topk_scores.resize(constants::MAX_K);
     }
 
     autocomplete(parameters const& params)
@@ -108,39 +108,38 @@ struct autocomplete {
         range r = m_completions.locate_prefix(prefix, suffix_lex_range);
         if (is_invalid(r)) return m_pool.begin();
 
-        uint32_t num_prefix_topk_completions =
-            m_unsorted_docs_list.topk(r, k, m_prefix_topk_scores);
+        uint32_t num_pref_topk_completions =
+            m_unsorted_docs_list.topk(r, k, m_pref_topk_scores);
 
         uint32_t num_completions = 0;
 
-        if (num_prefix_topk_completions < k) {
-            uint32_t num_conjunctive_topk_completions = 0;
+        if (num_pref_topk_completions < k) {
+            uint32_t num_conj_topk_completions = 0;
 
             if (num_terms == 1) {  // special case
                 suffix_lex_range.begin -= 1;
-                num_conjunctive_topk_completions =
-                    m_unsorted_minimal_docs_list.topk(
-                        suffix_lex_range, k, m_conjunctive_topk_scores,
-                        true  // must return unique results
-                    );
+                num_conj_topk_completions = m_unsorted_minimal_docs_list.topk(
+                    suffix_lex_range, k, m_conj_topk_scores,
+                    true  // must return unique results
+                );
             } else {
                 if (prefix.size() == 1) {  // we've got nothing to intersect
                     auto it = m_inverted_index.iterator(prefix.front() - 1);
-                    num_conjunctive_topk_completions = conjunctive_topk(
-                        it, suffix_lex_range, k, m_conjunctive_topk_scores);
+                    num_conj_topk_completions = conjunctive_topk(
+                        it, suffix_lex_range, k, m_conj_topk_scores);
                 } else {
                     auto it = m_inverted_index.intersection_iterator(prefix);
-                    num_conjunctive_topk_completions = conjunctive_topk(
-                        it, suffix_lex_range, k, m_conjunctive_topk_scores);
+                    num_conj_topk_completions = conjunctive_topk(
+                        it, suffix_lex_range, k, m_conj_topk_scores);
                 }
             }
 
-            num_completions = merge_scores(num_prefix_topk_completions,
-                                           num_conjunctive_topk_completions, k);
+            num_completions = merge_scores(num_pref_topk_completions,
+                                           num_conj_topk_completions, k);
 
         } else {
-            num_completions = num_prefix_topk_completions;
-            m_pool.scores().swap(m_prefix_topk_scores);
+            num_completions = num_pref_topk_completions;
+            m_pool.scores().swap(m_pref_topk_scores);
         }
 
         return extract_strings(num_completions);
@@ -264,8 +263,8 @@ private:
     ForwardIndex m_forward_index;
     scored_string_pool m_pool;
 
-    std::vector<id_type> m_prefix_topk_scores;
-    std::vector<id_type> m_conjunctive_topk_scores;
+    std::vector<id_type> m_pref_topk_scores;
+    std::vector<id_type> m_conj_topk_scores;
 
     void init() {
         m_pool.clear();
@@ -311,16 +310,15 @@ private:
         return m_pool.begin();
     }
 
-    uint32_t merge_scores(const uint32_t num_prefix_topk_completions,
-                          const uint32_t num_conjunctive_topk_completions,
+    uint32_t merge_scores(const uint32_t num_pref_topk_completions,
+                          const uint32_t num_conj_topk_completions,
                           const uint32_t k) {
         auto& topk = m_pool.scores();
         auto it = std::set_union(
-            m_prefix_topk_scores.begin(),
-            m_prefix_topk_scores.begin() + num_prefix_topk_completions,
-            m_conjunctive_topk_scores.begin(),
-            m_conjunctive_topk_scores.begin() +
-                num_conjunctive_topk_completions,
+            m_pref_topk_scores.begin(),
+            m_pref_topk_scores.begin() + num_pref_topk_completions,
+            m_conj_topk_scores.begin(),
+            m_conj_topk_scores.begin() + num_conj_topk_completions,
             topk.begin());
         uint32_t n = std::distance(topk.begin(), it);
         if (n > k) n = k;
