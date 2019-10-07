@@ -75,7 +75,6 @@ struct autocomplete {
                 suffix_lex_range, k, m_pool.scores(),
                 true  // must return unique results
             );
-
         } else {
             if (prefix.size() == 1) {  // we've got nothing to intersect
                 auto it = m_inverted_index.iterator(prefix.front() - 1);
@@ -313,16 +312,9 @@ private:
     uint32_t merge_scores(const uint32_t num_pref_topk_completions,
                           const uint32_t num_conj_topk_completions,
                           const uint32_t k) {
-        auto& topk = m_pool.scores();
-        auto it = std::set_union(
-            m_pref_topk_scores.begin(),
-            m_pref_topk_scores.begin() + num_pref_topk_completions,
-            m_conj_topk_scores.begin(),
-            m_conj_topk_scores.begin() + num_conj_topk_completions,
-            topk.begin());
-        uint32_t n = std::distance(topk.begin(), it);
-        if (n > k) n = k;
-        return n;
+        return set_union(m_pref_topk_scores, num_pref_topk_completions,
+                         m_conj_topk_scores, num_conj_topk_completions,
+                         m_pool.scores(), k);
     }
 };
 }  // namespace autocomplete

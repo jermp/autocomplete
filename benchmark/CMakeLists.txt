@@ -1,3 +1,4 @@
+add_executable(benchmark_topk benchmark_topk.cpp)
 add_executable(benchmark_prefix_topk benchmark_prefix_topk.cpp)
 add_executable(benchmark_conjunctive_topk benchmark_conjunctive_topk.cpp)
 add_executable(benchmark_fc_dictionary benchmark_fc_dictionary.cpp)

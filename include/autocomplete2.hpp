@@ -154,8 +154,9 @@ struct autocomplete2 {
                 }
             }
 
-            num_completions = merge_scores(num_pref_topk_completions,
-                                           num_conj_topk_completions, k);
+            num_completions =
+                merge_scores(num_pref_topk_completions,
+                             num_conj_topk_completions, k, num_terms == 1);
         } else {
             num_completions = num_pref_topk_completions;
             m_pool.scores().swap(m_pref_topk_scores);
@@ -374,18 +375,13 @@ private:
 
     uint32_t merge_scores(const uint32_t num_pref_topk_completions,
                           const uint32_t num_conj_topk_completions,
-                          const uint32_t k) {
-        auto const& conjunctive_topk_scores = m_conj_topk_completions.scores();
-
+                          const uint32_t k, bool extract_all) {
+        auto const& conj_topk_scores = m_conj_topk_completions.scores();
         auto& topk_scores = m_pool.scores();
-        auto it = std::set_union(
-            m_pref_topk_scores.begin(),
-            m_pref_topk_scores.begin() + num_pref_topk_completions,
-            conjunctive_topk_scores.begin(),
-            conjunctive_topk_scores.begin() + num_conj_topk_completions,
-            topk_scores.begin());
-        uint32_t n = std::distance(topk_scores.begin(), it);
-        if (n > k) n = k;
+
+        uint32_t n = set_union(m_pref_topk_scores, num_pref_topk_completions,
+                               conj_topk_scores, num_conj_topk_completions,
+                               topk_scores, k);
 
         auto& completions = m_topk_completion_set.completions();
         auto& sizes = m_topk_completion_set.sizes();
@@ -395,18 +391,14 @@ private:
         uint32_t pos = 0;
         for (uint32_t i = 0; i != n; ++i) {
             id_type doc_id = topk_scores[i];
-
-            // if doc_id is among m_conjunctive_topk_scores,
-            // then the corresponding doc has been already extracted
-            // and is present in conjunctive_topk_completions
             bool found = false;
-            for (; pos != num_conj_topk_completions; ++pos) {
-                if (doc_id == conjunctive_topk_scores[pos]) {
+
+            for (; !extract_all and pos != num_conj_topk_completions; ++pos) {
+                if (doc_id == conj_topk_scores[pos]) {
                     found = true;
-                    ++pos;
                     break;
                 }
-                if (doc_id < conjunctive_topk_scores[pos]) break;
+                if (doc_id < conj_topk_scores[pos]) break;
             }
 
             if (found) {
