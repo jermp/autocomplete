@@ -38,16 +38,16 @@ struct unsorted_list {
         m_q.push(sr);
 
         uint32_t i = 0;
-        while (true) {
+        while (!m_q.empty()) {
             scored_range min = m_q.top();
 
             if (!unique or
                 (unique and !std::binary_search(topk.begin(), topk.begin() + i,
                                                 min.min_val))) {
                 topk[i++] = min.min_val;
+                if (i == k) break;
             }
 
-            if (i == k) break;
             m_q.pop();
 
             if (min.min_pos > 0 and min.min_pos - 1 >= min.r.begin) {
@@ -75,7 +75,7 @@ struct unsorted_list {
             }
         }
 
-        return k;
+        return i;
     }
 
     size_t size() const {

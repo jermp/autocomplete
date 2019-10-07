@@ -196,6 +196,10 @@ struct topk_queue {
         m_q.clear();
     }
 
+    bool empty() const {
+        return m_q.empty();
+    }
+
 private:
     std::vector<scored_range> m_q;
 };

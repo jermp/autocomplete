@@ -37,13 +37,13 @@ static void ev_handler(struct mg_connection* nc, int ev, void* p) {
         std::string uri = std::string(hm->uri.p, (hm->uri.p) + (hm->uri.len));
 
         if (uri == "/topcomp") {
-            std::string prefix = "";
+            std::string query = "";
             size_t k = 10;
-            char prefix_buf[128];
-            int prefix_len =
-                mg_get_http_var(&(hm->query_string), "q", prefix_buf, 128);
-            if (prefix_len > 0) {
-                prefix = std::string(prefix_buf, prefix_buf + prefix_len);
+            char query_buf[128];
+            int query_len =
+                mg_get_http_var(&(hm->query_string), "q", query_buf, 128);
+            if (query_len > 0) {
+                query = std::string(query_buf, query_buf + query_len);
             }
             char k_buf[16];
             int k_len = mg_get_http_var(&(hm->query_string), "k", k_buf, 16);
@@ -52,8 +52,9 @@ static void ev_handler(struct mg_connection* nc, int ev, void* p) {
             }
 
             std::string data;
-            auto it = topk_index.prefix_topk(prefix, k);
-            // auto it = topk_index.conjunctive_topk(prefix, k);
+            auto it = topk_index.topk(query, k);
+            // auto it = topk_index.prefix_topk(query, k);
+            // auto it = topk_index.conjunctive_topk(query, k);
             if (it.empty()) {
                 data = "{\"suggestions\":[\"value\":\"\",\"data\":\"\"]}\n";
             } else {

@@ -13,6 +13,8 @@ struct autocomplete {
 
     autocomplete() {
         m_pool.resize(constants::POOL_SIZE, constants::MAX_K);
+        m_prefix_topk_scores.resize(constants::MAX_K);
+        m_conjunctive_topk_scores.resize(constants::MAX_K);
     }
 
     autocomplete(parameters const& params)
@@ -77,11 +79,68 @@ struct autocomplete {
         } else {
             if (prefix.size() == 1) {  // we've got nothing to intersect
                 auto it = m_inverted_index.iterator(prefix.front() - 1);
-                num_completions = conjunctive_topk(it, suffix_lex_range, k);
+                num_completions =
+                    conjunctive_topk(it, suffix_lex_range, k, m_pool.scores());
             } else {
                 auto it = m_inverted_index.intersection_iterator(prefix);
-                num_completions = conjunctive_topk(it, suffix_lex_range, k);
+                num_completions =
+                    conjunctive_topk(it, suffix_lex_range, k, m_pool.scores());
             }
+        }
+
+        return extract_strings(num_completions);
+    }
+
+    iterator_type topk(std::string& query, const uint32_t k) {
+        assert(k <= constants::MAX_K);
+        init();
+        completion_type prefix;
+        byte_range suffix;
+        uint32_t num_terms = parse(m_dictionary, query, prefix, suffix);
+        assert(num_terms > 0);
+
+        suffix.end += 1;  // include null terminator
+        range suffix_lex_range = m_dictionary.locate_prefix(suffix);
+        if (is_invalid(suffix_lex_range)) return m_pool.begin();
+
+        suffix_lex_range.begin += 1;
+        suffix_lex_range.end += 1;
+        range r = m_completions.locate_prefix(prefix, suffix_lex_range);
+        if (is_invalid(r)) return m_pool.begin();
+
+        uint32_t num_prefix_topk_completions =
+            m_unsorted_docs_list.topk(r, k, m_prefix_topk_scores);
+
+        uint32_t num_completions = 0;
+
+        if (num_prefix_topk_completions < k) {
+            uint32_t num_conjunctive_topk_completions = 0;
+
+            if (num_terms == 1) {  // special case
+                suffix_lex_range.begin -= 1;
+                num_conjunctive_topk_completions =
+                    m_unsorted_minimal_docs_list.topk(
+                        suffix_lex_range, k, m_conjunctive_topk_scores,
+                        true  // must return unique results
+                    );
+            } else {
+                if (prefix.size() == 1) {  // we've got nothing to intersect
+                    auto it = m_inverted_index.iterator(prefix.front() - 1);
+                    num_conjunctive_topk_completions = conjunctive_topk(
+                        it, suffix_lex_range, k, m_conjunctive_topk_scores);
+                } else {
+                    auto it = m_inverted_index.intersection_iterator(prefix);
+                    num_conjunctive_topk_completions = conjunctive_topk(
+                        it, suffix_lex_range, k, m_conjunctive_topk_scores);
+                }
+            }
+
+            num_completions = merge_scores(num_prefix_topk_completions,
+                                           num_conjunctive_topk_completions, k);
+
+        } else {
+            num_completions = num_prefix_topk_completions;
+            m_pool.scores().swap(m_prefix_topk_scores);
         }
 
         return extract_strings(num_completions);
@@ -160,10 +219,12 @@ struct autocomplete {
         } else {
             if (prefix.size() == 1) {  // we've got nothing to intersect
                 auto it = m_inverted_index.iterator(prefix.front() - 1);
-                num_completions = conjunctive_topk(it, suffix_lex_range, k);
+                num_completions =
+                    conjunctive_topk(it, suffix_lex_range, k, m_pool.scores());
             } else {
                 auto it = m_inverted_index.intersection_iterator(prefix);
-                num_completions = conjunctive_topk(it, suffix_lex_range, k);
+                num_completions =
+                    conjunctive_topk(it, suffix_lex_range, k, m_pool.scores());
             }
         }
         timers[2].stop();
@@ -203,6 +264,9 @@ private:
     ForwardIndex m_forward_index;
     scored_string_pool m_pool;
 
+    std::vector<id_type> m_prefix_topk_scores;
+    std::vector<id_type> m_conjunctive_topk_scores;
+
     void init() {
         m_pool.clear();
         m_pool.init();
@@ -210,13 +274,13 @@ private:
     }
 
     template <typename Iterator>
-    uint32_t conjunctive_topk(Iterator& it, const range r, uint32_t const k) {
-        auto& topk = m_pool.scores();
+    uint32_t conjunctive_topk(Iterator& it, const range r, uint32_t const k,
+                              std::vector<id_type>& topk_scores) {
         uint32_t i = 0;
         while (it.has_next()) {
             id_type doc_id = *it;
             if (m_forward_index.contains(doc_id, r)) {
-                topk[i++] = doc_id;
+                topk_scores[i++] = doc_id;
                 if (i == k) break;
             }
             ++it;
@@ -225,9 +289,9 @@ private:
     }
 
     iterator_type extract_strings(const uint32_t num_completions) {
-        auto const& topk = m_pool.scores();
+        auto const& topk_scores = m_pool.scores();
         for (uint32_t i = 0; i != num_completions; ++i) {
-            id_type doc_id = topk[i];
+            id_type doc_id = topk_scores[i];
             auto it = m_forward_index.permuting_iterator(doc_id);
             uint64_t offset = m_pool.bytes();
             uint8_t* decoded = m_pool.data() + offset;
@@ -245,6 +309,22 @@ private:
         }
         assert(m_pool.size() == num_completions);
         return m_pool.begin();
+    }
+
+    uint32_t merge_scores(const uint32_t num_prefix_topk_completions,
+                          const uint32_t num_conjunctive_topk_completions,
+                          const uint32_t k) {
+        auto& topk = m_pool.scores();
+        auto it = std::set_union(
+            m_prefix_topk_scores.begin(),
+            m_prefix_topk_scores.begin() + num_prefix_topk_completions,
+            m_conjunctive_topk_scores.begin(),
+            m_conjunctive_topk_scores.begin() +
+                num_conjunctive_topk_completions,
+            topk.begin());
+        uint32_t n = std::distance(topk.begin(), it);
+        if (n > k) n = k;
+        return n;
     }
 };
 }  // namespace autocomplete

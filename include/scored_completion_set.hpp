@@ -2,10 +2,11 @@
 
 namespace autocomplete {
 
-struct completion_set {
+struct scored_completion_set {
     void resize(uint32_t k, uint32_t max_num_terms_per_completion) {
         m_sizes.resize(k);
         m_completions.resize(k);
+        m_scores.resize(k);
         for (auto& c : m_completions) {
             c.resize(max_num_terms_per_completion);
         }
@@ -19,9 +20,14 @@ struct completion_set {
         return m_sizes;
     }
 
+    std::vector<id_type>& scores() {
+        return m_scores;
+    }
+
 private:
     std::vector<uint8_t> m_sizes;
     std::vector<completion_type> m_completions;
+    std::vector<id_type> m_scores;
 };
 
 }  // namespace autocomplete
