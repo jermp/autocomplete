@@ -38,8 +38,9 @@ with open(input_filename, 'r') as f:
                 term = x[i].encode('utf-8')
                 try:
                     term_id = tokens[term]
+                    if term_id not in mapped:
+                        inverted_index[term_id].append(doc_id)
                     mapped.append(term_id)
-                    inverted_index[term_id].append(doc_id)
                 except KeyError:
                     print("'" + term + "' not found in dictionary")
                     print(line)

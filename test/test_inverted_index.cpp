@@ -25,21 +25,21 @@ int main(int argc, char** argv) {
     params.collection_basename = argv[1];
     params.load();
 
-    {
-        // build, print and write
-        uncompressed_inverted_index::builder builder(params);
-        uncompressed_inverted_index ii;
-        builder.build(ii);
-        std::cout << "using " << ii.bytes() << " bytes" << std::endl;
-        std::cout << "num docs " << ii.num_docs() << std::endl;
-        std::cout << "num terms " << ii.num_terms() << std::endl;
+    // {
+    //     // build, print and write
+    //     uncompressed_inverted_index::builder builder(params);
+    //     uncompressed_inverted_index ii;
+    //     builder.build(ii);
+    //     std::cout << "using " << ii.bytes() << " bytes" << std::endl;
+    //     std::cout << "num docs " << ii.num_docs() << std::endl;
+    //     std::cout << "num terms " << ii.num_terms() << std::endl;
 
-        if (output_filename) {
-            essentials::logger("saving data structure to disk...");
-            essentials::save<uncompressed_inverted_index>(ii, output_filename);
-            essentials::logger("DONE");
-        }
-    }
+    //     if (output_filename) {
+    //         essentials::logger("saving data structure to disk...");
+    //         essentials::save<uncompressed_inverted_index>(ii,
+    //         output_filename); essentials::logger("DONE");
+    //     }
+    // }
 
     {
         if (output_filename) {
@@ -59,15 +59,15 @@ int main(int argc, char** argv) {
             // id_type j = 294;
             // id_type i = 899;
             // id_type j = 822;
-            id_type i = 14145;
-            id_type j = 5430;
+            id_type i = 2401599 - 1;
+            id_type j = 1752198 - 1;
             term_ids.push_back(i + 1);
             term_ids.push_back(j + 1);
             // uint64_t size = ii.intersect(term_ids, intersection);
 
             {
-                std::cout << "size of intersection between " << i << " and "
-                          << j << " is: ";
+                std::cout << "intersection between " << i << " and " << j
+                          << " is: ";
                 uint32_t i = 0;
                 auto intersec_it = ii.intersection_iterator(term_ids);
                 while (intersec_it.has_next()) {
@@ -100,7 +100,7 @@ int main(int argc, char** argv) {
             auto it = std::set_intersection(a.begin(), a.end(), b.begin(),
                                             b.end(), intersection.begin());
             intersection.resize(it - intersection.begin());
-            std::cout << "size of intersection between " << i << " and " << j
+            std::cout << "intersection between " << i << " and " << j
                       << " is: ";
             for (auto x : intersection) {
                 std::cout << x << " ";

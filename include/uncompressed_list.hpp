@@ -63,7 +63,7 @@ struct uncompressed_list {
             while (lo <= hi) {
                 if (hi - lo <= global::linear_scan_threshold) {
                     for (m_position = lo; m_position <= hi; ++m_position) {
-                        UintType val = m_data[m_position];
+                        auto val = m_data[m_position];
                         if (val >= lower_bound) {
                             m_id = val;
                             return m_id;
@@ -72,8 +72,8 @@ struct uncompressed_list {
                     break;
                 }
 
-                uint64_t m_position = (lo + hi) / 2;
-                UintType val = m_data[m_position];
+                m_position = (lo + hi) / 2;
+                auto val = m_data[m_position];
 
                 if (val > lower_bound) {
                     hi = m_position != 0 ? m_position - 1 : 0;
@@ -101,7 +101,7 @@ struct uncompressed_list {
 
         bool contains(range r) const {
             for (uint64_t i = 0; i != size(); ++i) {
-                UintType val = m_data[i];
+                auto val = m_data[i];
                 if (val > r.end) break;
                 if (val >= r.begin and val <= r.end) return true;
             }
