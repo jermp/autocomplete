@@ -10,6 +10,23 @@ $(function () {
         dataType: 'json',
         minChars: '0',
         params: {k: 10},
+        formatResult: function(suggestion, currentValue) {
+            // Do not replace anything if the current value is empty
+            if (!currentValue) {
+                return suggestion.value;
+            }
+
+            // match any tokens, not just prefix
+            var keywords = currentValue.split(' ').join('|');
+
+            return suggestion.value
+                .replace(new RegExp("(" + keywords + ")", "gi"), '<strong>$1<\/strong>')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/&lt;(\/?strong)&gt;/g, '<$1>');
+        },
         paramName: 'q',
         lookupFilter: function(suggestion, originalQuery, queryLowerCase) {
             var re = new RegExp('\\b' + $.Autocomplete.utils.escapeRegExChars(queryLowerCase), 'gi');
