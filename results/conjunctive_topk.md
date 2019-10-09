@@ -96,7 +96,7 @@ needed to produce the intersection. This can also be observed considering that t
 	{"num_terms_per_query": "6", "num_queries": "50000", "parsing_ns_per_query": "2164", "dictionary_search_ns_per_query": "13", "conjunctive_search_ns_per_query": "10222", "reporting_ns_per_query": "246"}
 	{"num_terms_per_query": "7", "num_queries": "50000", "parsing_ns_per_query": "2567", "dictionary_search_ns_per_query": "12", "conjunctive_search_ns_per_query": "8579", "reporting_ns_per_query": "305"}
 	{"num_terms_per_query": "8+", "num_queries": "50000", "parsing_ns_per_query": "3670", "dictionary_search_ns_per_query": "12", "conjunctive_search_ns_per_query": "6644", "reporting_ns_per_query": "714"}
-	
+
 	{"num_terms_per_query": "1", "num_queries": "50000", "ns_per_query": "5667"}
 	{"num_terms_per_query": "2", "num_queries": "50000", "ns_per_query": "19144"}
 	{"num_terms_per_query": "3", "num_queries": "50000", "ns_per_query": "18886"}

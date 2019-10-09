@@ -105,10 +105,12 @@ struct autocomplete {
         suffix_lex_range.begin += 1;
         suffix_lex_range.end += 1;
         range r = m_completions.locate_prefix(prefix, suffix_lex_range);
-        if (is_invalid(r)) return m_pool.begin();
 
-        uint32_t num_pref_topk_completions =
-            m_unsorted_docs_list.topk(r, k, m_pref_topk_scores);
+        uint32_t num_pref_topk_completions = 0;
+        if (!is_invalid(r)) {
+            num_pref_topk_completions =
+                m_unsorted_docs_list.topk(r, k, m_pref_topk_scores);
+        }
 
         uint32_t num_completions = 0;
 

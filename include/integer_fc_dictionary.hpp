@@ -178,7 +178,10 @@ struct integer_fc_dictionary {
         p_end += right_locate(completion_to_uint32_range(prefix), h_end,
                               bucket_id_end);
 
-        if (p_end < p_begin) return global::invalid_range;
+        if (p_end < p_begin) {
+            prefix.pop_back();
+            return global::invalid_range;
+        }
 
         prefix.pop_back();
         if (suffix_lex_range.begin == suffix_lex_range.end) {

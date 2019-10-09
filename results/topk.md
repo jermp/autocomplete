@@ -17,7 +17,7 @@ Average among 10 runs.
 	{"num_terms_per_query": "6", "num_queries": "50000", "ns_per_query": "28812"}
 	{"num_terms_per_query": "7", "num_queries": "50000", "ns_per_query": "25978"}
 	{"num_terms_per_query": "8+", "num_queries": "50000", "ns_per_query": "22785"}
-	
+
 #### Solution 2
 
 	{"num_terms_per_query": "1", "num_queries": "50000", "ns_per_query": "5812"}
@@ -32,7 +32,7 @@ Average among 10 runs.
 ### MSN
 
 #### Solution 1
-	
+
 	{"num_terms_per_query": "1", "num_queries": "50000", "ns_per_query": "5823"}
 	{"num_terms_per_query": "2", "num_queries": "50000", "ns_per_query": "6251"}
 	{"num_terms_per_query": "3", "num_queries": "50000", "ns_per_query": "16502"}
@@ -41,7 +41,7 @@ Average among 10 runs.
 	{"num_terms_per_query": "6", "num_queries": "50000", "ns_per_query": "15622"}
 	{"num_terms_per_query": "7", "num_queries": "50000", "ns_per_query": "14709"}
 	{"num_terms_per_query": "8+", "num_queries": "50000", "ns_per_query": "14323"}
-	
+
 #### Solution 2
 
 	{"num_terms_per_query": "1", "num_queries": "50000", "ns_per_query": "6837"}
