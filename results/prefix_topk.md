@@ -22,6 +22,15 @@ range obtained from the completion trie can be very large.
 	{"num_terms_per_query": "7", "num_queries": "50000", "parsing_ns_per_query": "2410", "completions_search_ns_per_query": "1581", "topk_rmq_ns_per_query": "2", "reporting_ns_per_query": "611"}
 	{"num_terms_per_query": "8+", "num_queries": "50000", "parsing_ns_per_query": "3360", "completions_search_ns_per_query": "1888", "topk_rmq_ns_per_query": "2", "reporting_ns_per_query": "913"}
 
+	{"num_terms_per_query": "1", "num_queries": "50000", "ns_per_query": "5027"}
+	{"num_terms_per_query": "2", "num_queries": "50000", "ns_per_query": "4974"}
+	{"num_terms_per_query": "3", "num_queries": "50000", "ns_per_query": "3984"}
+	{"num_terms_per_query": "4", "num_queries": "50000", "ns_per_query": "4137"}
+	{"num_terms_per_query": "5", "num_queries": "50000", "ns_per_query": "4660"}
+	{"num_terms_per_query": "6", "num_queries": "50000", "ns_per_query": "5335"}
+	{"num_terms_per_query": "7", "num_queries": "50000", "ns_per_query": "5785"}
+	{"num_terms_per_query": "8+", "num_queries": "50000", "ns_per_query": "7394"}
+
 #### Solution 2
 
 	{"num_terms_per_query": "1", "num_queries": "50000", "parsing_ns_per_query": "0", "completions_search_ns_per_query": "493", "topk_rmq_ns_per_query": "3072", "reporting_ns_per_query": "628"}
@@ -32,6 +41,15 @@ range obtained from the completion trie can be very large.
 	{"num_terms_per_query": "6", "num_queries": "50000", "parsing_ns_per_query": "1886", "completions_search_ns_per_query": "1139", "topk_rmq_ns_per_query": "3", "reporting_ns_per_query": "300"}
 	{"num_terms_per_query": "7", "num_queries": "50000", "parsing_ns_per_query": "2242", "completions_search_ns_per_query": "1166", "topk_rmq_ns_per_query": "3", "reporting_ns_per_query": "455"}
 	{"num_terms_per_query": "8+", "num_queries": "50000", "parsing_ns_per_query": "3229", "completions_search_ns_per_query": "1205", "topk_rmq_ns_per_query": "2", "reporting_ns_per_query": "809"}
+
+	{"num_terms_per_query": "1", "num_queries": "50000", "ns_per_query": "5768"}
+	{"num_terms_per_query": "2", "num_queries": "50000", "ns_per_query": "5625"}
+	{"num_terms_per_query": "3", "num_queries": "50000", "ns_per_query": "4389"}
+	{"num_terms_per_query": "4", "num_queries": "50000", "ns_per_query": "4421"}
+	{"num_terms_per_query": "5", "num_queries": "50000", "ns_per_query": "4830"}
+	{"num_terms_per_query": "6", "num_queries": "50000", "ns_per_query": "5336"}
+	{"num_terms_per_query": "7", "num_queries": "50000", "ns_per_query": "5963"}
+	{"num_terms_per_query": "8+", "num_queries": "50000", "ns_per_query": "7104"}
 
 ### MSN
     
@@ -46,7 +64,15 @@ range obtained from the completion trie can be very large.
 	{"num_terms_per_query": "7", "num_queries": "50000", "parsing_ns_per_query": "2362", "completions_search_ns_per_query": "1437", "topk_rmq_ns_per_query": "0", "reporting_ns_per_query": "545"}
 	{"num_terms_per_query": "8+", "num_queries": "50000", "parsing_ns_per_query": "3186", "completions_search_ns_per_query": "1737", "topk_rmq_ns_per_query": "1", "reporting_ns_per_query": "873"}
 	
-	
+	{"num_terms_per_query": "1", "num_queries": "50000", "ns_per_query": "5804"}
+	{"num_terms_per_query": "2", "num_queries": "50000", "ns_per_query": "4006"}
+	{"num_terms_per_query": "3", "num_queries": "50000", "ns_per_query": "3456"}
+	{"num_terms_per_query": "4", "num_queries": "50000", "ns_per_query": "3873"}
+	{"num_terms_per_query": "5", "num_queries": "50000", "ns_per_query": "4587"}
+	{"num_terms_per_query": "6", "num_queries": "50000", "ns_per_query": "5030"}
+	{"num_terms_per_query": "7", "num_queries": "50000", "ns_per_query": "5617"}
+	{"num_terms_per_query": "8+", "num_queries": "50000", "ns_per_query": "6957"}
+
 #### Solution 2
 
 	{"num_terms_per_query": "1", "num_queries": "50000", "parsing_ns_per_query": "0", "completions_search_ns_per_query": "697", "topk_rmq_ns_per_query": "3495", "reporting_ns_per_query": "1114"}
@@ -57,3 +83,12 @@ range obtained from the completion trie can be very large.
 	{"num_terms_per_query": "6", "num_queries": "50000", "parsing_ns_per_query": "1922", "completions_search_ns_per_query": "1077", "topk_rmq_ns_per_query": "1", "reporting_ns_per_query": "242"}
 	{"num_terms_per_query": "7", "num_queries": "50000", "parsing_ns_per_query": "2213", "completions_search_ns_per_query": "1099", "topk_rmq_ns_per_query": "1", "reporting_ns_per_query": "425"}
 	{"num_terms_per_query": "8+", "num_queries": "50000", "parsing_ns_per_query": "3228", "completions_search_ns_per_query": "1124", "topk_rmq_ns_per_query": "0", "reporting_ns_per_query": "799"}
+	
+	{"num_terms_per_query": "1", "num_queries": "50000", "ns_per_query": "6772"}
+	{"num_terms_per_query": "2", "num_queries": "50000", "ns_per_query": "4646"}
+	{"num_terms_per_query": "3", "num_queries": "50000", "ns_per_query": "3831"}
+	{"num_terms_per_query": "4", "num_queries": "50000", "ns_per_query": "4108"}
+	{"num_terms_per_query": "5", "num_queries": "50000", "ns_per_query": "4594"}
+	{"num_terms_per_query": "6", "num_queries": "50000", "ns_per_query": "5080"}
+	{"num_terms_per_query": "7", "num_queries": "50000", "ns_per_query": "5621"}
+	{"num_terms_per_query": "8+", "num_queries": "50000", "ns_per_query": "6775"}

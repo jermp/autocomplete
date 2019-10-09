@@ -22,6 +22,15 @@ range obtained from the completion trie can be very large.
 	{"num_terms_per_query": "7", "num_queries": "50000", "parsing_ns_per_query": "2871", "dictionary_search_ns_per_query": "32", "conjunctive_search_ns_per_query": "18657", "reporting_ns_per_query": "465"}
 	{"num_terms_per_query": "8+", "num_queries": "50000", "parsing_ns_per_query": "3774", "dictionary_search_ns_per_query": "30", "conjunctive_search_ns_per_query": "13967", "reporting_ns_per_query": "844"}
 
+	{"num_terms_per_query": "1", "num_queries": "50000", "ns_per_query": "4463"}
+	{"num_terms_per_query": "2", "num_queries": "50000", "ns_per_query": "6677"}
+	{"num_terms_per_query": "3", "num_queries": "50000", "ns_per_query": "25503"}
+	{"num_terms_per_query": "4", "num_queries": "50000", "ns_per_query": "31536"}
+	{"num_terms_per_query": "5", "num_queries": "50000", "ns_per_query": "29973"}
+	{"num_terms_per_query": "6", "num_queries": "50000", "ns_per_query": "27148"}
+	{"num_terms_per_query": "7", "num_queries": "50000", "ns_per_query": "23630"}
+	{"num_terms_per_query": "8+", "num_queries": "50000", "ns_per_query": "20511"}
+
 If we do not check the forward index (thus erronously reporting the first k docids of the intersection), we have:
 
     {"num_terms_per_query": "3", "num_queries": "50000", "conjunctive_search_ns_per_query": "10362"}
@@ -46,6 +55,15 @@ needed to produce the intersection. This can also be observed considering that t
 	{"num_terms_per_query": "7", "num_queries": "50000", "parsing_ns_per_query": "2762", "dictionary_search_ns_per_query": "37", "conjunctive_search_ns_per_query": "19437", "reporting_ns_per_query": "443"}
 	{"num_terms_per_query": "8+", "num_queries": "50000", "parsing_ns_per_query": "3878", "dictionary_search_ns_per_query": "40", "conjunctive_search_ns_per_query": "14657", "reporting_ns_per_query": "814"}
 
+	{"num_terms_per_query": "1", "num_queries": "50000", "ns_per_query": "4917"}
+	{"num_terms_per_query": "2", "num_queries": "50000", "ns_per_query": "20361"}
+	{"num_terms_per_query": "3", "num_queries": "50000", "ns_per_query": "28619"}
+	{"num_terms_per_query": "4", "num_queries": "50000", "ns_per_query": "33140"}
+	{"num_terms_per_query": "5", "num_queries": "50000", "ns_per_query": "30410"}
+	{"num_terms_per_query": "6", "num_queries": "50000", "ns_per_query": "27477"}
+	{"num_terms_per_query": "7", "num_queries": "50000", "ns_per_query": "24357"}
+	{"num_terms_per_query": "8+", "num_queries": "50000", "ns_per_query": "21042"}
+
 ### MSN
 
 #### Solution 1
@@ -58,7 +76,16 @@ needed to produce the intersection. This can also be observed considering that t
 	{"num_terms_per_query": "6", "num_queries": "50000", "parsing_ns_per_query": "2049", "dictionary_search_ns_per_query": "10", "conjunctive_search_ns_per_query": "9565", "reporting_ns_per_query": "252"}
 	{"num_terms_per_query": "7", "num_queries": "50000", "parsing_ns_per_query": "2396", "dictionary_search_ns_per_query": "9", "conjunctive_search_ns_per_query": "8020", "reporting_ns_per_query": "324"}
 	{"num_terms_per_query": "8+", "num_queries": "50000", "parsing_ns_per_query": "3431", "dictionary_search_ns_per_query": "9", "conjunctive_search_ns_per_query": "6199", "reporting_ns_per_query": "738"}
-	
+
+	{"num_terms_per_query": "1", "num_queries": "50000", "ns_per_query": "4982"}
+	{"num_terms_per_query": "2", "num_queries": "50000", "ns_per_query": "6176"}
+	{"num_terms_per_query": "3", "num_queries": "50000", "ns_per_query": "16236"}
+	{"num_terms_per_query": "4", "num_queries": "50000", "ns_per_query": "17306"}
+	{"num_terms_per_query": "5", "num_queries": "50000", "ns_per_query": "15591"}
+	{"num_terms_per_query": "6", "num_queries": "50000", "ns_per_query": "13961"}
+	{"num_terms_per_query": "7", "num_queries": "50000", "ns_per_query": "12980"}
+	{"num_terms_per_query": "8+", "num_queries": "50000", "ns_per_query": "12311"}
+
 #### Solution 2
 
 	{"num_terms_per_query": "1", "num_queries": "50000", "parsing_ns_per_query": "0", "dictionary_search_ns_per_query": "6", "conjunctive_search_ns_per_query": "3722", "reporting_ns_per_query": "511"}
@@ -69,3 +96,12 @@ needed to produce the intersection. This can also be observed considering that t
 	{"num_terms_per_query": "6", "num_queries": "50000", "parsing_ns_per_query": "2164", "dictionary_search_ns_per_query": "13", "conjunctive_search_ns_per_query": "10222", "reporting_ns_per_query": "246"}
 	{"num_terms_per_query": "7", "num_queries": "50000", "parsing_ns_per_query": "2567", "dictionary_search_ns_per_query": "12", "conjunctive_search_ns_per_query": "8579", "reporting_ns_per_query": "305"}
 	{"num_terms_per_query": "8+", "num_queries": "50000", "parsing_ns_per_query": "3670", "dictionary_search_ns_per_query": "12", "conjunctive_search_ns_per_query": "6644", "reporting_ns_per_query": "714"}
+	
+	{"num_terms_per_query": "1", "num_queries": "50000", "ns_per_query": "5667"}
+	{"num_terms_per_query": "2", "num_queries": "50000", "ns_per_query": "19144"}
+	{"num_terms_per_query": "3", "num_queries": "50000", "ns_per_query": "18886"}
+	{"num_terms_per_query": "4", "num_queries": "50000", "ns_per_query": "18109"}
+	{"num_terms_per_query": "5", "num_queries": "50000", "ns_per_query": "16030"}
+	{"num_terms_per_query": "6", "num_queries": "50000", "ns_per_query": "14423"}
+	{"num_terms_per_query": "7", "num_queries": "50000", "ns_per_query": "13418"}
+	{"num_terms_per_query": "8+", "num_queries": "50000", "ns_per_query": "12779"}
