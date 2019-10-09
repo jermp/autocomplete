@@ -3,6 +3,7 @@
 #include <sstream>
 #include <iomanip>
 
+#include "constants.hpp"
 #include "types.hpp"
 
 #include "../external/mongoose/mongoose.h"
@@ -39,9 +40,9 @@ static void ev_handler(struct mg_connection* nc, int ev, void* p) {
         if (uri == "/topcomp") {
             std::string query = "";
             size_t k = 10;
-            char query_buf[128];
-            int query_len =
-                mg_get_http_var(&(hm->query_string), "q", query_buf, 128);
+            char query_buf[constants::MAX_NUM_CHARS_PER_QUERY];
+            int query_len = mg_get_http_var(&(hm->query_string), "q", query_buf,
+                                            constants::MAX_NUM_CHARS_PER_QUERY);
             if (query_len > 0) {
                 query = std::string(query_buf, query_buf + query_len);
             }

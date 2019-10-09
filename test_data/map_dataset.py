@@ -16,20 +16,26 @@ print("mapping dataset...")
 
 output_file = open(input_filename + ".mapped", 'w')
 stats_file = open(input_filename + ".mapped.stats", 'w')
+max_string_len = 0;
 
 with open(input_filename, 'r') as f:
     for line in f:
         x = line.rstrip('\n').split()
+        string_len = 0;
         mapped = [x[0]]
         for i in range(1, len(x)): # x[0] stores the docID
             t = x[i].encode('utf-8')
             try:
                 id = tokens[t]
                 mapped.append(id)
+                string_len += len(t)
             except KeyError:
                 print("'" + t + "' not found in dictionary")
                 print(line)
                 exit()
+
+        if string_len > max_string_len:
+            max_string_len = string_len
 
         mapped.append("0") # terminator
         s = [str(i) for i in mapped]
@@ -41,4 +47,5 @@ with open(input_filename, 'r') as f:
 output_file.close()
 
 stats_file.write(str(len(tokens)) + "\n")
+stats_file.write(str(max_string_len) + "\n")
 stats_file.close()

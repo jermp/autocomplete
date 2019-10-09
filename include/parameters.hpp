@@ -11,6 +11,7 @@ namespace autocomplete {
 struct parameters {
     parameters()
         : num_terms(0)
+        , max_string_length(0)
         , num_completions(0)
         , num_levels(0) {}
 
@@ -21,11 +22,18 @@ struct parameters {
             throw std::runtime_error("File with statistics not found");
         }
         input >> num_terms;
+        input >> max_string_length;
         input >> num_completions;
         input >> num_levels;
         assert(num_terms > 0);
+        assert(max_string_length > 0);
         assert(num_completions > 0);
         assert(num_levels > 0);
+
+        if (max_string_length > constants::MAX_NUM_CHARS_PER_QUERY) {
+            throw std::runtime_error(
+                "Enlarge constants::MAX_NUM_CHARS_PER_QUERY");
+        }
 
         if (num_levels > constants::MAX_NUM_TERMS_PER_QUERY) {
             throw std::runtime_error(
@@ -39,6 +47,7 @@ struct parameters {
     }
 
     uint32_t num_terms;
+    uint32_t max_string_length;
     uint32_t num_completions;
     uint32_t num_levels;
     std::vector<uint32_t> nodes_per_level;
