@@ -29,6 +29,17 @@ Average among 10 runs.
 	{"num_terms_per_query": "7", "num_queries": "50000", "ns_per_query": "25728"}
 	{"num_terms_per_query": "8+", "num_queries": "50000", "ns_per_query": "22419"}
 
+#### Solution 3
+
+	{"num_terms_per_query": "1", "num_queries": "1000", "ns_per_query": "5899"}
+	{"num_terms_per_query": "2", "num_queries": "1000", "ns_per_query": "12282007"}
+	{"num_terms_per_query": "3", "num_queries": "1000", "ns_per_query": "18393403"}
+	{"num_terms_per_query": "4", "num_queries": "1000", "ns_per_query": "15212918"}
+	{"num_terms_per_query": "5", "num_queries": "1000", "ns_per_query": "11852012"}
+	{"num_terms_per_query": "6", "num_queries": "1000", "ns_per_query": "7781194"}
+	{"num_terms_per_query": "7", "num_queries": "1000", "ns_per_query": "7939661"}
+	{"num_terms_per_query": "8+", "num_queries": "1000", "ns_per_query": "6980226"}
+
 ### MSN
 
 #### Solution 1
@@ -52,3 +63,16 @@ Average among 10 runs.
 	{"num_terms_per_query": "6", "num_queries": "50000", "ns_per_query": "15738"}
 	{"num_terms_per_query": "7", "num_queries": "50000", "ns_per_query": "14810"}
 	{"num_terms_per_query": "8+", "num_queries": "50000", "ns_per_query": "14260"}
+	
+	
+#### Solution 3
+
+	
+	{"num_terms_per_query": "1", "num_queries": "1000", "ns_per_query": "6666"}
+	{"num_terms_per_query": "2", "num_queries": "1000", "ns_per_query": "6635754"}
+	{"num_terms_per_query": "3", "num_queries": "1000", "ns_per_query": "8612266"}
+	{"num_terms_per_query": "4", "num_queries": "1000", "ns_per_query": "5290905"}
+	{"num_terms_per_query": "5", "num_queries": "1000", "ns_per_query": "3939319"}
+	{"num_terms_per_query": "6", "num_queries": "1000", "ns_per_query": "3035556"}
+	{"num_terms_per_query": "7", "num_queries": "1000", "ns_per_query": "3106875"}
+	{"num_terms_per_query": "8+", "num_queries": "1000", "ns_per_query": "3089917"}
