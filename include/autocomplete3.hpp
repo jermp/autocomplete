@@ -117,8 +117,7 @@ struct autocomplete3 {
         init();
         completion_type prefix;
         byte_range suffix;
-        uint32_t num_terms = parse(m_dictionary, query, prefix, suffix);
-        assert(num_terms > 0);
+        parse(m_dictionary, query, prefix, suffix);
 
         suffix.end += 1;  // include null terminator
         range suffix_lex_range = m_dictionary.locate_prefix(suffix);

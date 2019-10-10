@@ -14,7 +14,7 @@ void benchmark_topk(char const* binary_filename, uint32_t k,
     essentials::logger("loading data structure from disk...");
     essentials::load(autocomp, binary_filename);
     essentials::logger("DONE");
-    autocomp.print_stats();
+    // autocomp.print_stats();
 
     std::vector<std::string> queries;
     essentials::logger("loading queries...");
@@ -69,8 +69,11 @@ int main(int argc, char** argv) {
     if (type == "type1") {
         benchmark_topk<uncompressed_autocomplete_type>(
             binary_filename, k, max_num_queries, breakdowns);
-    } else if (type == "type2" or type == "type3") {
+    } else if (type == "type2") {
         benchmark_topk<uncompressed_autocomplete_type2>(
+            binary_filename, k, max_num_queries, breakdowns);
+    } else if (type == "type3") {
+        benchmark_topk<uncompressed_autocomplete_type3>(
             binary_filename, k, max_num_queries, breakdowns);
     } else {
         return 1;
