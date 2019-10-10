@@ -90,6 +90,7 @@ struct fc_dictionary {
 
     // NOTE: return inclusive ranges, i.e., [a,b]
     range locate_prefix(byte_range p) const {
+        if (p.end - p.begin - 1 == 0) return {0, size() - 1};
         auto bucket_id = locate_buckets(p);
         byte_range h_begin = header(bucket_id.begin);
         byte_range h_end = header(bucket_id.end);

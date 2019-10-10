@@ -73,6 +73,7 @@ struct inverted_index {
     inverted_index() {}
 
     iterator_type iterator(id_type term_id) const {
+        assert(term_id < num_terms());
         uint64_t offset = m_pointers.access(term_id);
         uint32_t n = m_data.get_bits(offset, 32);
         iterator_type it(m_data, offset + 32, m_num_docs, n, m_params);

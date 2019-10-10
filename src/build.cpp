@@ -40,7 +40,7 @@ int main(int argc, char** argv) {
 
     if (type == "type1") {
         build<uncompressed_autocomplete_type>(params, output_filename);
-    } else if (type == "type2") {
+    } else if (type == "type2" or type == "type3") {
         build<uncompressed_autocomplete_type2>(params, output_filename);
     } else {
         return 1;
