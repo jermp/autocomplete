@@ -97,7 +97,7 @@ int main(int argc, char** argv) {
     if (type == "type1") {
         benchmark_conjunctive_topk<uncompressed_autocomplete_type>(
             binary_filename, k, max_num_queries, breakdowns, breakdown);
-    } else if (type == "type2") {
+    } else if (type == "type2" or type == "type3") {
         benchmark_conjunctive_topk<uncompressed_autocomplete_type2>(
             binary_filename, k, max_num_queries, breakdowns, breakdown);
     } else {
