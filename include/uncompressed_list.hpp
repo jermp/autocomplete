@@ -20,6 +20,8 @@ struct uncompressed_list {
     }
 
     struct iterator {
+        iterator() {}
+
         iterator(bit_vector const& bv, uint64_t offset, uint64_t universe,
                  uint64_t n, compression_parameters const& /*params*/)
             : m_universe(universe)
@@ -99,7 +101,7 @@ struct uncompressed_list {
             return m_id;
         }
 
-        bool contains(range r) const {
+        bool intersects(range r) const {
             for (uint64_t i = 0; i != size(); ++i) {
                 auto val = m_data[i];
                 if (val > r.end) break;
@@ -110,6 +112,10 @@ struct uncompressed_list {
 
         uint64_t size() const {
             return m_size;
+        }
+
+        uint64_t position() const {
+            return m_position;
         }
 
     private:

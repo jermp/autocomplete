@@ -102,8 +102,8 @@ struct forward_index {
         return it;
     }
 
-    bool contains(id_type doc_id, range r) {
-        return iterator(doc_id).contains(r);
+    bool intersects(id_type doc_id, range r) {
+        return iterator(doc_id).intersects(r);
     }
 
     struct permuting_iterator_type {

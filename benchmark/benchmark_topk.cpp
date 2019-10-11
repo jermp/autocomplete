@@ -14,7 +14,7 @@ void benchmark_topk(char const* binary_filename, uint32_t k,
     essentials::logger("loading data structure from disk...");
     essentials::load(autocomp, binary_filename);
     essentials::logger("DONE");
-    // autocomp.print_stats();
+    autocomp.print_stats();
 
     std::vector<std::string> queries;
     essentials::logger("loading queries...");

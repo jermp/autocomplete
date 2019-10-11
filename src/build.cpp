@@ -16,6 +16,18 @@ void build(parameters const& params, char const* output_filename) {
     }
 }
 
+void build_type4(parameters const& params, const float c,
+                 char const* output_filename) {
+    uncompressed_autocomplete_type4 index(params, c);
+    index.print_stats();
+    if (output_filename) {
+        essentials::logger("saving data structure to disk...");
+        essentials::save<uncompressed_autocomplete_type4>(index,
+                                                          output_filename);
+        essentials::logger("DONE");
+    }
+}
+
 int main(int argc, char** argv) {
     int mandatory = 2;
     if (argc < mandatory + 1) {
@@ -40,8 +52,13 @@ int main(int argc, char** argv) {
 
     if (type == "type1") {
         build<uncompressed_autocomplete_type>(params, output_filename);
-    } else if (type == "type2" or type == "type3") {
+    } else if (type == "type2") {
         build<uncompressed_autocomplete_type2>(params, output_filename);
+    } else if (type == "type3") {
+        build<uncompressed_autocomplete_type3>(params, output_filename);
+    } else if (type == "type4") {
+        const float c = 0.1;
+        build_type4(params, c, output_filename);
     } else {
         return 1;
     }

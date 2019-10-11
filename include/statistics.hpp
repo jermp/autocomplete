@@ -1,5 +1,7 @@
 #include "autocomplete.hpp"
 #include "autocomplete2.hpp"
+#include "autocomplete3.hpp"
+#include "autocomplete4.hpp"
 
 namespace autocomplete {
 
@@ -38,6 +40,36 @@ void autocomplete2<Completions, UnsortedDocsList, Dictionary,
           total_bytes);
     print("dictionary", m_dictionary.bytes(), total_bytes);
     print("inverted index", m_inverted_index.bytes(), total_bytes);
+    print("map from docid to lexid", essentials::vec_bytes(m_docid_to_lexid),
+          total_bytes);
+}
+
+template <typename Completions, typename UnsortedDocsList, typename Dictionary,
+          typename InvertedIndex>
+void autocomplete3<Completions, UnsortedDocsList, Dictionary,
+                   InvertedIndex>::print_stats() const {
+    size_t total_bytes = bytes();
+    std::cout << "using " << convert(total_bytes, essentials::GiB) << " [GiB]"
+              << std::endl;
+    print("completions", m_completions.bytes(), total_bytes);
+    print("unsorted docs list", m_unsorted_docs_list.bytes(), total_bytes);
+    print("dictionary", m_dictionary.bytes(), total_bytes);
+    print("inverted index", m_inverted_index.bytes(), total_bytes);
+    print("map from docid to lexid", essentials::vec_bytes(m_docid_to_lexid),
+          total_bytes);
+}
+
+template <typename Completions, typename UnsortedDocsList, typename Dictionary,
+          typename BlockedInvertedIndex>
+void autocomplete4<Completions, UnsortedDocsList, Dictionary,
+                   BlockedInvertedIndex>::print_stats() const {
+    size_t total_bytes = bytes();
+    std::cout << "using " << convert(total_bytes, essentials::GiB) << " [GiB]"
+              << std::endl;
+    print("completions", m_completions.bytes(), total_bytes);
+    print("unsorted docs list", m_unsorted_docs_list.bytes(), total_bytes);
+    print("dictionary", m_dictionary.bytes(), total_bytes);
+    print("blocked inverted index", m_inverted_index.bytes(), total_bytes);
     print("map from docid to lexid", essentials::vec_bytes(m_docid_to_lexid),
           total_bytes);
 }

@@ -8,10 +8,12 @@
 #include "uncompressed_list.hpp"
 #include "forward_index.hpp"
 #include "inverted_index.hpp"
+#include "blocked_inverted_index.hpp"
 
 #include "autocomplete.hpp"
 #include "autocomplete2.hpp"
 #include "autocomplete3.hpp"
+#include "autocomplete4.hpp"
 
 #include "succinct_rmq/cartesian_tree.hpp"
 
@@ -36,6 +38,10 @@ typedef forward_index<uncompressed_list32_t, uint64_vec>
 typedef inverted_index<uncompressed_list32_t, uint64_vec>
     uncompressed_inverted_index;
 
+typedef blocked_inverted_index<uncompressed_list32_t, uncompressed_list32_t,
+                               uncompressed_list32_t, uint64_vec>
+    uncompressed_blocked_inverted_index;
+
 typedef autocomplete<uint64_completion_trie, unsorted_list_succinct_rmq,
                      fc_dictionary_B16, uncompressed_inverted_index,
                      uncompressed_forward_index>
@@ -48,5 +54,9 @@ typedef autocomplete2<integer_fc_dictionary_B16, unsorted_list_succinct_rmq,
 typedef autocomplete3<integer_fc_dictionary_B16, unsorted_list_succinct_rmq,
                       fc_dictionary_B16, uncompressed_inverted_index>
     uncompressed_autocomplete_type3;
+
+typedef autocomplete4<integer_fc_dictionary_B16, unsorted_list_succinct_rmq,
+                      fc_dictionary_B16, uncompressed_blocked_inverted_index>
+    uncompressed_autocomplete_type4;
 
 }  // namespace autocomplete

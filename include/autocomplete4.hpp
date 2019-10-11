@@ -10,21 +10,16 @@ namespace autocomplete {
 
 /*
 
-During the conjunctive step, maintain a min-heap of iterators,
-one iterator for each termID in the lexicographic range of the
-last token of the query.
+Bast and Weber approach.
 
 */
 
 template <typename Completions, typename UnsortedDocsList, typename Dictionary,
-          typename InvertedIndex>
-struct autocomplete3 {
+          typename BlockedInvertedIndex>
+struct autocomplete4 {
     typedef scored_string_pool::iterator iterator_type;
-    typedef min_heap<typename InvertedIndex::iterator_type,
-                     iterator_comparator<typename InvertedIndex::iterator_type>>
-        queue_type;
 
-    autocomplete3() {
+    autocomplete4() {
         m_pool.resize(constants::POOL_SIZE, constants::MAX_K);
         m_topk_completion_set.resize(constants::MAX_K,
                                      constants::MAX_NUM_TERMS_PER_QUERY);
@@ -32,11 +27,11 @@ struct autocomplete3 {
         m_conj_topk_scores.resize(constants::MAX_K);
     }
 
-    autocomplete3(parameters const& params)
-        : autocomplete3() {
+    autocomplete4(parameters const& params, float c)
+        : autocomplete4() {
         typename Completions::builder cm_builder(params);
         typename Dictionary::builder di_builder(params);
-        typename InvertedIndex::builder ii_builder(params);
+        typename BlockedInvertedIndex::builder ii_builder(params, c);
 
         auto const& doc_ids = cm_builder.doc_ids();
         m_unsorted_docs_list.build(doc_ids);
@@ -96,15 +91,8 @@ struct autocomplete3 {
         range suffix_lex_range = m_dictionary.locate_prefix(suffix);
         if (is_invalid(suffix_lex_range)) return m_pool.begin();
 
-        if (prefix.size() == 1) {  // we've got nothing to intersect
-            auto it = m_inverted_index.iterator(prefix.front() - 1);
-            num_completions =
-                conjunctive_topk(it, suffix_lex_range, k, m_pool.scores());
-        } else {
-            auto it = m_inverted_index.intersection_iterator(prefix);
-            num_completions =
-                conjunctive_topk(it, suffix_lex_range, k, m_pool.scores());
-        }
+        num_completions =
+            conjunctive_topk(prefix, suffix_lex_range, k, m_pool.scores());
 
         extract_completions(num_completions);
         return extract_strings(num_completions);
@@ -134,18 +122,8 @@ struct autocomplete3 {
         uint32_t num_completions = 0;
 
         if (num_pref_topk_completions < k) {
-            uint32_t num_conj_topk_completions = 0;
-
-            if (prefix.size() == 1) {  // we've got nothing to intersect
-                auto it = m_inverted_index.iterator(prefix.front() - 1);
-                num_conj_topk_completions = conjunctive_topk(
-                    it, suffix_lex_range, k, m_conj_topk_scores);
-            } else {
-                auto it = m_inverted_index.intersection_iterator(prefix);
-                num_conj_topk_completions = conjunctive_topk(
-                    it, suffix_lex_range, k, m_conj_topk_scores);
-            }
-
+            uint32_t num_conj_topk_completions = conjunctive_topk(
+                prefix, suffix_lex_range, k, m_conj_topk_scores);
             num_completions = merge_scores(num_pref_topk_completions,
                                            num_conj_topk_completions, k);
         } else {
@@ -219,15 +197,8 @@ struct autocomplete3 {
 
         // step 2
         timers[2].start();
-        if (prefix.size() == 1) {  // we've got nothing to intersect
-            auto it = m_inverted_index.iterator(prefix.front() - 1);
-            num_completions =
-                conjunctive_topk(it, suffix_lex_range, k, m_pool.scores());
-        } else {
-            auto it = m_inverted_index.intersection_iterator(prefix);
-            num_completions =
-                conjunctive_topk(it, suffix_lex_range, k, m_pool.scores());
-        }
+        num_completions =
+            conjunctive_topk(prefix, suffix_lex_range, k, m_pool.scores());
         timers[2].stop();
 
         // step 3
@@ -260,7 +231,7 @@ private:
     Completions m_completions;
     UnsortedDocsList m_unsorted_docs_list;
     Dictionary m_dictionary;
-    InvertedIndex m_inverted_index;
+    BlockedInvertedIndex m_inverted_index;
     std::vector<uint32_t> m_docid_to_lexid;
     scored_string_pool m_pool;
 
@@ -291,50 +262,19 @@ private:
         }
     }
 
-    template <typename Iterator>
-    uint32_t conjunctive_topk(Iterator& it, const range r, const uint32_t k,
+    uint32_t conjunctive_topk(completion_type& prefix, const range suffix,
+                              const uint32_t k,
                               std::vector<id_type>& topk_scores) {
-        queue_type q;
-        q.reserve(r.end - r.begin + 1);  // inclusive range
-        assert(r.begin > 0);
-        for (uint64_t term_id = r.begin; term_id <= r.end; ++term_id) {
-            q.push_back(m_inverted_index.iterator(term_id - 1));
-        }
-        q.make_heap();
-
+        auto it = m_inverted_index.intersection_iterator(prefix, suffix);
         uint32_t i = 0;
-        while (it.has_next() and !q.empty()) {
+        while (it.has_next()) {
             id_type doc_id = *it;
-            bool match = false;
-
-            while (!q.empty()) {
-                auto& z = q.top();
-                auto val = *z;
-
-                if (val > doc_id) break;
-                if (val < doc_id) {
-                    val = z.next_geq(doc_id);
-                    if (!z.has_next()) {
-                        q.pop();
-                    } else {
-                        q.heapify();
-                    }
-                }
-                if (val == doc_id) {
-                    match = true;
-                    break;
-                }
-            }
-
-            if (match) {
-                topk_scores[i] = doc_id;
-                ++i;
+            if (it.intersects()) {
+                topk_scores[i++] = doc_id;
                 if (i == k) break;
             }
-
             ++it;
         }
-
         return i;
     }
 

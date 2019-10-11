@@ -279,7 +279,7 @@ private:
         uint32_t i = 0;
         while (it.has_next()) {
             id_type doc_id = *it;
-            if (m_forward_index.contains(doc_id, r)) {
+            if (m_forward_index.intersects(doc_id, r)) {
                 topk_scores[i++] = doc_id;
                 if (i == k) break;
             }
