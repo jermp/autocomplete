@@ -32,7 +32,7 @@ int main(int argc, char** argv) {
     int mandatory = 2;
     if (argc < mandatory + 1) {
         std::cout << argv[0]
-                  << " <type> <collection_basename> [-o output_filename]"
+                  << " <type> <collection_basename> [-o output_filename] [-c c]"
                   << std::endl;
         return 1;
     }
@@ -43,10 +43,15 @@ int main(int argc, char** argv) {
     params.load();
 
     char const* output_filename = nullptr;
+    float c = 0.0;
+
     for (int i = mandatory; i != argc; ++i) {
         if (std::string(argv[i]) == "-o") {
             ++i;
             output_filename = argv[i];
+        } else if (std::string(argv[i]) == "-c") {
+            ++i;
+            c = std::stof(argv[i]);
         }
     }
 
@@ -57,7 +62,10 @@ int main(int argc, char** argv) {
     } else if (type == "type3") {
         build<uncompressed_autocomplete_type3>(params, output_filename);
     } else if (type == "type4") {
-        const float c = 0.1;
+        if (c == 0.0) {
+            std::cerr << "c must be greater than 0.0" << std::endl;
+            return 1;
+        }
         build_type4(params, c, output_filename);
     } else {
         return 1;

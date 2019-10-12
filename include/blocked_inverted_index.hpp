@@ -19,6 +19,7 @@ struct blocked_inverted_index {
         builder(parameters const& params, float c)
             : m_num_docs(params.num_completions)
             , m_num_terms(params.num_terms) {
+            assert(c > 0.0);
             essentials::logger("building blocked_inverted_index with c = " +
                                std::to_string(c) + "...");
 
