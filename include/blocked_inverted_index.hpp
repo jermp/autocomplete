@@ -201,7 +201,7 @@ struct blocked_inverted_index {
         uint32_t id = 0;
         for (; id != num_blocks(); ++id) {
             uint32_t block_size = m_blocks[id];
-            if (term_id < block_size) break;
+            if (term_id <= block_size) break;
         }
         return id;
     }
@@ -238,7 +238,6 @@ struct blocked_inverted_index {
                         }
                         m_iterators.push_back(std::move(block));
                     }
-
                     current_block_id = b;
                 }
 
