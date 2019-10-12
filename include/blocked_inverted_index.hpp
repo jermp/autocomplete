@@ -198,11 +198,9 @@ struct blocked_inverted_index {
     }
 
     uint32_t block_id(id_type term_id) const {
-        uint32_t id = 0;
-        for (; id != num_blocks(); ++id) {
-            uint32_t block_size = m_blocks[id];
-            if (term_id <= block_size) break;
-        }
+        auto it = std::upper_bound(m_blocks.begin(), m_blocks.end(), term_id);
+        uint32_t id = std::distance(m_blocks.begin(), it);
+        if (id > 0 and *std::prev(it) == term_id) return id - 1;
         return id;
     }
 
@@ -218,7 +216,7 @@ struct blocked_inverted_index {
                                    std::vector<id_type>& term_ids,
                                    const range r)
             : m_suffix(r) {
-            assert(!is_invalid(r));
+            assert(!r.is_invalid());
 
             if (!term_ids.empty()) {
                 m_iterators.reserve(term_ids.size());  // at most
@@ -310,12 +308,9 @@ struct blocked_inverted_index {
                     uint64_t end = block.offsets_iterator.access(pos + 1);
                     assert(end > begin);
                     for (uint64_t i = begin; i != end; ++i) {
-                        assert(i < block.terms_iterator.size());
                         auto t = block.terms_iterator.access(i);
                         if (t > m_suffix.end) break;
-                        if (t >= m_suffix.begin and t <= m_suffix.end) {
-                            return true;
-                        }
+                        if (m_suffix.contains(t)) return true;
                     }
                 }
             }
@@ -337,8 +332,7 @@ struct blocked_inverted_index {
             uint64_t begin = m_iterators[m_i].offsets_iterator.access(pos);
             uint64_t end = m_iterators[m_i].offsets_iterator.access(pos + 1);
             assert(end > begin);
-            uint64_t size = end - begin;
-            if (size < m_iterators[m_i].term_ids.size()) return false;
+            if (end - begin < m_iterators[m_i].term_ids.size()) return false;
 
             uint64_t i = begin;
             for (auto x : m_iterators[m_i].term_ids) {

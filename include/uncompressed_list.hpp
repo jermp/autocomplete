@@ -59,15 +59,7 @@ struct uncompressed_list {
         }
 
         UintType next_geq_by_scan(UintType lower_bound) {
-            for (; m_position != size(); ++m_position) {
-                auto val = m_data[m_position];
-                if (val >= lower_bound) {
-                    m_id = val;
-                    return m_id;
-                }
-            }
-            m_id = m_universe;
-            return m_id;
+            return next_geq_by_scan(m_position, size() - 1, lower_bound);
         }
 
         UintType next_geq(UintType lower_bound) {
@@ -76,14 +68,7 @@ struct uncompressed_list {
 
             while (lo <= hi) {
                 if (hi - lo <= global::linear_scan_threshold) {
-                    for (m_position = lo; m_position <= hi; ++m_position) {
-                        auto val = m_data[m_position];
-                        if (val >= lower_bound) {
-                            m_id = val;
-                            return m_id;
-                        }
-                    }
-                    break;
+                    return next_geq_by_scan(lo, hi, lower_bound);
                 }
 
                 m_position = (lo + hi) / 2;
@@ -117,7 +102,7 @@ struct uncompressed_list {
             for (uint64_t i = 0; i != size(); ++i) {
                 auto val = m_data[i];
                 if (val > r.end) break;
-                if (val >= r.begin and val <= r.end) return true;
+                if (r.contains(val)) return true;
             }
             return false;
         }
@@ -136,6 +121,21 @@ struct uncompressed_list {
         UintType m_id;
         uint64_t m_position;
         UintType const* m_data;
+
+        UintType next_geq_by_scan(uint64_t lo, uint64_t hi,
+                                  UintType lower_bound) {
+            for (uint64_t i = lo; i <= hi; ++i) {
+                auto val = m_data[i];
+                if (val >= lower_bound) {
+                    m_position = i;
+                    m_id = val;
+                    return m_id;
+                }
+            }
+            m_position = hi + 1;
+            m_id = m_universe;
+            return m_id;
+        }
     };
 };
 
