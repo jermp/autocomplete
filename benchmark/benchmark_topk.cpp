@@ -75,6 +75,9 @@ int main(int argc, char** argv) {
     } else if (type == "type3") {
         benchmark_topk<uncompressed_autocomplete_type3>(
             binary_filename, k, max_num_queries, breakdowns);
+    } else if (type == "type4") {
+        benchmark_topk<uncompressed_autocomplete_type4>(
+            binary_filename, k, max_num_queries, breakdowns);
     } else {
         return 1;
     }

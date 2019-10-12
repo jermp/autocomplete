@@ -377,15 +377,11 @@ struct blocked_inverted_index {
     void visit(Visitor& visitor) {
         visitor.visit(m_num_docs);
         visitor.visit(m_num_terms);
-
         visitor.visit(m_blocks);
-
         visitor.visit(m_pointers_to_lists);
         visitor.visit(m_lists);
-
         visitor.visit(m_pointers_to_offsets);
         visitor.visit(m_offsets);
-
         visitor.visit(m_pointers_to_terms);
         visitor.visit(m_terms);
     }
@@ -394,15 +390,11 @@ private:
     uint64_t m_num_docs;
     uint64_t m_num_terms;
     compression_parameters m_params;
-
     std::vector<uint32_t> m_blocks;
-
     Pointers m_pointers_to_lists;
     bit_vector m_lists;
-
     Pointers m_pointers_to_offsets;
     bit_vector m_offsets;
-
     Pointers m_pointers_to_terms;
     bit_vector m_terms;
 

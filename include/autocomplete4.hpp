@@ -8,11 +8,7 @@
 
 namespace autocomplete {
 
-/*
-
-Bast and Weber approach.
-
-*/
+/* Bast and Weber approach. */
 
 template <typename Completions, typename UnsortedDocsList, typename Dictionary,
           typename BlockedInvertedIndex>
