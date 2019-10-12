@@ -290,7 +290,9 @@ struct blocked_inverted_index {
         void operator++() {
             assert(m_i == m_iterators.size());
             if (!m_iterators.empty()) {
-                m_candidate = m_iterators[0].docs_iterator.next();
+                if (m_iterators.size() > 1) {
+                    m_candidate = m_iterators[0].docs_iterator.next();
+                }
             } else {
                 m_candidate += 1;
             }
@@ -355,14 +357,26 @@ struct blocked_inverted_index {
         }
 
         void next() {
-            while (m_candidate < m_num_docs and m_i != m_iterators.size()) {
-                auto val = m_iterators[m_i].docs_iterator.next_geq(m_candidate);
-                bool is_in = in();
-                if (val == m_candidate and is_in) {
-                    ++m_i;
-                } else {
-                    m_candidate = val + !is_in;
-                    m_i = 0;
+            if (m_iterators.size() == 1) {
+                while (m_candidate < m_num_docs and m_i != m_iterators.size()) {
+                    assert(m_i == 0);
+                    m_candidate = m_iterators[m_i].docs_iterator.next();
+                    if (in()) ++m_i;
+                }
+            } else {
+                while (m_candidate < m_num_docs and m_i != m_iterators.size()) {
+                    // NOTE: since we work with (set) unions of posting lists,
+                    // next_geq by scan is considerably faster than a
+                    // traditional binary search
+                    auto val = m_iterators[m_i].docs_iterator.next_geq_by_scan(
+                        m_candidate);
+                    bool is_in = in();
+                    if (val == m_candidate and is_in) {
+                        ++m_i;
+                    } else {
+                        m_candidate = val + !is_in;
+                        m_i = 0;
+                    }
                 }
             }
         }

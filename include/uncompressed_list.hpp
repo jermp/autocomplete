@@ -58,6 +58,18 @@ struct uncompressed_list {
             return m_id;
         }
 
+        UintType next_geq_by_scan(UintType lower_bound) {
+            for (; m_position != size(); ++m_position) {
+                auto val = m_data[m_position];
+                if (val >= lower_bound) {
+                    m_id = val;
+                    return m_id;
+                }
+            }
+            m_id = m_universe;
+            return m_id;
+        }
+
         UintType next_geq(UintType lower_bound) {
             uint64_t lo = m_position;
             uint64_t hi = size() - 1;
