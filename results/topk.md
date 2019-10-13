@@ -125,11 +125,11 @@ Average among 10 runs.
 	{"num_terms_per_query": "6", "num_queries": "50000", "ns_per_query": "15738"}
 	{"num_terms_per_query": "7", "num_queries": "50000", "ns_per_query": "14810"}
 	{"num_terms_per_query": "8+", "num_queries": "50000", "ns_per_query": "14260"}
-	
-	
+
+
 #### Solution 3
 
-	
+
 	{"num_terms_per_query": "1", "num_queries": "1000", "ns_per_query": "6666"}
 	{"num_terms_per_query": "2", "num_queries": "1000", "ns_per_query": "6635754"}
 	{"num_terms_per_query": "3", "num_queries": "1000", "ns_per_query": "8612266"}
@@ -138,9 +138,9 @@ Average among 10 runs.
 	{"num_terms_per_query": "6", "num_queries": "1000", "ns_per_query": "3035556"}
 	{"num_terms_per_query": "7", "num_queries": "1000", "ns_per_query": "3106875"}
 	{"num_terms_per_query": "8+", "num_queries": "1000", "ns_per_query": "3089917"}
-	
+
 #### Solution 4 with c = 0.1
-	
+
 	{"num_terms_per_query": "1", "num_queries": "100", "ns_per_query": "7496"}
 	{"num_terms_per_query": "2", "num_queries": "100", "ns_per_query": "1280652"}
 	{"num_terms_per_query": "3", "num_queries": "100", "ns_per_query": "3181191"}

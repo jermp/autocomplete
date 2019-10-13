@@ -262,16 +262,15 @@ private:
                               const uint32_t k,
                               std::vector<id_type>& topk_scores) {
         auto it = m_inverted_index.intersection_iterator(prefix, suffix);
-        uint32_t i = 0;
-        while (it.has_next()) {
+        uint32_t results = 0;
+        for (; it.has_next(); ++it) {
             id_type doc_id = *it;
             if (it.intersects()) {
-                topk_scores[i++] = doc_id;
-                if (i == k) break;
+                topk_scores[results++] = doc_id;
+                if (results == k) break;
             }
-            ++it;
         }
-        return i;
+        return results;
     }
 
     iterator_type extract_strings(const uint32_t num_completions) {

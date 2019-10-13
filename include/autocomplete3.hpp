@@ -22,7 +22,7 @@ struct autocomplete3 {
     typedef scored_string_pool::iterator iterator_type;
     typedef min_heap<typename InvertedIndex::iterator_type,
                      iterator_comparator<typename InvertedIndex::iterator_type>>
-        queue_type;
+        min_priority_queue_type;
 
     autocomplete3() {
         m_pool.resize(constants::POOL_SIZE, constants::MAX_K);
@@ -294,7 +294,9 @@ private:
     template <typename Iterator>
     uint32_t conjunctive_topk(Iterator& it, const range r, const uint32_t k,
                               std::vector<id_type>& topk_scores) {
-        queue_type q;
+        assert(!r.is_invalid());
+
+        min_priority_queue_type q;
         q.reserve(r.end - r.begin + 1);  // inclusive range
         assert(r.begin > 0);
         for (uint64_t term_id = r.begin; term_id <= r.end; ++term_id) {
@@ -302,15 +304,14 @@ private:
         }
         q.make_heap();
 
-        uint32_t i = 0;
-        while (it.has_next() and !q.empty()) {
+        uint32_t results = 0;
+        for (; it.has_next() and !q.empty(); ++it) {
             id_type doc_id = *it;
-            bool match = false;
 
-            while (!q.empty()) {
+            bool found = false;
+            while (!q.empty() and !found) {
                 auto& z = q.top();
                 auto val = *z;
-
                 if (val > doc_id) break;
                 if (val < doc_id) {
                     val = z.next_geq(doc_id);
@@ -320,22 +321,16 @@ private:
                         q.heapify();
                     }
                 }
-                if (val == doc_id) {
-                    match = true;
-                    break;
-                }
+                if (val == doc_id) found = true;
             }
 
-            if (match) {
-                topk_scores[i] = doc_id;
-                ++i;
-                if (i == k) break;
+            if (found) {
+                topk_scores[results++] = doc_id;
+                if (results == k) break;
             }
-
-            ++it;
         }
 
-        return i;
+        return results;
     }
 
     iterator_type extract_strings(const uint32_t num_completions) {

@@ -324,28 +324,22 @@ private:
         auto& sizes = completion_set.sizes();
         uint32_t i = 0;
 
-        while (it.has_next()) {
+        for (; it.has_next(); ++it) {
             id_type doc_id = *it;
-            bool match = false;
             id_type lex_id = m_docid_to_lexid[doc_id];
             uint32_t size = m_completions.extract(lex_id, completions[i]);
 
-            for (uint32_t j = 0; j != size; ++j) {
-                if (completions[i][j] >= r.begin and
-                    completions[i][j] <= r.end) {
-                    match = true;
-                    break;
-                }
+            bool found = false;
+            for (uint32_t j = 0; j != size and !found; ++j) {
+                if (r.contains(completions[i][j])) found = true;
             }
 
-            if (match) {
+            if (found) {
                 topk_scores[i] = doc_id;
                 sizes[i] = size;
                 ++i;
                 if (i == k) break;
             }
-
-            ++it;
         }
 
         return i;

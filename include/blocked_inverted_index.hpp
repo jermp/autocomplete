@@ -56,9 +56,7 @@ struct blocked_inverted_index {
                     input >> doc_id;
                     union_of_lists.push_back(doc_id);
                     terms[doc_id].push_back(term_id);
-                    if (k == 0) {
-                        m_minimal_doc_ids.push_back(doc_id);
-                    }
+                    if (k == 0) { m_minimal_doc_ids.push_back(doc_id); }
                 }
 
                 if (num_postings_in_block >= m or term_id == num_terms) {
@@ -215,7 +213,9 @@ struct blocked_inverted_index {
         intersection_iterator_type(blocked_inverted_index const* ii,
                                    std::vector<id_type>& term_ids,
                                    const range r)
-            : m_suffix(r) {
+            : m_i(0)
+            , m_num_docs(ii->num_docs())
+            , m_suffix(r) {
             assert(!r.is_invalid());
 
             if (!term_ids.empty()) {
@@ -272,8 +272,6 @@ struct blocked_inverted_index {
                 m_range.push_back(ii->block(current_block_id));
             }
 
-            m_i = 0;
-            m_num_docs = ii->num_docs();
             next();
         }
 
@@ -408,8 +406,8 @@ private:
 
     block_type block(uint32_t i) const {
         assert(i < num_blocks());
-
         block_type b;
+        b.term_ids.resize(0);
 
         {
             uint64_t offset = m_pointers_to_lists.access(i);
@@ -418,7 +416,6 @@ private:
                                   m_params);
             b.docs_iterator = it;
         }
-
         {
             uint64_t offset = m_pointers_to_offsets.access(i);
             uint32_t n = m_offsets.get_bits(offset, 32);
@@ -427,7 +424,6 @@ private:
                                      m_params);
             b.offsets_iterator = it;
         }
-
         {
             uint64_t offset = m_pointers_to_terms.access(i);
             uint32_t n = m_terms.get_bits(offset, 32);
