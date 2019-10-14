@@ -26,18 +26,18 @@ uint32_t set_union(std::vector<id_type> const& l, const uint32_t size_l,
     uint32_t j = 0;
     uint32_t n = 0;
 
-    while (i != size_l and j != size_r and n != k) {
-        id_type x = l[i];
-        id_type y = r[j];
+    for (; i != size_l and j != size_r and n != k; ++n) {
+        auto x = l[i];
+        auto y = r[j];
         if (x == y) {
-            out[n++] = x;
+            out[n] = x;
             ++i;
             ++j;
         } else if (x < y) {
-            out[n++] = x;
+            out[n] = x;
             ++i;
         } else {
-            out[n++] = y;
+            out[n] = y;
             ++j;
         }
     }

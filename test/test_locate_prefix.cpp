@@ -50,7 +50,6 @@ int test_locate_prefix(Dictionary const& dict, Index const& index,
         // print(suffix);
         // std::cout << std::endl;
 
-        suffix.end += 1;  // include null terminator
         range suffix_lex_range = dict.locate_prefix(suffix);
         suffix_lex_range.begin += 1;
         suffix_lex_range.end += 1;
