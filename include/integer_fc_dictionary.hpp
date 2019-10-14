@@ -258,12 +258,12 @@ private:
         return false;
     }
 
-#define INT_FC_DICT_LOCATE_INIT                                     \
-    static uint32_t* decoded = new uint32_t[64];                    \
-    memcpy(decoded, h.begin, (h.end - h.begin) * sizeof(uint32_t)); \
-    uint8_t lcp_len;                                                \
-    uint32_t n = bucket_size(bucket_id);                            \
-    uint8_t const* curr =                                           \
+#define INT_FC_DICT_LOCATE_INIT                                      \
+    static uint32_t decoded[2 * constants::MAX_NUM_TERMS_PER_QUERY]; \
+    memcpy(decoded, h.begin, (h.end - h.begin) * sizeof(uint32_t));  \
+    uint8_t lcp_len;                                                 \
+    uint32_t n = bucket_size(bucket_id);                             \
+    uint8_t const* curr =                                            \
         m_buckets.data() + m_pointers_to_buckets[bucket_id].begin;
 
     // return the length of the decoded string
@@ -271,8 +271,10 @@ private:
         *lcp_len = *in++;  // |lcp|
         uint8_t l = *lcp_len;
         uint8_t suffix_len = *in++;
+        // memcpy(out + l, reinterpret_cast<uint32_t const*>(in),
+        //        suffix_len * sizeof(uint32_t));
         memcpy(out + l, reinterpret_cast<uint32_t const*>(in),
-               suffix_len * sizeof(uint32_t));
+               constants::MAX_NUM_TERMS_PER_QUERY * sizeof(uint32_t));
         return l + suffix_len;
     }
 

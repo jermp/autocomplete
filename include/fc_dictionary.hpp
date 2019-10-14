@@ -58,6 +58,7 @@ struct fc_dictionary {
                 m_buckets.push_back(0);
             }
 
+            input.close();
             essentials::logger("DONE");
         }
 

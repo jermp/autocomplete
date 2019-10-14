@@ -1,14 +1,14 @@
 #include <iostream>
 
 #include "types.hpp"
+#include "benchmark_common.hpp"
 
 using namespace autocomplete;
 
 template <typename Dictionary>
 void perf_test(Dictionary const& dict,
                std::vector<std::string> const& queries) {
-    std::vector<uint8_t> decoded(256 + 1);  // assume this is enough
-    static const uint32_t runs = 10;
+    std::vector<uint8_t> decoded(2 * constants::MAX_NUM_CHARS_PER_QUERY);
     essentials::timer_type timer;
 
     for (uint32_t i = 0; i != runs; ++i) {
@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
     std::vector<std::string> queries;
     queries.reserve(num_queries);
     std::string query;
-    query.reserve(256 + 1);
+    query.reserve(2 * constants::MAX_NUM_CHARS_PER_QUERY);
     for (uint32_t i = 0; i != num_queries; ++i) {
         if (!std::getline(std::cin, query)) break;
         queries.push_back(std::move(query));
@@ -82,7 +82,5 @@ int main(int argc, char** argv) {
     num_queries = queries.size();
     essentials::logger("loaded " + std::to_string(num_queries) + " queries");
 
-    exe(4) exe(8) exe(16) exe(32) exe(64) exe(128) exe(256)
-
-        return 0;
+    exe(4) exe(8) exe(16) exe(32) exe(64) exe(128) exe(256) return 0;
 }
