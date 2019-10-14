@@ -57,6 +57,13 @@ struct integer_fc_dictionary {
                 m_pointers_to_buckets.push_back(m_buckets.size());
             }
 
+            // NOTE: pad to allow fixed-copy operations
+            for (uint32_t i = 0;
+                 i != constants::MAX_NUM_TERMS_PER_QUERY * sizeof(uint32_t);
+                 ++i) {
+                m_buckets.push_back(0);
+            }
+
             input.close();
             essentials::logger("DONE");
         }
