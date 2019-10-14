@@ -17,7 +17,7 @@ $(function () {
             }
 
             // match any tokens, not just prefix
-            var keywords = currentValue.split(' ').join('|');
+            var keywords = currentValue.trim().split(/\s+/).join('|');
 
             return suggestion.value
                 .replace(new RegExp("(" + keywords + ")", "gi"), '<strong>$1<\/strong>')
