@@ -18,4 +18,5 @@ Experiments
 - The file `prefix_topk.md` reports the timing breakdowns for the prefix_topk step by varying the number of query terms.
 - The file `conjunctive_topk.md` reports the timing breakdowns for the conjunctive_topk step by varying the number of query terms.
 - The file `topk.md` reports the total time of the `topk` operation (combining the two steps, `prefix_topk` and `conjunctive_topk`) by varying the number of query terms.
-- The file `fc_dictionary.md` reports on the dictionary benchmark.
+- The file `fc_dictionary.md` reports on the `fc_dictionary` benchmark.
+- The file `integer_fc_dictionary.md` reports on the `integer_fc_dictionary` benchmark.

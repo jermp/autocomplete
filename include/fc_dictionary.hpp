@@ -20,7 +20,8 @@ struct fc_dictionary {
             uint32_t buckets = std::ceil(double(m_size) / (BucketSize + 1));
             m_pointers_to_buckets.reserve(buckets + 1);
             uint32_t tail =
-                m_size - ((m_size / (BucketSize + 1)) * (BucketSize + 1)) - 1;
+                m_size - ((m_size / (BucketSize + 1)) * (BucketSize + 1));
+            if (tail) tail -= 1;  // remove header
 
             m_pointers_to_headers.push_back(0);
             m_pointers_to_buckets.push_back(0);
@@ -151,10 +152,10 @@ struct fc_dictionary {
     }
 
     size_t bucket_size(uint32_t bucket_id) const {
-        uint32_t n = size();
-        return bucket_id != buckets() - 1
-                   ? BucketSize
-                   : (n - ((n / (BucketSize + 1)) * (BucketSize + 1)) - 1);
+        if (bucket_id != buckets() - 1) return BucketSize;
+        size_t tail = size() - ((size() / (BucketSize + 1)) * (BucketSize + 1));
+        if (tail) tail -= 1;
+        return tail;
     }
 
     size_t buckets() const {
