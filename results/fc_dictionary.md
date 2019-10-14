@@ -1,39 +1,40 @@
-Results on the AOL query log.
+#### Results on the AOL querylog.
 
-	2019-10-01 10:18:50: loading queries...
-	2019-10-01 10:18:50: loaded 1000000 queries
-	2019-10-01 10:18:50: building fc_dictionary with bucket size 4...
-	2019-10-01 10:18:50: DONE
-	using 43703932 bytes
-	locate: 554.154 [ns/string]
-	extract: 180.782 [ns/string]
-	2019-10-01 10:18:58: building fc_dictionary with bucket size 8...
-	2019-10-01 10:18:59: DONE
-	using 38536494 bytes
-	locate: 531.742 [ns/string]
-	extract: 177.296 [ns/string]
-	2019-10-01 10:19:06: building fc_dictionary with bucket size 16...
-	2019-10-01 10:19:07: DONE
-	using 35495127 bytes
-	locate: 503.593 [ns/string]
-	extract: 190.604 [ns/string]
-	2019-10-01 10:19:14: building fc_dictionary with bucket size 32...
-	2019-10-01 10:19:14: DONE
-	using 33838110 bytes
-	locate: 553.546 [ns/string]
-	extract: 252.278 [ns/string]
-	2019-10-01 10:19:23: building fc_dictionary with bucket size 64...
-	2019-10-01 10:19:23: DONE
-	using 32968926 bytes
-	locate: 702.618 [ns/string]
-	extract: 409.25 [ns/string]
-	2019-10-01 10:19:35: building fc_dictionary with bucket size 128...
-	2019-10-01 10:19:35: DONE
-	using 32525905 bytes
-	locate: 1189.23 [ns/string]
-	extract: 700.539 [ns/string]
-	2019-10-01 10:19:55: building fc_dictionary with bucket size 256...
-	2019-10-01 10:19:56: DONE
-	using 32300801 bytes
-	locate: 2383.01 [ns/string]
-	extract: 1364.15 [ns/string]
+	pibiri@rubino:~/autocomplete/build$ ./benchmark_fc_dictionary ../test_data/aol/aol.completions 1000000 < ../test_data/aol/aol.completions.dict
+	2019-10-14 13:37:11: loading queries...
+	2019-10-14 13:37:11: loaded 1000000 queries
+	2019-10-14 13:37:11: building fc_dictionary with bucket size 4...
+	2019-10-14 13:37:12: DONE
+	using 42938762 bytes
+	locate: 137.05 [ns/string]
+	extract: 20.0646 [ns/string]
+	2019-10-14 13:37:13: building fc_dictionary with bucket size 8...
+	2019-10-14 13:37:14: DONE
+	using 38111399 bytes
+	locate: 151.646 [ns/string]
+	extract: 40.733 [ns/string]
+	2019-10-14 13:37:16: building fc_dictionary with bucket size 16...
+	2019-10-14 13:37:16: DONE
+	using 35270077 bytes
+	locate: 182.845 [ns/string]
+	extract: 66.8254 [ns/string]
+	2019-10-14 13:37:19: building fc_dictionary with bucket size 32...
+	2019-10-14 13:37:19: DONE
+	using 33722175 bytes
+	locate: 259.57 [ns/string]
+	extract: 111.641 [ns/string]
+	2019-10-14 13:37:23: building fc_dictionary with bucket size 64...
+	2019-10-14 13:37:23: DONE
+	using 32910066 bytes
+	locate: 415.206 [ns/string]
+	extract: 195.543 [ns/string]
+	2019-10-14 13:37:30: building fc_dictionary with bucket size 128...
+	2019-10-14 13:37:30: DONE
+	using 32496247 bytes
+	locate: 722.426 [ns/string]
+	extract: 370.092 [ns/string]
+	2019-10-14 13:37:42: building fc_dictionary with bucket size 256...
+	2019-10-14 13:37:42: DONE
+	using 32285914 bytes
+	locate: 1342.53 [ns/string]
+	extract: 715.244 [ns/string]
