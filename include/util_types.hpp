@@ -37,13 +37,6 @@ struct scored_range {
     id_type min_val;
 };
 
-typedef std::function<bool(scored_range const&, scored_range const&)>
-    scored_range_comparator_type;
-scored_range_comparator_type scored_range_comparator =
-    [](scored_range const& l, scored_range const& r) {
-        return l.min_val > r.min_val;
-    };
-
 struct byte_range {
     uint8_t const* begin;
     uint8_t const* end;
@@ -52,11 +45,6 @@ struct byte_range {
 struct uint32_range {
     uint32_t const* begin;
     uint32_t const* end;
-};
-
-struct scored_byte_range {
-    byte_range string;
-    id_type score;
 };
 
 byte_range string_to_byte_range(std::string const& s) {
@@ -176,61 +164,25 @@ private:
     }
 };
 
-// NOTE: this has log complexity but if k is small...
-struct topk_queue {
-    void push(scored_range sr) {
-        m_q.push_back(sr);
-        std::push_heap(m_q.begin(), m_q.end(), scored_range_comparator);
-    }
+struct byte_range_iterator {
+    byte_range_iterator(const byte_range r)
+        : m_r(r) {}
 
-    scored_range top() {
-        return m_q.front();
-    }
-
-    void pop() {
-        std::pop_heap(m_q.begin(), m_q.end(), scored_range_comparator);
-        m_q.pop_back();
-    }
-
-    void clear() {
-        m_q.clear();
-    }
-
-    bool empty() const {
-        return m_q.empty();
-    }
-
-private:
-    std::vector<scored_range> m_q;
-};
-
-struct forward_byte_range_iterator {
-    forward_byte_range_iterator(byte_range const& r) {
-        init(r);
-    }
-
-    void init(byte_range const& r, char separator = '\0') {
-        m_cur_pos = r.begin;
-        m_begin = r.begin;
-        m_end = r.end;
-        m_separator = separator;
+    bool has_next() const {
+        return m_r.begin < m_r.end;
     }
 
     byte_range next() {
-        uint8_t const* pos = m_cur_pos;
-        for (; pos != m_end; ++pos) {
-            if (*pos == m_separator or *pos == '\n') break;
-        }
-        byte_range br = {m_cur_pos, pos};
-        m_cur_pos = pos + 1;
-        return br;
+        byte_range ret;
+        while (m_r.begin != m_r.end and *m_r.begin == ' ') ++m_r.begin;
+        ret.begin = m_r.begin;
+        while (m_r.begin != m_r.end and *m_r.begin != ' ') ++m_r.begin;
+        ret.end = m_r.begin;
+        return ret;
     }
 
 private:
-    uint8_t const* m_cur_pos;
-    uint8_t const* m_begin;
-    uint8_t const* m_end;
-    char m_separator;
+    byte_range m_r;
 };
 
 typedef std::chrono::high_resolution_clock clock_type;

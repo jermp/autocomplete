@@ -33,7 +33,7 @@ void benchmark_conjunctive_topk(char const* binary_filename, uint32_t k,
     if (breakdown) {
         std::vector<timer_type> timers(4);
         for (uint32_t run = 0; run != runs; ++run) {
-            for (auto& query : queries) {
+            for (auto const& query : queries) {
                 auto it = autocomp.conjunctive_topk(query, k, timers);
                 reported_strings += it.size();
             }
@@ -53,7 +53,7 @@ void benchmark_conjunctive_topk(char const* binary_filename, uint32_t k,
         essentials::timer_type timer;
         timer.start();
         for (uint32_t run = 0; run != runs; ++run) {
-            for (auto& query : queries) {
+            for (auto const& query : queries) {
                 auto it = autocomp.conjunctive_topk(query, k);
                 reported_strings += it.size();
             }

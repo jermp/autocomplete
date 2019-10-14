@@ -28,7 +28,7 @@ void benchmark_topk(char const* binary_filename, uint32_t k,
 
     timer.start();
     for (uint32_t run = 0; run != runs; ++run) {
-        for (auto& query : queries) {
+        for (auto const& query : queries) {
             auto it = autocomp.topk(query, k);
             reported_strings += it.size();
         }

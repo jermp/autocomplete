@@ -93,52 +93,6 @@ struct inverted_index {
                m_data.bytes();
     }
 
-    // uint32_t intersect(std::vector<id_type> const& term_ids,
-    //                    std::vector<id_type>& out) {
-    //     assert(term_ids.size() > 0);
-
-    //     if (term_ids.size() == 1) {
-    //         auto it = iterator(term_ids.front() - 1);
-    //         return it.decode(out.data());
-    //     }
-
-    //     static std::vector<iterator_type> iterators;
-    //     iterators.clear();
-    //     iterators.reserve(term_ids.size());
-
-    //     for (auto id : term_ids) {
-    //         assert(id > 0);  // id 0 is reserved for null terminator
-    //         iterators.push_back(std::move(iterator(id - 1)));
-    //     }
-
-    //     std::sort(
-    //         iterators.begin(), iterators.end(),
-    //         [](auto const& l, auto const& r) { return l.size() < r.size();
-    //         });
-
-    //     uint32_t size = 0;
-    //     id_type candidate = iterators[0].access(0);
-    //     size_t i = 1;
-    //     while (candidate < num_docs()) {
-    //         for (; i < iterators.size(); ++i) {
-    //             id_type val = iterators[i].next_geq(candidate);
-    //             if (val != candidate) {
-    //                 candidate = val;
-    //                 i = 0;
-    //                 break;
-    //             }
-    //         }
-
-    //         if (i == iterators.size()) {
-    //             out[size++] = candidate;
-    //             candidate = iterators[0].next();
-    //             i = 1;
-    //         }
-    //     }
-
-    //     return size;
-    // }
-
     struct intersection_iterator_type {
         intersection_iterator_type(inverted_index const* ii,
                                    std::vector<id_type> const& term_ids) {

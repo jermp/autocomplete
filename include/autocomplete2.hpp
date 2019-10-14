@@ -15,10 +15,10 @@ struct autocomplete2 {
     autocomplete2() {
         m_pool.resize(constants::POOL_SIZE, constants::MAX_K);
         m_topk_completion_set.resize(constants::MAX_K,
-                                     constants::MAX_NUM_TERMS_PER_QUERY);
+                                     2 * constants::MAX_NUM_TERMS_PER_QUERY);
         m_pref_topk_scores.resize(constants::MAX_K);
         m_conj_topk_completions.resize(constants::MAX_K,
-                                       constants::MAX_NUM_TERMS_PER_QUERY);
+                                       2 * constants::MAX_NUM_TERMS_PER_QUERY);
     }
 
     autocomplete2(parameters const& params)
@@ -52,14 +52,13 @@ struct autocomplete2 {
         ii_builder.build(m_inverted_index);
     }
 
-    iterator_type prefix_topk(std::string& query, const uint32_t k) {
+    iterator_type prefix_topk(std::string const& query, const uint32_t k) {
         assert(k <= constants::MAX_K);
         init();
         completion_type prefix;
         byte_range suffix;
         parse(m_dictionary, query, prefix, suffix);
 
-        suffix.end += 1;  // include null terminator
         range suffix_lex_range = m_dictionary.locate_prefix(suffix);
         if (suffix_lex_range.is_invalid()) return m_pool.begin();
 
@@ -74,7 +73,7 @@ struct autocomplete2 {
         return extract_strings(num_completions);
     }
 
-    iterator_type conjunctive_topk(std::string& query, const uint32_t k) {
+    iterator_type conjunctive_topk(std::string const& query, const uint32_t k) {
         assert(k <= constants::MAX_K);
         init();
         completion_type prefix;
@@ -82,20 +81,18 @@ struct autocomplete2 {
         uint32_t num_terms = parse(m_dictionary, query, prefix, suffix);
         assert(num_terms > 0);
 
-        uint32_t num_completions = 0;
-        suffix.end += 1;  // include null terminator
         range suffix_lex_range = m_dictionary.locate_prefix(suffix);
         if (suffix_lex_range.is_invalid()) return m_pool.begin();
 
-        if (num_terms == 1) {  // special case
+        uint32_t num_completions = 0;
 
+        if (num_terms == 1) {  // special case
             suffix_lex_range.end += 1;
             num_completions = m_unsorted_minimal_docs_list.topk(
                 suffix_lex_range, k, m_pool.scores(),
                 true  // must return unique results
             );
             extract_completions(num_completions);
-
         } else {
             if (prefix.size() == 1) {  // we've got nothing to intersect
                 auto it = m_inverted_index.iterator(prefix.front() - 1);
@@ -111,7 +108,7 @@ struct autocomplete2 {
         return extract_strings(num_completions);
     }
 
-    iterator_type topk(std::string& query, const uint32_t k) {
+    iterator_type topk(std::string const& query, const uint32_t k) {
         assert(k <= constants::MAX_K);
         init();
         completion_type prefix;
@@ -119,7 +116,6 @@ struct autocomplete2 {
         uint32_t num_terms = parse(m_dictionary, query, prefix, suffix);
         assert(num_terms > 0);
 
-        suffix.end += 1;  // include null terminator
         range suffix_lex_range = m_dictionary.locate_prefix(suffix);
         if (suffix_lex_range.is_invalid()) return m_pool.begin();
 
@@ -169,7 +165,7 @@ struct autocomplete2 {
     }
 
     // for benchmarking
-    iterator_type prefix_topk(std::string& query, uint32_t const k,
+    iterator_type prefix_topk(std::string const& query, uint32_t const k,
                               std::vector<timer_type>& timers) {
         // step 0
         timers[0].start();
@@ -182,7 +178,6 @@ struct autocomplete2 {
 
         // step 1
         timers[1].start();
-        suffix.end += 1;  // include null terminator
         range suffix_lex_range = m_dictionary.locate_prefix(suffix);
         if (suffix_lex_range.is_invalid()) return m_pool.begin();
 
@@ -208,7 +203,7 @@ struct autocomplete2 {
     }
 
     // for benchmarking
-    iterator_type conjunctive_topk(std::string& query, uint32_t const k,
+    iterator_type conjunctive_topk(std::string const& query, uint32_t const k,
                                    std::vector<timer_type>& timers) {
         // step 0
         timers[0].start();
@@ -224,7 +219,6 @@ struct autocomplete2 {
 
         // step 1
         timers[1].start();
-        suffix.end += 1;  // include null terminator
         range suffix_lex_range = m_dictionary.locate_prefix(suffix);
         if (suffix_lex_range.is_invalid()) return m_pool.begin();
         timers[1].stop();
@@ -232,14 +226,12 @@ struct autocomplete2 {
         // step 2
         timers[2].start();
         if (num_terms == 1) {  // special case
-
             suffix_lex_range.end += 1;
             num_completions = m_unsorted_minimal_docs_list.topk(
                 suffix_lex_range, k, m_pool.scores(),
                 true  // must return unique results
             );
             extract_completions(num_completions);
-
         } else {
             if (prefix.size() == 1) {  // we've got nothing to intersect
                 auto it = m_inverted_index.iterator(prefix.front() - 1);
@@ -309,8 +301,8 @@ private:
         auto& completions = m_topk_completion_set.completions();
         auto& sizes = m_topk_completion_set.sizes();
         for (uint32_t i = 0; i != num_completions; ++i) {
-            id_type doc_id = topk_scores[i];
-            id_type lex_id = m_docid_to_lexid[doc_id];
+            auto doc_id = topk_scores[i];
+            auto lex_id = m_docid_to_lexid[doc_id];
             uint8_t size = m_completions.extract(lex_id, completions[i]);
             sizes[i] = size;
         }
@@ -325,8 +317,8 @@ private:
         uint32_t i = 0;
 
         for (; it.has_next(); ++it) {
-            id_type doc_id = *it;
-            id_type lex_id = m_docid_to_lexid[doc_id];
+            auto doc_id = *it;
+            auto lex_id = m_docid_to_lexid[doc_id];
             uint32_t size = m_completions.extract(lex_id, completions[i]);
 
             bool found = false;
@@ -354,7 +346,7 @@ private:
             uint64_t offset = m_pool.bytes();
             uint8_t* decoded = m_pool.data() + offset;
             for (uint32_t j = 0; j != size; ++j) {
-                id_type term_id = c[j];
+                auto term_id = c[j];
                 uint8_t len = m_dictionary.extract(term_id, decoded);
                 decoded += len;
                 offset += len;
@@ -386,7 +378,7 @@ private:
 
         uint32_t pos = 0;
         for (uint32_t i = 0; i != n; ++i) {
-            id_type doc_id = topk_scores[i];
+            auto doc_id = topk_scores[i];
             bool found = false;
 
             for (; !extract_all and pos != num_conj_topk_completions; ++pos) {
@@ -401,7 +393,7 @@ private:
                 completions[i].swap(conjunctive_completions[pos]);
                 sizes[i] = conjunctive_sizes[pos];
             } else {
-                id_type lex_id = m_docid_to_lexid[doc_id];
+                auto lex_id = m_docid_to_lexid[doc_id];
                 uint8_t size = m_completions.extract(lex_id, completions[i]);
                 sizes[i] = size;
             }
