@@ -61,7 +61,7 @@ struct scored_byte_range {
 
 byte_range string_to_byte_range(std::string const& s) {
     const uint8_t* begin = reinterpret_cast<uint8_t const*>(s.c_str());
-    const uint8_t* end = begin + s.size() + 1;  // for '\0' terminator
+    const uint8_t* end = begin + s.size();  // exclude null terminator
     return {begin, end};
 }
 
@@ -84,13 +84,23 @@ void print(uint32_range r) {
 }
 
 inline int byte_range_compare(byte_range l, byte_range r) {
-    return strcmp(reinterpret_cast<const char*>(l.begin),
-                  reinterpret_cast<const char*>(r.begin));
+    int size_l = l.end - l.begin;
+    int size_r = r.end - r.begin;
+    int n = size_l < size_r ? size_l : size_r;
+    int cmp = strncmp(reinterpret_cast<const char*>(l.begin),
+                      reinterpret_cast<const char*>(r.begin), n);
+    if (cmp != 0) return cmp;
+    return size_l - size_r;
 }
 
-inline int byte_range_compare(byte_range l, byte_range r, uint32_t n) {
-    return strncmp(reinterpret_cast<const char*>(l.begin),
-                   reinterpret_cast<const char*>(r.begin), n);
+inline int byte_range_compare(byte_range l, byte_range r, int n) {
+    assert(n > 0 and n <= r.end - r.begin);
+    int size_l = l.end - l.begin;
+    int m = size_l < n ? size_l : n;
+    int cmp = strncmp(reinterpret_cast<const char*>(l.begin),
+                      reinterpret_cast<const char*>(r.begin), m);
+    if (cmp != 0) return cmp;
+    return m - n;
 }
 
 inline int uint32_range_compare(uint32_range l, uint32_range r) {
@@ -118,23 +128,6 @@ inline int uint32_range_compare(uint32_range l, uint32_range r, uint32_t n) {
         i += 1;
     }
     if (i == n) return 0;
-    return -1;
-}
-
-inline int uint32_range_compare(uint32_range l, uint32_range r, uint32_t n,
-                                range suffix_lex_range) {
-    assert(n > 0 and n <= r.end - r.begin);
-    uint32_t i = 0;
-    while (l.begin != l.end and i != n) {
-        uint32_t x = *(l.begin);
-        uint32_t y = *(r.begin);
-        if (x < y) return -1;
-        if (x > y) return 1;
-        l.begin += 1;
-        r.begin += 1;
-        i += 1;
-    }
-    if (i == n) return int(*(l.begin)) - int(suffix_lex_range.begin);
     return -1;
 }
 
@@ -210,17 +203,6 @@ struct topk_queue {
 private:
     std::vector<scored_range> m_q;
 };
-
-uint32_t parse_query(std::string& query) {
-    uint32_t num_terms = 1;
-    for (uint64_t i = 0; i != query.size(); ++i) {
-        if (query[i] == ' ' or query[i] == '\0') {
-            query[i] = '\0';
-            ++num_terms;
-        }
-    }
-    return num_terms;
-}
 
 struct forward_byte_range_iterator {
     forward_byte_range_iterator(byte_range const& r) {

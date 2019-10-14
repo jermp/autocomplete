@@ -4,6 +4,17 @@
 
 namespace autocomplete {
 
+uint32_t parse_query(std::string& query) {
+    uint32_t num_terms = 1;
+    for (uint64_t i = 0; i != query.size(); ++i) {
+        if (query[i] == ' ' or query[i] == '\0') {
+            query[i] = '\0';
+            ++num_terms;
+        }
+    }
+    return num_terms;
+}
+
 template <typename Dictionary>
 uint32_t parse(Dictionary const& dict, std::string& query,
                completion_type& prefix, byte_range& suffix) {

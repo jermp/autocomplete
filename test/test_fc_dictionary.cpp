@@ -123,15 +123,17 @@ int main(int argc, char** argv) {
                     return 1;
                 }
 
-                std::string d(reinterpret_cast<char const*>(decoded.data()));
-                if (d != t) {
-                    std::cout << "Error: expected '" << t << "',"
-                              << " but got '" << d << "'" << std::endl;
-                    return 1;
+                auto s = reinterpret_cast<char const*>(decoded.data());
+                for (uint8_t i = 0; i != string_len; ++i) {
+                    if (t[i] != s[i]) {
+                        std::cout << "Error: expected char " << t[i]
+                                  << " but got " << s[i] << std::endl;
+                        return 1;
+                    }
                 }
 
-                // std::cout << "lexicographic id of '" << t << "' is " << got
-                //           << std::endl;
+                std::cout << "lexicographic id of '" << t << "' is " << got
+                          << std::endl;
             }
 
             // test locate_prefix() for all strings
@@ -160,9 +162,9 @@ int main(int argc, char** argv) {
                         return 1;
                     }
 
-                    // std::cout << "prefix range of '" << prefix << "' is ["
-                    //           << got.begin << "," << got.end << "]" <<
-                    //           std::endl;
+                    std::cout << "prefix range of '" << prefix << "' is ["
+                              << got.begin << "," << got.end << "]"
+                              << std::endl;
                 }
             }
         }

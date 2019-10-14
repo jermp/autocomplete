@@ -36,8 +36,7 @@ struct fc_dictionary {
 
             for (uint32_t b = 0; b != buckets; ++b) {
                 input >> header;
-                m_headers.insert(m_headers.end(), header.begin(), header.end());
-                m_headers.push_back('\0');
+                write_header(header);
                 m_pointers_to_headers.push_back(m_headers.size());
                 prev.swap(header);
                 uint32_t size = b != buckets - 1 ? BucketSize : tail;
@@ -48,11 +47,7 @@ struct fc_dictionary {
                            curr[l] == prev[l]) {
                         ++l;
                     }
-                    assert(l < 256);  // 1 byte is enough
-                    m_buckets.push_back(l);
-                    m_buckets.insert(m_buckets.end(), curr.begin() + l,
-                                     curr.end());
-                    m_buckets.push_back('\0');
+                    write(curr, l);
                     prev.swap(curr);
                 }
                 m_pointers_to_buckets.push_back(m_buckets.size());
@@ -84,13 +79,29 @@ struct fc_dictionary {
         std::vector<uint32_t> m_pointers_to_buckets;
         std::vector<uint8_t> m_headers;
         std::vector<uint8_t> m_buckets;
+
+        void write_header(std::string const& header) {
+            assert(header.size() > 0 and
+                   header.size() <= constants::MAX_NUM_CHARS_PER_QUERY);
+            m_headers.insert(m_headers.end(), header.begin(), header.end());
+        }
+
+        void write(std::string const& s, uint32_t lcp) {
+            assert(s.size() > 0 and
+                   s.size() <= constants::MAX_NUM_CHARS_PER_QUERY);
+            m_buckets.push_back(lcp);
+            uint8_t size = s.size();
+            assert(size >= lcp);
+            m_buckets.push_back(size - lcp);
+            m_buckets.insert(m_buckets.end(), s.begin() + lcp, s.end());
+        }
     };
 
     fc_dictionary() {}
 
     // NOTE: return inclusive ranges, i.e., [a,b]
     range locate_prefix(byte_range p) const {
-        if (p.end - p.begin - 1 == 0) return {0, size() - 1};
+        if (p.end - p.begin == 0) return {0, size() - 1};
         auto bucket_id = locate_buckets(p);
         byte_range h_begin = header(bucket_id.begin);
         byte_range h_end = header(bucket_id.end);
@@ -147,9 +158,11 @@ struct fc_dictionary {
     byte_range header(uint32_t i) const {
         assert(i < buckets());
         range pointer = m_pointers_to_headers[i];
-        assert(m_headers[pointer.end - 1] == '\0');
+        // assert(m_headers[pointer.end - 1] == '\0');
+        // return {m_headers.data() + pointer.begin,
+        //         m_headers.data() + pointer.end - 1};
         return {m_headers.data() + pointer.begin,
-                m_headers.data() + pointer.end - 1};
+                m_headers.data() + pointer.end};
     }
 
     size_t bytes() const {
@@ -204,7 +217,7 @@ private:
 
     range locate_buckets(byte_range p) const {
         range r;
-        uint32_t n = p.end - p.begin - 1;
+        uint32_t n = p.end - p.begin;
         int lo, hi, left, right;
 
         // 1. locate left bucket
@@ -266,25 +279,26 @@ private:
 
 #define FC_DICT_LOCATE_INIT                         \
     static uint8_t* decoded = new uint8_t[256 + 1]; \
-    memcpy(decoded, h.begin, h.end - h.begin + 1);  \
+    memcpy(decoded, h.begin, h.end - h.begin);      \
     uint8_t lcp_len;                                \
     uint32_t n = bucket_size(bucket_id);            \
     uint8_t const* curr =                           \
         m_buckets.data() + m_pointers_to_buckets[bucket_id].begin;
 
+    // return the length of the decoded string
     uint8_t decode(uint8_t const* in, uint8_t* out, uint8_t* lcp_len) const {
         *lcp_len = *in++;  // |lcp|
         uint8_t l = *lcp_len;
-        while (*in) out[l++] = *in++;
-        out[l] = '\0';
-        return l;
+        uint8_t suffix_len = *in++;
+        memcpy(out + l, in, suffix_len);
+        return l + suffix_len;
     }
 
     uint8_t extract(id_type id, id_type bucket_id, uint8_t* out) const {
-        byte_range h = header(bucket_id);
-        memcpy(out, h.begin, h.end - h.begin + 1);
-        uint8_t lcp_len;
         assert(id <= bucket_size(bucket_id));
+        byte_range h = header(bucket_id);
+        memcpy(out, h.begin, h.end - h.begin);
+        uint8_t lcp_len;
         uint8_t const* curr =
             m_buckets.data() + m_pointers_to_buckets[bucket_id].begin;
         uint8_t string_len = h.end - h.begin;
@@ -310,7 +324,7 @@ private:
 
     id_type left_locate(byte_range p, byte_range h, id_type bucket_id) const {
         FC_DICT_LOCATE_INIT
-        uint32_t len = p.end - p.begin - 1;
+        uint32_t len = p.end - p.begin;
         for (id_type i = 1; i <= n; ++i) {
             uint8_t l = decode(curr, decoded, &lcp_len);
             int cmp = byte_range_compare({decoded, decoded + l}, p, len);
@@ -322,7 +336,7 @@ private:
 
     id_type right_locate(byte_range p, byte_range h, id_type bucket_id) const {
         FC_DICT_LOCATE_INIT
-        uint32_t len = p.end - p.begin - 1;
+        uint32_t len = p.end - p.begin;
         for (id_type i = 1; i <= n; ++i) {
             uint8_t l = decode(curr, decoded, &lcp_len);
             int cmp = byte_range_compare({decoded, decoded + l}, p, len);
