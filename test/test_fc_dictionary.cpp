@@ -101,7 +101,8 @@ int main(int argc, char** argv) {
 
             std::cout << "terms.size() " << terms.size() << std::endl;
 
-            std::vector<uint8_t> decoded(256 + 1);  // assume this is enough
+            std::vector<uint8_t> decoded(2 *
+                                         constants::MAX_NUM_CHARS_PER_QUERY);
 
             for (auto const& t : terms) {
                 id_type expected = locate(terms, t);

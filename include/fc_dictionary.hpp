@@ -53,6 +53,11 @@ struct fc_dictionary {
                 m_pointers_to_buckets.push_back(m_buckets.size());
             }
 
+            // NOTE: pad to allow fixed-copy operations
+            for (uint32_t i = 0; i != constants::MAX_NUM_CHARS_PER_QUERY; ++i) {
+                m_buckets.push_back(0);
+            }
+
             essentials::logger("DONE");
         }
 
@@ -158,9 +163,6 @@ struct fc_dictionary {
     byte_range header(uint32_t i) const {
         assert(i < buckets());
         range pointer = m_pointers_to_headers[i];
-        // assert(m_headers[pointer.end - 1] == '\0');
-        // return {m_headers.data() + pointer.begin,
-        //         m_headers.data() + pointer.end - 1};
         return {m_headers.data() + pointer.begin,
                 m_headers.data() + pointer.end};
     }
@@ -277,22 +279,27 @@ private:
         return r;
     }
 
-#define FC_DICT_LOCATE_INIT                         \
-    static uint8_t* decoded = new uint8_t[256 + 1]; \
-    memcpy(decoded, h.begin, h.end - h.begin);      \
-    uint8_t lcp_len;                                \
-    uint32_t n = bucket_size(bucket_id);            \
-    uint8_t const* curr =                           \
+#define FC_DICT_LOCATE_INIT                                         \
+    static uint8_t decoded[2 * constants::MAX_NUM_CHARS_PER_QUERY]; \
+    memcpy(decoded, h.begin, h.end - h.begin);                      \
+    uint8_t lcp_len;                                                \
+    uint32_t n = bucket_size(bucket_id);                            \
+    uint8_t const* curr =                                           \
         m_buckets.data() + m_pointers_to_buckets[bucket_id].begin;
 
     uint8_t decode(uint8_t const* in, uint8_t* out, uint8_t* lcp_len) const {
         *lcp_len = *in++;  // |lcp|
         uint8_t l = *lcp_len;
         uint8_t suffix_len = *in++;
-        // NOTE: excluding null terminators, allow us to use memcpy here because
-        // we know exactly how many bytes to copy: this is much faster than
-        // looping until we hit '\0'
-        memcpy(out + l, in, suffix_len);
+
+        // NOTE 1: excluding null terminators, allow us to use memcpy here
+        // because we know exactly how many bytes to copy: this is much faster
+        // than looping until we hit '\0'. NOTE 2: always copying a fixed amount
+        // of bytes (constants::MAX_NUM_CHARS_PER_QUERY) is much faster than
+        // copying an exact amount, e.g., suffix_len (althoung it could be
+        // less), so do not do: memcpy(out+ l, in, suffix_len).
+        memcpy(out + l, in, constants::MAX_NUM_CHARS_PER_QUERY);
+
         return l + suffix_len;
     }
 
