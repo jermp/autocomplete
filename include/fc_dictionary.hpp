@@ -285,11 +285,13 @@ private:
     uint8_t const* curr =                           \
         m_buckets.data() + m_pointers_to_buckets[bucket_id].begin;
 
-    // return the length of the decoded string
     uint8_t decode(uint8_t const* in, uint8_t* out, uint8_t* lcp_len) const {
         *lcp_len = *in++;  // |lcp|
         uint8_t l = *lcp_len;
         uint8_t suffix_len = *in++;
+        // NOTE: excluding null terminators, allow us to use memcpy here because
+        // we know exactly how many bytes to copy: this is much faster than
+        // looping until we hit '\0'
         memcpy(out + l, in, suffix_len);
         return l + suffix_len;
     }
