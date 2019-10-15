@@ -118,8 +118,8 @@ struct forward_index {
     }
 
     struct permuting_iterator_type {
-        permuting_iterator_type(forward_list_iterator_type sorted,
-                                permutation_list_iterator_type permuted)
+        permuting_iterator_type(forward_list_iterator_type const& sorted,
+                                permutation_list_iterator_type const& permuted)
             : m_i(0)
             , m_sorted(sorted)
             , m_permuted(permuted) {

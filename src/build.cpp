@@ -55,7 +55,9 @@ int main(int argc, char** argv) {
         }
     }
 
-    if (type == "type1") {
+    if (type == "ef_type1") {
+        build<ef_autocomplete_type>(params, output_filename);
+    } else if (type == "type1") {
         build<uncompressed_autocomplete_type>(params, output_filename);
     } else if (type == "type2") {
         build<uncompressed_autocomplete_type2>(params, output_filename);
