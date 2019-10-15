@@ -27,22 +27,22 @@ int main(int argc, char** argv) {
 
     {
         // build, print and write
-        integer_fc_dictionary_B16::builder builder(params);
-        integer_fc_dictionary_B16 dict;
+        integer_fc_dictionary_type::builder builder(params);
+        integer_fc_dictionary_type dict;
         builder.build(dict);
         std::cout << "using " << dict.bytes() << " bytes" << std::endl;
 
         if (output_filename) {
             // essentials::print_size(dict);
             essentials::logger("saving data structure to disk...");
-            essentials::save<integer_fc_dictionary_B16>(dict, output_filename);
+            essentials::save<integer_fc_dictionary_type>(dict, output_filename);
             essentials::logger("DONE");
         }
     }
 
     {
         if (output_filename) {
-            integer_fc_dictionary_B16 dict;
+            integer_fc_dictionary_type dict;
             essentials::logger("loading data structure from disk...");
             essentials::load(dict, output_filename);
             essentials::logger("DONE");

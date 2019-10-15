@@ -78,9 +78,9 @@ int main(int argc, char** argv) {
     params.collection_basename = argv[1];
     params.load();
 
-    fc_dictionary_B16 dict;
+    fc_dictionary_type dict;
     {
-        fc_dictionary_B16::builder builder(params);
+        fc_dictionary_type::builder builder(params);
         builder.build(dict);
     }
 
@@ -112,6 +112,7 @@ int main(int argc, char** argv) {
     {
         // typedef uint64_completion_trie completion_trie_type;
         typedef ef_completion_trie completion_trie_type;
+
         completion_trie_type index;
         {
             completion_trie_type::builder builder(params);
@@ -124,9 +125,9 @@ int main(int argc, char** argv) {
     }
 
     {
-        integer_fc_dictionary_B16 index;
+        integer_fc_dictionary_type index;
         {
-            integer_fc_dictionary_B16::builder builder(params);
+            integer_fc_dictionary_type::builder builder(params);
             builder.build(index);
         }
         essentials::logger(

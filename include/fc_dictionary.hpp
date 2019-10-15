@@ -2,12 +2,14 @@
 
 #include <cmath>
 
+#include "uint_vec.hpp"
 #include "parameters.hpp"
 #include "util_types.hpp"
+#include "constants.hpp"
 
 namespace autocomplete {
 
-template <uint32_t BucketSize, typename Pointers>
+template <uint32_t BucketSize = 16, typename Pointers = uint_vec<uint32_t>>
 struct fc_dictionary {
     struct builder {
         builder() {}

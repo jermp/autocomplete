@@ -60,22 +60,22 @@ int main(int argc, char** argv) {
 
     {
         // build, print and write
-        fc_dictionary_B16::builder builder(params);
-        fc_dictionary_B16 dict;
+        fc_dictionary_type::builder builder(params);
+        fc_dictionary_type dict;
         builder.build(dict);
         std::cout << "using " << dict.bytes() << " bytes" << std::endl;
 
         if (output_filename) {
             // essentials::print_size(dict);
             essentials::logger("saving data structure to disk...");
-            essentials::save<fc_dictionary_B16>(dict, output_filename);
+            essentials::save<fc_dictionary_type>(dict, output_filename);
             essentials::logger("DONE");
         }
     }
 
     {
         if (output_filename) {
-            fc_dictionary_B16 dict;
+            fc_dictionary_type dict;
             essentials::logger("loading data structure from disk...");
             essentials::load(dict, output_filename);
             essentials::logger("DONE");
