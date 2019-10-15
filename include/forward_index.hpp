@@ -38,7 +38,7 @@ struct forward_index {
 
                 uint32_t n = 0;
                 input >> n;
-                assert(n > 0 and n < 256);
+                assert(n > 0 and n < constants::MAX_NUM_TERMS_PER_QUERY);
                 list.reserve(n);
                 sorted_permutation.reserve(n);
 

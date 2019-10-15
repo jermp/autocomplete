@@ -110,9 +110,11 @@ int main(int argc, char** argv) {
     essentials::logger("loaded " + std::to_string(num_queries) + " queries");
 
     {
-        uint64_completion_trie index;
+        // typedef uint64_completion_trie completion_trie_type;
+        typedef ef_completion_trie completion_trie_type;
+        completion_trie_type index;
         {
-            uint64_completion_trie::builder builder(params);
+            completion_trie_type::builder builder(params);
             builder.build(index);
         }
         essentials::logger("testing locate_prefix() for completion_trie...");

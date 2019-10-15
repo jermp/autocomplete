@@ -47,22 +47,24 @@ int main(int argc, char** argv) {
     params.collection_basename = argv[1];
     params.load();
 
+    // typedef uint64_completion_trie completion_trie_type;
+    typedef ef_completion_trie completion_trie_type;
+
     {
-        uint64_completion_trie::builder builder(params);
-        uint64_completion_trie ct;
+        completion_trie_type::builder builder(params);
+        completion_trie_type ct;
         builder.build(ct);
 
         if (output_filename) {
-            // essentials::print_size(ct);
             essentials::logger("saving data structure to disk...");
-            essentials::save<uint64_completion_trie>(ct, output_filename);
+            essentials::save<completion_trie_type>(ct, output_filename);
             essentials::logger("DONE");
         }
     }
 
     {
         if (output_filename) {
-            uint64_completion_trie ct;
+            completion_trie_type ct;
             essentials::logger("loading data structure from disk...");
             essentials::load(ct, output_filename);
             essentials::logger("DONE");
@@ -115,7 +117,8 @@ int main(int argc, char** argv) {
 
             //         range got = ct.locate_prefix(prefix);
 
-            //         // std::cout << "is [" << got.begin << "," << got.end <<
+            //         // std::cout << "is [" << got.begin << "," << got.end
+            // <<
             //         ")"
             //         //           << std::endl;
 

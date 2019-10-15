@@ -162,31 +162,6 @@ struct completion_trie {
 
     completion_trie() {}
 
-    // NOTE: return [a,b)
-    // range locate_prefix(completion_type const& c) const {
-    //     assert(c.size() > 0);
-    //     range r{global::not_found, global::not_found};
-    //     range pointer{0, m_nodes.front().size()};
-    //     uint32_t levels = c.size() - 1;
-
-    //     for (uint32_t i = 0; i <= levels; ++i) {
-    //         uint64_t pos = m_nodes[i].find(pointer, c[i]);
-
-    //         // NOTE: if c is not stored in the trie but only
-    //         // a prefix p of c, then return the range of p
-    //         if (pos == global::not_found) break;
-
-    //         r.begin = m_left_extremes[i].access(pos) + pos;
-    //         uint64_t size = m_sizes[i].access(pos) -
-    //                         (pos ? m_sizes[i].access(pos - 1) : 0) + 1;
-    //         r.end = r.begin + size;
-
-    //         if (i != levels) pointer = m_pointers[i][pos];
-    //     }
-
-    //     return r;
-    // }
-
     // If the last token of the query is not completely specified,
     // then we search for its lexicographic range among the children of c.
     // Return [a,b)

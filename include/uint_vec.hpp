@@ -47,8 +47,8 @@ struct uint_vec {
     }
 
     struct iterator {
-        iterator(uint_vec<UintType> const& vec, uint64_t pos)
-            : m_vec(&vec)
+        iterator(uint_vec<UintType> const* vec, uint64_t pos)
+            : m_vec(vec)
             , m_pos(pos) {}
 
         UintType operator*() {
@@ -73,17 +73,17 @@ struct uint_vec {
         return m_data[i];
     }
 
-    uint64_t find(range r, UintType id) const {
-        assert(r.end > r.begin);
+    uint64_t find(const range r, UintType id) const {
+        assert(!r.is_invalid());
         assert(r.end <= size());
         UintType prev_upper = previous_range_upperbound(r);
         return util::find(*this, id + prev_upper, r.begin, r.end - 1);
     }
 
-    range find(range r, range lex) const {
-        assert(r.end > r.begin);
+    range find(const range r, const range lex) const {
+        assert(!r.is_invalid());
         assert(r.end <= size());
-        UintType prev_upper = previous_range_upperbound(r);
+        auto prev_upper = previous_range_upperbound(r);
 
         uint64_t begin =
             util::next_geq(*this, lex.begin + prev_upper, r.begin, r.end - 1);
@@ -101,7 +101,7 @@ struct uint_vec {
             return {begin, r.end};
         }
 
-        return {begin, m_data[end] != id_end ? end : end + 1};
+        return {begin, access(end) != id_end ? end : end + 1};
     }
 
     inline range operator[](uint64_t i) const {
@@ -109,7 +109,7 @@ struct uint_vec {
     }
 
     iterator at(uint64_t pos) const {
-        return iterator(*this, pos);
+        return iterator(this, pos);
     }
 
     size_t bytes() const {
@@ -130,7 +130,8 @@ struct uint_vec {
 private:
     std::vector<UintType> m_data;
 
-    UintType previous_range_upperbound(range r) const {
+    UintType previous_range_upperbound(const range r) const {
+        assert(!r.is_invalid());
         return r.begin ? access(r.begin - 1) : 0;
     }
 };  // namespace autocomplete

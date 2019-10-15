@@ -15,6 +15,7 @@
 #include "autocomplete3.hpp"
 #include "autocomplete4.hpp"
 
+#include "ef/ef_sequence.hpp"
 #include "succinct_rmq/cartesian_tree.hpp"
 
 namespace autocomplete {
@@ -24,6 +25,10 @@ typedef uint_vec<uint64_t> uint64_vec;
 
 typedef completion_trie<uint64_vec, uint32_vec, uint32_vec, uint32_vec>
     uint64_completion_trie;
+
+typedef completion_trie<ef::ef_sequence, ef::ef_sequence, ef::ef_sequence,
+                        ef::ef_sequence>
+    ef_completion_trie;
 
 static const uint32_t BucketSize = 16;
 typedef fc_dictionary<BucketSize, uint32_vec> fc_dictionary_B16;

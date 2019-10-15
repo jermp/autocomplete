@@ -46,10 +46,10 @@ struct uncompressed_list {
             return m_id;
         }
 
-        uint64_t decode(UintType* out) {
-            memcpy(out, m_data, size() * sizeof(UintType));
-            return size();
-        }
+        // uint64_t decode(UintType* out) {
+        //     memcpy(out, m_data, size() * sizeof(UintType));
+        //     return size();
+        // }
 
         UintType access(uint64_t i) {
             assert(i < size());
