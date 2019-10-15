@@ -105,16 +105,8 @@ struct forward_index {
 
     forward_index() {}
 
-    forward_list_iterator_type iterator(id_type doc_id) {
-        uint64_t offset = m_pointers.access(doc_id * 2);
-        bits_iterator<bit_vector> it(m_data, offset);
-        uint64_t n = read_gamma_nonzero(it);
-        if (ListType::is_byte_aligned) util::eat_pad(it);
-        return {m_data, it.position(), m_num_terms + 1, n};
-    }
-
     bool intersects(id_type doc_id, range r) {
-        return iterator(doc_id).intersects(r);
+        return get(doc_id).intersects(r);
     }
 
     struct permuting_iterator_type {
@@ -144,7 +136,7 @@ struct forward_index {
         permutation_list_iterator_type m_permuted;
     };
 
-    permuting_iterator_type permuting_iterator(id_type doc_id) {
+    permuting_iterator_type iterator(id_type doc_id) {
         uint64_t offset = m_pointers.access(doc_id * 2);
         bits_iterator<bit_vector> it(m_data, offset);
         uint64_t n = read_gamma_nonzero(it);
@@ -195,6 +187,14 @@ private:
     uint64_t m_num_terms;
     Pointers m_pointers;
     bit_vector m_data;
+
+    forward_list_iterator_type get(id_type doc_id) {
+        uint64_t offset = m_pointers.access(doc_id * 2);
+        bits_iterator<bit_vector> it(m_data, offset);
+        uint64_t n = read_gamma_nonzero(it);
+        if (ListType::is_byte_aligned) util::eat_pad(it);
+        return {m_data, it.position(), m_num_terms + 1, n};
+    }
 };
 
 }  // namespace autocomplete

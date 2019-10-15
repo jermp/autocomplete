@@ -286,7 +286,7 @@ private:
         auto const& topk_scores = m_pool.scores();
         for (uint32_t i = 0; i != num_completions; ++i) {
             auto doc_id = topk_scores[i];
-            auto it = m_forward_index.permuting_iterator(doc_id);
+            auto it = m_forward_index.iterator(doc_id);
             uint64_t offset = m_pool.bytes();
             uint8_t* decoded = m_pool.data() + offset;
             for (uint32_t j = 0; j != it.size(); ++j, ++it) {

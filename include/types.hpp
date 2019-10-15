@@ -7,6 +7,7 @@
 #include "unsorted_list.hpp"
 #include "uncompressed_list.hpp"
 #include "forward_index.hpp"
+#include "forward_index2.hpp"
 #include "inverted_index.hpp"
 #include "blocked_inverted_index.hpp"
 
@@ -44,6 +45,7 @@ typedef forward_index<uncompressed_list32_t, uint64_vec>
 typedef inverted_index<uncompressed_list32_t, uint64_vec>
     uncompressed_inverted_index;
 
+typedef forward_index2 compact_forward_index;
 typedef forward_index<ef::compact_ef, ef::ef_sequence> ef_forward_index;
 typedef inverted_index<ef::compact_ef, ef::ef_sequence> ef_inverted_index;
 
@@ -70,7 +72,8 @@ typedef autocomplete4<integer_fc_dictionary_B16, unsorted_list_succinct_rmq,
 
 /* compressed indexes */
 typedef autocomplete<ef_completion_trie, unsorted_list_succinct_rmq,
-                     fc_dictionary_B16, ef_inverted_index, ef_forward_index>
+                     fc_dictionary_B16, ef_inverted_index,
+                     compact_forward_index>
     ef_autocomplete_type;
 
 typedef autocomplete2<integer_fc_dictionary_B16, unsorted_list_succinct_rmq,
