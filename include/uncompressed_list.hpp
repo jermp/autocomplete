@@ -27,8 +27,8 @@ struct uncompressed_list {
                  uint64_t n)
             : m_universe(universe)
             , m_size(n)
-            , m_position(0)
-            , m_id(-1) {
+            , m_id(-1)
+            , m_position(0) {
             assert(offset % 8 == 0);
             uint8_t const* base =
                 reinterpret_cast<uint8_t const*>(bv.data().data()) + offset / 8;
