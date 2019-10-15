@@ -40,14 +40,12 @@ typedef unsorted_list<uint32_vec, cartesian_tree> unsorted_list_succinct_rmq;
 
 typedef uncompressed_list<uint32_t> uncompressed_list32_t;
 
-typedef forward_index<uncompressed_list32_t, uint64_vec>
-    uncompressed_forward_index;
-typedef inverted_index<uncompressed_list32_t, uint64_vec>
-    uncompressed_inverted_index;
+typedef forward_index<uncompressed_list32_t> uncompressed_forward_index;
+typedef inverted_index<uncompressed_list32_t> uncompressed_inverted_index;
 
 typedef forward_index2 compact_forward_index;
-typedef forward_index<ef::compact_ef, ef::ef_sequence> ef_forward_index;
-typedef inverted_index<ef::compact_ef, ef::ef_sequence> ef_inverted_index;
+typedef forward_index<ef::compact_ef> ef_forward_index;
+typedef inverted_index<ef::compact_ef> ef_inverted_index;
 
 typedef blocked_inverted_index<uncompressed_list32_t, uncompressed_list32_t,
                                uncompressed_list32_t, uint64_vec>

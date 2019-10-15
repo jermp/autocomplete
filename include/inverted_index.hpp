@@ -3,10 +3,11 @@
 #include "parameters.hpp"
 #include "integer_codes.hpp"
 #include "building_util.hpp"
+#include "ef/ef_sequence.hpp"
 
 namespace autocomplete {
 
-template <typename ListType, typename Pointers>
+template <typename ListType>
 struct inverted_index {
     typedef typename ListType::iterator iterator_type;
 
@@ -62,7 +63,7 @@ struct inverted_index {
             other.m_bvb.swap(m_bvb);
         }
 
-        void build(inverted_index<ListType, Pointers>& ii) {
+        void build(inverted_index<ListType>& ii) {
             ii.m_num_integers = m_num_integers;
             ii.m_num_docs = m_num_docs;
             ii.m_pointers.build(m_pointers);
@@ -187,7 +188,7 @@ struct inverted_index {
 private:
     uint64_t m_num_integers;
     uint64_t m_num_docs;
-    Pointers m_pointers;
+    ef::ef_sequence m_pointers;
     bit_vector m_data;
 };
 

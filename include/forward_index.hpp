@@ -3,10 +3,11 @@
 #include "parameters.hpp"
 #include "integer_codes.hpp"
 #include "building_util.hpp"
+#include "ef/ef_sequence.hpp"
 
 namespace autocomplete {
 
-template <typename ListType, typename Pointers>
+template <typename ListType>
 struct forward_index {
     typedef ListType forward_list_type;
     typedef typename forward_list_type::iterator forward_list_iterator_type;
@@ -88,7 +89,7 @@ struct forward_index {
             other.m_bvb.swap(m_bvb);
         }
 
-        void build(forward_index<ListType, Pointers>& fi) {
+        void build(forward_index<ListType>& fi) {
             fi.m_num_integers = m_num_integers;
             fi.m_num_terms = m_num_terms;
             fi.m_pointers.build(m_pointers);
@@ -185,7 +186,7 @@ struct forward_index {
 private:
     uint64_t m_num_integers;
     uint64_t m_num_terms;
-    Pointers m_pointers;
+    ef::ef_sequence m_pointers;
     bit_vector m_data;
 
     forward_list_iterator_type get(id_type doc_id) {

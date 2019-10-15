@@ -28,6 +28,16 @@ Average among 10 runs.
 	{"num_terms_per_query": "7", "num_queries": "10000", "ns_per_query": "29992"}
 	{"num_terms_per_query": "8+", "num_queries": "10000", "ns_per_query": "27313"}
 	
+	+ Elias-Fano and forward_index2
+	{"num_terms_per_query": "1", "num_queries": "10000", "ns_per_query": "5336"}
+	{"num_terms_per_query": "2", "num_queries": "10000", "ns_per_query": "7884"}
+	{"num_terms_per_query": "3", "num_queries": "10000", "ns_per_query": "26278"}
+	{"num_terms_per_query": "4", "num_queries": "10000", "ns_per_query": "35664"}
+	{"num_terms_per_query": "5", "num_queries": "10000", "ns_per_query": "35189"}
+	{"num_terms_per_query": "6", "num_queries": "10000", "ns_per_query": "32033"}
+	{"num_terms_per_query": "7", "num_queries": "10000", "ns_per_query": "29950"}
+	{"num_terms_per_query": "8+", "num_queries": "10000", "ns_per_query": "27332"}
+	
 #### Solution 2
 
 	{"num_terms_per_query": "1", "num_queries": "50000", "ns_per_query": "5812"}
