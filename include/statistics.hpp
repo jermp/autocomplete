@@ -53,7 +53,9 @@ void autocomplete2<Completions, UnsortedDocsList, Dictionary,
           total_bytes);
     print("dictionary", m_dictionary.bytes(), total_bytes);
     print("inverted index", m_inverted_index.bytes(), total_bytes);
-    print_bpi("data+pointers", m_inverted_index.bytes(),
+    print_bpi("data", m_inverted_index.data_bytes(),
+              m_inverted_index.num_integers());
+    print_bpi("pointers", m_inverted_index.pointer_bytes(),
               m_inverted_index.num_integers());
     print("map from docid to lexid", essentials::vec_bytes(m_docid_to_lexid),
           total_bytes);
@@ -70,7 +72,9 @@ void autocomplete3<Completions, UnsortedDocsList, Dictionary,
     print("unsorted docs list", m_unsorted_docs_list.bytes(), total_bytes);
     print("dictionary", m_dictionary.bytes(), total_bytes);
     print("inverted index", m_inverted_index.bytes(), total_bytes);
-    print_bpi("data+pointers", m_inverted_index.bytes(),
+    print_bpi("data", m_inverted_index.data_bytes(),
+              m_inverted_index.num_integers());
+    print_bpi("pointers", m_inverted_index.pointer_bytes(),
               m_inverted_index.num_integers());
     print("map from docid to lexid", essentials::vec_bytes(m_docid_to_lexid),
           total_bytes);

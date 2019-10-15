@@ -39,6 +39,16 @@ Average among 10 runs.
 	{"num_terms_per_query": "7", "num_queries": "50000", "ns_per_query": "25728"}
 	{"num_terms_per_query": "8+", "num_queries": "50000", "ns_per_query": "22419"}
 
+	+ Elias-Fano
+	{"num_terms_per_query": "1", "num_queries": "10000", "ns_per_query": "5609"}
+	{"num_terms_per_query": "2", "num_queries": "10000", "ns_per_query": "10894"}
+	{"num_terms_per_query": "3", "num_queries": "10000", "ns_per_query": "27311"}
+	{"num_terms_per_query": "4", "num_queries": "10000", "ns_per_query": "34780"}
+	{"num_terms_per_query": "5", "num_queries": "10000", "ns_per_query": "33849"}
+	{"num_terms_per_query": "6", "num_queries": "10000", "ns_per_query": "30319"}
+	{"num_terms_per_query": "7", "num_queries": "10000", "ns_per_query": "28181"}
+	{"num_terms_per_query": "8+", "num_queries": "10000", "ns_per_query": "24757"}
+	
 #### Solution 3
 
 	{"num_terms_per_query": "1", "num_queries": "1000", "ns_per_query": "5899"}

@@ -68,7 +68,12 @@ typedef autocomplete4<integer_fc_dictionary_B16, unsorted_list_succinct_rmq,
                       fc_dictionary_B16, uncompressed_blocked_inverted_index>
     uncompressed_autocomplete_type4;
 
+/* compressed indexes */
 typedef autocomplete<ef_completion_trie, unsorted_list_succinct_rmq,
                      fc_dictionary_B16, ef_inverted_index, ef_forward_index>
     ef_autocomplete_type;
+
+typedef autocomplete2<integer_fc_dictionary_B16, unsorted_list_succinct_rmq,
+                      fc_dictionary_B16, ef_inverted_index>
+    ef_autocomplete_type2;
 }  // namespace autocomplete
