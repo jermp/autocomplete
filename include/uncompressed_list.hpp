@@ -13,7 +13,8 @@ struct uncompressed_list {
     static_assert(BITS <= 64, "bits per integer must be <= 64");
 
     template <typename Iterator>
-    static void build(bit_vector_builder& bvb, Iterator begin, uint64_t n) {
+    static void build(bit_vector_builder& bvb, Iterator begin,
+                      uint64_t /*universe*/, uint64_t n) {
         for (uint64_t i = 0; i != n; ++i, ++begin) {
             bvb.append_bits(*begin, BITS);
         }
@@ -23,7 +24,7 @@ struct uncompressed_list {
         iterator() {}
 
         iterator(bit_vector const& bv, uint64_t offset, uint64_t universe,
-                 uint64_t n, compression_parameters const& /*params*/)
+                 uint64_t n)
             : m_universe(universe)
             , m_size(n)
             , m_position(0) {

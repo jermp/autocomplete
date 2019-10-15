@@ -56,7 +56,9 @@ struct blocked_inverted_index {
                     input >> doc_id;
                     union_of_lists.push_back(doc_id);
                     terms[doc_id].push_back(term_id);
-                    if (k == 0) { m_minimal_doc_ids.push_back(doc_id); }
+                    if (k == 0) {
+                        m_minimal_doc_ids.push_back(doc_id);
+                    }
                 }
 
                 if (num_postings_in_block >= m or term_id == num_terms) {
@@ -69,7 +71,7 @@ struct blocked_inverted_index {
 
                     m_lists.append_bits(size, 32);
                     InvertedListType::build(m_lists, union_of_lists.begin(),
-                                            size);
+                                            m_num_docs, size);
                     m_pointers_to_lists.push_back(m_lists.size());
 
                     std::vector<id_type> term_list;
@@ -96,11 +98,12 @@ struct blocked_inverted_index {
                     m_offsets.append_bits(offset_list.size(), 32);
                     m_offsets.append_bits(offset_list.back() + 1, 32);
                     OffsetListType::build(m_offsets, offset_list.begin(),
+                                          offset_list.back() + 1,
                                           offset_list.size());
                     m_pointers_to_offsets.push_back(m_offsets.size());
 
                     m_terms.append_bits(term_list.size(), 32);
-                    TermListType::build(m_terms, term_list.begin(),
+                    TermListType::build(m_terms, term_list.begin(), m_num_terms,
                                         term_list.size());
                     m_pointers_to_terms.push_back(m_terms.size());
 
@@ -395,8 +398,9 @@ struct blocked_inverted_index {
 private:
     uint64_t m_num_docs;
     uint64_t m_num_terms;
-    compression_parameters m_params;
+
     std::vector<uint32_t> m_blocks;
+
     Pointers m_pointers_to_lists;
     bit_vector m_lists;
     Pointers m_pointers_to_offsets;
@@ -412,23 +416,20 @@ private:
         {
             uint64_t offset = m_pointers_to_lists.access(i);
             uint32_t n = m_lists.get_bits(offset, 32);
-            docs_iterator_type it(m_lists, offset + 32, m_num_docs, n,
-                                  m_params);
+            docs_iterator_type it(m_lists, offset + 32, m_num_docs, n);
             b.docs_iterator = it;
         }
         {
             uint64_t offset = m_pointers_to_offsets.access(i);
             uint32_t n = m_offsets.get_bits(offset, 32);
             uint32_t universe = m_offsets.get_bits(offset + 32, 32);
-            offsets_iterator_type it(m_offsets, offset + 32 + 32, universe, n,
-                                     m_params);
+            offsets_iterator_type it(m_offsets, offset + 32 + 32, universe, n);
             b.offsets_iterator = it;
         }
         {
             uint64_t offset = m_pointers_to_terms.access(i);
             uint32_t n = m_terms.get_bits(offset, 32);
-            terms_iterator_type it(m_terms, offset + 32, m_num_terms, n,
-                                   m_params);
+            terms_iterator_type it(m_terms, offset + 32, m_num_terms, n);
             b.terms_iterator = it;
         }
 

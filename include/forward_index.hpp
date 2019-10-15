@@ -61,10 +61,11 @@ struct forward_index {
                 }
 
                 std::sort(list.begin(), list.end());
-                forward_list_type::build(m_bvb, list.begin(), n);
+                forward_list_type::build(m_bvb, list.begin(), m_num_terms, n);
                 m_pointers.push_back(m_bvb.size());
 
-                permutation_list_type::build(m_bvb, permutation.begin(), n);
+                permutation_list_type::build(m_bvb, permutation.begin(), n + 1,
+                                             n);
                 m_pointers.push_back(m_bvb.size());
             }
 
@@ -97,8 +98,7 @@ struct forward_index {
     forward_list_iterator_type iterator(id_type doc_id) {
         uint64_t offset = m_pointers.access(doc_id * 2);
         uint32_t n = m_data.get_bits(offset, 32);
-        forward_list_iterator_type it(m_data, offset + 32, m_num_terms, n,
-                                      m_params);
+        forward_list_iterator_type it(m_data, offset + 32, m_num_terms, n);
         return it;
     }
 
@@ -137,10 +137,9 @@ struct forward_index {
         uint64_t offset = m_pointers.access(doc_id * 2);
         uint32_t n = m_data.get_bits(offset, 32);
         forward_list_iterator_type it_sorted(m_data, offset + 32, m_num_terms,
-                                             n, m_params);
+                                             n);
         offset = m_pointers.access(doc_id * 2 + 1);
-        permutation_list_iterator_type it_permutation(m_data, offset,
-                                                      m_num_terms, n, m_params);
+        permutation_list_iterator_type it_permutation(m_data, offset, n + 1, n);
         return permuting_iterator_type(it_sorted, it_permutation);
     }
 
@@ -166,7 +165,6 @@ struct forward_index {
 
 private:
     uint64_t m_num_terms;
-    compression_parameters m_params;
     Pointers m_pointers;
     bit_vector m_data;
 };

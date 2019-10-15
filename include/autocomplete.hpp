@@ -273,7 +273,7 @@ private:
                               std::vector<id_type>& topk_scores) {
         uint32_t results = 0;
         for (; it.has_next(); ++it) {
-            id_type doc_id = *it;
+            auto doc_id = *it;
             if (m_forward_index.intersects(doc_id, r)) {
                 topk_scores[results++] = doc_id;
                 if (results == k) break;

@@ -16,6 +16,7 @@
 #include "autocomplete4.hpp"
 
 #include "ef/ef_sequence.hpp"
+#include "ef/compact_ef.hpp"
 #include "succinct_rmq/cartesian_tree.hpp"
 
 namespace autocomplete {
@@ -42,6 +43,7 @@ typedef forward_index<uncompressed_list32_t, uint64_vec>
     uncompressed_forward_index;
 typedef inverted_index<uncompressed_list32_t, uint64_vec>
     uncompressed_inverted_index;
+typedef inverted_index<ef::compact_ef, ef::ef_sequence> ef_inverted_index;
 
 typedef blocked_inverted_index<uncompressed_list32_t, uncompressed_list32_t,
                                uncompressed_list32_t, uint64_vec>
@@ -64,4 +66,8 @@ typedef autocomplete4<integer_fc_dictionary_B16, unsorted_list_succinct_rmq,
                       fc_dictionary_B16, uncompressed_blocked_inverted_index>
     uncompressed_autocomplete_type4;
 
+typedef autocomplete<ef_completion_trie, unsorted_list_succinct_rmq,
+                     fc_dictionary_B16, ef_inverted_index,
+                     uncompressed_forward_index>
+    ef_autocomplete_type;
 }  // namespace autocomplete

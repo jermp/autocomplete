@@ -26,23 +26,25 @@ int main(int argc, char** argv) {
     params.collection_basename = argv[1];
     params.load();
 
+    // typedef uncompressed_autocomplete_type index_type;
+    typedef ef_autocomplete_type index_type;
+
     {
-        uncompressed_autocomplete_type autocomp(params);
+        index_type index(params);
         if (output_filename) {
             essentials::logger("saving data structure to disk...");
-            essentials::save<uncompressed_autocomplete_type>(autocomp,
-                                                             output_filename);
+            essentials::save<index_type>(index, output_filename);
             essentials::logger("DONE");
         }
     }
 
     {
         if (output_filename) {
-            uncompressed_autocomplete_type autocomp;
+            index_type index;
             essentials::logger("loading data structure from disk...");
-            essentials::load(autocomp, output_filename);
+            essentials::load(index, output_filename);
             essentials::logger("DONE");
-            autocomp.print_stats();
+            index.print_stats();
 
             {
                 essentials::logger("testing prefix_topk()...");
@@ -62,7 +64,7 @@ int main(int argc, char** argv) {
                     "floridaaa"};
 
                 for (auto& query : queries) {
-                    auto it = autocomp.prefix_topk(query, k);
+                    auto it = index.prefix_topk(query, k);
                     std::cout << "top-" << it.size() << " completions for '"
                               << query << "':\n";
                     for (uint32_t i = 0; i != it.size(); ++i, ++it) {
@@ -87,7 +89,7 @@ int main(int argc, char** argv) {
                     "flor",     "fly",      "the starting l"};
 
                 for (auto& query : queries) {
-                    auto it = autocomp.conjunctive_topk(query, k);
+                    auto it = index.conjunctive_topk(query, k);
                     std::cout << "top-" << it.size() << " completions for '"
                               << query << "':\n";
                     for (uint32_t i = 0; i != it.size(); ++i, ++it) {
