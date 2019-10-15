@@ -169,6 +169,15 @@ struct fc_dictionary {
                 m_headers.data() + pointer.end};
     }
 
+    size_t data_bytes() const {
+        return essentials::vec_bytes(m_headers) +
+               essentials::vec_bytes(m_buckets);
+    }
+
+    size_t pointer_bytes() const {
+        return m_pointers_to_headers.bytes() + m_pointers_to_buckets.bytes();
+    }
+
     size_t bytes() const {
         return essentials::pod_bytes(m_size) + m_pointers_to_headers.bytes() +
                m_pointers_to_buckets.bytes() +
@@ -287,7 +296,7 @@ private:
     uint8_t lcp_len;                                                \
     uint32_t n = bucket_size(bucket_id);                            \
     uint8_t const* curr =                                           \
-        m_buckets.data() + m_pointers_to_buckets[bucket_id].begin;
+        m_buckets.data() + m_pointers_to_buckets.access(bucket_id);
 
     uint8_t decode(uint8_t const* in, uint8_t* out, uint8_t* lcp_len) const {
         *lcp_len = *in++;  // |lcp|
@@ -311,7 +320,7 @@ private:
         memcpy(out, h.begin, h.end - h.begin);
         uint8_t lcp_len;
         uint8_t const* curr =
-            m_buckets.data() + m_pointers_to_buckets[bucket_id].begin;
+            m_buckets.data() + m_pointers_to_buckets.access(bucket_id);
         uint8_t string_len = h.end - h.begin;
         for (id_type i = 1; i <= id; ++i) {
             string_len = decode(curr, out, &lcp_len);

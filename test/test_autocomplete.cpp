@@ -27,7 +27,8 @@ int main(int argc, char** argv) {
     params.load();
 
     // typedef uncompressed_autocomplete_type index_type;
-    typedef ef_autocomplete_type index_type;
+    // typedef ef_autocomplete_type index_type;
+    typedef ef_autocomplete_type2 index_type;
 
     {
         index_type index(params);

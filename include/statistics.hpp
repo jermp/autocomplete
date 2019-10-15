@@ -16,6 +16,11 @@ void print_bpi(std::string const& what, size_t bytes, size_t integers) {
               << std::endl;
 }
 
+void print_bps(std::string const& what, size_t bytes, size_t strings) {
+    std::cout << '\t' << what << ": " << (bytes * 8.0) / strings << " [bps]"
+              << std::endl;
+}
+
 template <typename Completions, typename UnsortedDocsList, typename Dictionary,
           typename InvertedIndex, typename ForwardIndex>
 void autocomplete<Completions, UnsortedDocsList, Dictionary, InvertedIndex,
@@ -27,7 +32,11 @@ void autocomplete<Completions, UnsortedDocsList, Dictionary, InvertedIndex,
     print("unsorted docs list", m_unsorted_docs_list.bytes(), total_bytes);
     print("unsorted minimal docs list", m_unsorted_minimal_docs_list.bytes(),
           total_bytes);
+
     print("dictionary", m_dictionary.bytes(), total_bytes);
+    print_bps("data", m_dictionary.data_bytes(), m_dictionary.size());
+    print_bps("pointers", m_dictionary.pointer_bytes(), m_dictionary.size());
+
     print("inverted index", m_inverted_index.bytes(), total_bytes);
     print_bpi("data", m_inverted_index.data_bytes(),
               m_inverted_index.num_integers());
@@ -48,10 +57,17 @@ void autocomplete2<Completions, UnsortedDocsList, Dictionary,
     std::cout << "using " << convert(total_bytes, essentials::GiB) << " [GiB]"
               << std::endl;
     print("completions", m_completions.bytes(), total_bytes);
+    print_bps("data", m_completions.data_bytes(), m_completions.size());
+    print_bps("pointers", m_completions.pointer_bytes(), m_completions.size());
+
     print("unsorted docs list", m_unsorted_docs_list.bytes(), total_bytes);
     print("unsorted minimal docs list", m_unsorted_minimal_docs_list.bytes(),
           total_bytes);
+
     print("dictionary", m_dictionary.bytes(), total_bytes);
+    print_bps("data", m_dictionary.data_bytes(), m_dictionary.size());
+    print_bps("pointers", m_dictionary.pointer_bytes(), m_dictionary.size());
+
     print("inverted index", m_inverted_index.bytes(), total_bytes);
     print_bpi("data", m_inverted_index.data_bytes(),
               m_inverted_index.num_integers());
