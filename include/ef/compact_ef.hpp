@@ -137,7 +137,7 @@ struct compact_ef {
             , m_position(0) {
             ef_parameters params;
             m_of = offsets(offset, universe, n, params);
-            // m_value = access(m_position);
+            m_value = access(m_position);
         }
 
         bool has_next() const {
@@ -154,11 +154,10 @@ struct compact_ef {
         }
 
         uint64_t access(uint64_t position) {
-            assert(position <= m_of.n);
+            assert(position <= size());
             // if (position == m_position) return m_value;
 
             uint64_t skip = position - m_position;
-            // optimize small forward skips
             if (LIKELY(position > m_position &&
                        skip <= linear_scan_threshold)) {
                 m_position = position;
@@ -246,8 +245,20 @@ struct compact_ef {
             return m_position;
         }
 
-        offsets const& of() {
-            return m_of;
+        // offsets const& of() {
+        //     return m_of;
+        // }
+
+        bool intersects(const range r) {
+            uint64_t val = access(0);
+            if (val > r.end) return false;
+            if (r.contains(val)) return true;
+            for (uint64_t i = 1; i != size(); ++i) {
+                auto val = next();
+                if (val > r.end) break;
+                if (r.contains(val)) return true;
+            }
+            return false;
         }
 
     private:

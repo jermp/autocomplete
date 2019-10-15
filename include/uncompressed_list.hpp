@@ -99,7 +99,7 @@ struct uncompressed_list {
             return m_id;
         }
 
-        bool intersects(range r) const {
+        bool intersects(const range r) const {
             for (uint64_t i = 0; i != size(); ++i) {
                 auto val = m_data[i];
                 if (val > r.end) break;

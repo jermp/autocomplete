@@ -43,6 +43,8 @@ typedef forward_index<uncompressed_list32_t, uint64_vec>
     uncompressed_forward_index;
 typedef inverted_index<uncompressed_list32_t, uint64_vec>
     uncompressed_inverted_index;
+
+typedef forward_index<ef::compact_ef, ef::ef_sequence> ef_forward_index;
 typedef inverted_index<ef::compact_ef, ef::ef_sequence> ef_inverted_index;
 
 typedef blocked_inverted_index<uncompressed_list32_t, uncompressed_list32_t,
@@ -67,7 +69,6 @@ typedef autocomplete4<integer_fc_dictionary_B16, unsorted_list_succinct_rmq,
     uncompressed_autocomplete_type4;
 
 typedef autocomplete<ef_completion_trie, unsorted_list_succinct_rmq,
-                     fc_dictionary_B16, ef_inverted_index,
-                     uncompressed_forward_index>
+                     fc_dictionary_B16, ef_inverted_index, ef_forward_index>
     ef_autocomplete_type;
 }  // namespace autocomplete
