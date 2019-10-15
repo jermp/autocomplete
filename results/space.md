@@ -12,9 +12,11 @@ in decreasing frequency order (ties broken lexicographically).
 	  unsorted minimal docs list: 0.0154568 [GiB] (1.41224%)
 	  dictionary: 0.0328479 [GiB] (3.00123%)
 	  inverted index: 0.154881 [GiB] (14.151%)
-		44.2029 [bpi]
+		data: 36.0676 [bpi]
+		pointers: 8.13526 [bpi]
 	  forward index: 0.330038 [GiB] (30.1547%)
-		93.5474 [bpi]
+		data: 50.7095 [bpi]
+		pointers: 42.8379 [bpi]
 
 	using 0.420024 [GiB]
 	  completions: 0.0867222 [GiB] (20.647%)
@@ -22,9 +24,11 @@ in decreasing frequency order (ties broken lexicographically).
 	  unsorted minimal docs list: 0.0154568 [GiB] (3.67997%)
 	  dictionary: 0.0328479 [GiB] (7.82049%)
 	  inverted index: 0.0732451 [GiB] (17.4383%)
-		20.9041 [bpi]
+		data: 19.6621 [bpi]
+		pointers: 1.24204 [bpi]
 	  forward index: 0.170771 [GiB] (40.6574%)
-		48.4039 [bpi]
+		data: 42.6777 [bpi]
+		pointers: 5.72626 [bpi]
 
 #### Solution 2
 

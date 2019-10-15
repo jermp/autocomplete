@@ -66,7 +66,10 @@ int main(int argc, char** argv) {
     breakdowns.new_line();
     breakdowns.add("num_terms_per_query", num_terms_per_query);
 
-    if (type == "type1") {
+    if (type == "ef_type1") {
+        benchmark_topk<ef_autocomplete_type>(binary_filename, k,
+                                             max_num_queries, breakdowns);
+    } else if (type == "type1") {
         benchmark_topk<uncompressed_autocomplete_type>(
             binary_filename, k, max_num_queries, breakdowns);
     } else if (type == "type2") {
