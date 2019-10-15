@@ -1,6 +1,8 @@
 #pragma once
 
 #include "parameters.hpp"
+#include "integer_codes.hpp"
+#include "building_util.hpp"
 
 namespace autocomplete {
 
@@ -37,7 +39,8 @@ struct inverted_index {
                     list.push_back(x);
                 }
                 m_minimal_doc_ids.push_back(list.front());
-                m_bvb.append_bits(n, 32);
+                write_gamma_nonzero(m_bvb, n);
+                if (ListType::is_byte_aligned) util::push_pad(m_bvb);
                 ListType::build(m_bvb, list.begin(), m_num_docs, list.size());
                 m_pointers.push_back(m_bvb.size());
             }
@@ -80,9 +83,10 @@ struct inverted_index {
     iterator_type iterator(id_type term_id) const {
         assert(term_id < num_terms());
         uint64_t offset = m_pointers.access(term_id);
-        uint32_t n = m_data.get_bits(offset, 32);
-        iterator_type it(m_data, offset + 32, m_num_docs, n);
-        return it;
+        bits_iterator<bit_vector> it(m_data, offset);
+        uint64_t n = read_gamma_nonzero(it);
+        if (ListType::is_byte_aligned) util::eat_pad(it);
+        return {m_data, it.position(), m_num_docs, n};
     }
 
     uint64_t num_integers() const {

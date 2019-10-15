@@ -10,6 +10,8 @@ namespace autocomplete {
 namespace ef {
 
 struct compact_ef {
+    static constexpr bool is_byte_aligned = false;
+
     struct offsets {
         offsets() {}
 

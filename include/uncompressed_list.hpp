@@ -11,10 +11,12 @@ template <typename UintType>
 struct uncompressed_list {
     static constexpr uint8_t BITS = sizeof(UintType) * 8;
     static_assert(BITS <= 64, "bits per integer must be <= 64");
+    static constexpr bool is_byte_aligned = true;
 
     template <typename Iterator>
     static void build(bit_vector_builder& bvb, Iterator begin,
                       uint64_t /*universe*/, uint64_t n) {
+        assert(bvb.size() % 8 == 0);
         for (uint64_t i = 0; i != n; ++i, ++begin) {
             bvb.append_bits(*begin, BITS);
         }

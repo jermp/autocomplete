@@ -1,6 +1,8 @@
 #pragma once
 
 #include "parameters.hpp"
+#include "integer_codes.hpp"
+#include "building_util.hpp"
 
 namespace autocomplete {
 
@@ -51,7 +53,8 @@ struct forward_index {
                     sorted_permutation.push_back(k);
                 }
 
-                m_bvb.append_bits(n, 32);
+                write_gamma_nonzero(m_bvb, n);
+                if (ListType::is_byte_aligned) util::push_pad(m_bvb);
 
                 std::sort(
                     sorted_permutation.begin(), sorted_permutation.end(),
@@ -65,7 +68,7 @@ struct forward_index {
                 std::sort(list.begin(), list.end());
                 forward_list_type::build(m_bvb, list.begin(), m_num_terms + 1,
                                          n);
-                push_pad(m_bvb);
+                util::push_pad(m_bvb);
                 m_pointers.push_back(m_bvb.size());
 
                 permutation_list_type::build(m_bvb, permutation.begin(), n + 1,
@@ -98,24 +101,16 @@ struct forward_index {
         uint64_t m_num_terms;
         std::vector<uint64_t> m_pointers;
         bit_vector_builder m_bvb;
-
-        void push_pad(bit_vector_builder& bvb, uint64_t alignment = 8) {
-            uint64_t mod = bvb.size() % alignment;
-            if (mod) {
-                uint64_t pad = alignment - mod;
-                bvb.append_bits(0, pad);
-                assert(bvb.size() % alignment == 0);
-            }
-        }
     };
 
     forward_index() {}
 
     forward_list_iterator_type iterator(id_type doc_id) {
         uint64_t offset = m_pointers.access(doc_id * 2);
-        uint32_t n = m_data.get_bits(offset, 32);
-        forward_list_iterator_type it(m_data, offset + 32, m_num_terms + 1, n);
-        return it;
+        bits_iterator<bit_vector> it(m_data, offset);
+        uint64_t n = read_gamma_nonzero(it);
+        if (ListType::is_byte_aligned) util::eat_pad(it);
+        return {m_data, it.position(), m_num_terms + 1, n};
     }
 
     bool intersects(id_type doc_id, range r) {
@@ -151,8 +146,10 @@ struct forward_index {
 
     permuting_iterator_type permuting_iterator(id_type doc_id) {
         uint64_t offset = m_pointers.access(doc_id * 2);
-        uint32_t n = m_data.get_bits(offset, 32);
-        forward_list_iterator_type it_sorted(m_data, offset + 32,
+        bits_iterator<bit_vector> it(m_data, offset);
+        uint64_t n = read_gamma_nonzero(it);
+        if (ListType::is_byte_aligned) util::eat_pad(it);
+        forward_list_iterator_type it_sorted(m_data, it.position(),
                                              m_num_terms + 1, n);
         offset = m_pointers.access(doc_id * 2 + 1);
         permutation_list_iterator_type it_permutation(m_data, offset, n + 1, n);
