@@ -6,13 +6,15 @@ in decreasing frequency order (ties broken lexicographically).
 
 #### Solution 1
 
-	using 1.09469 [GiB]
-	  completion trie: 0.520278 [GiB] (47.5273%)
-	  unsorted docs list: 0.0409812 [GiB] (3.74362%)
-	  unsorted minimal docs list: 0.0154568 [GiB] (1.41197%)
-	  dictionary: 0.0330574 [GiB] (3.01979%)
-	  inverted index: 0.154881 [GiB] (14.1483%)
-	  forward index: 0.330038 [GiB] (30.1489%)
+	using 1.09448 [GiB]
+	  completions: 0.520278 [GiB] (47.5364%)
+	  unsorted docs list: 0.0409812 [GiB] (3.74434%)
+	  unsorted minimal docs list: 0.0154568 [GiB] (1.41224%)
+	  dictionary: 0.0328479 [GiB] (3.00123%)
+	  inverted index: 0.154881 [GiB] (14.151%)
+		44.2029 [bpi]
+	  forward index: 0.330038 [GiB] (30.1547%)
+		93.5474 [bpi]
 
 	using 0.420024 [GiB]
 	  completions: 0.0867222 [GiB] (20.647%)
@@ -20,7 +22,9 @@ in decreasing frequency order (ties broken lexicographically).
 	  unsorted minimal docs list: 0.0154568 [GiB] (3.67997%)
 	  dictionary: 0.0328479 [GiB] (7.82049%)
 	  inverted index: 0.0732451 [GiB] (17.4383%)
+		20.9041 [bpi]
 	  forward index: 0.170771 [GiB] (40.6574%)
+		48.4039 [bpi]
 
 #### Solution 2
 

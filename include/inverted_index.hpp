@@ -97,6 +97,14 @@ struct inverted_index {
         return m_num_docs;
     }
 
+    size_t data_bytes() const {
+        return m_data.bytes();
+    }
+
+    size_t pointer_bytes() const {
+        return m_pointers.bytes();
+    }
+
     size_t bytes() const {
         return essentials::pod_bytes(m_num_integers) +
                essentials::pod_bytes(m_num_docs) + m_pointers.bytes() +
