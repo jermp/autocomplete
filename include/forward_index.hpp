@@ -16,7 +16,8 @@ struct forward_index {
         builder() {}
 
         builder(parameters const& params)
-            : m_num_terms(params.num_terms) {
+            : m_num_integers(0)
+            , m_num_terms(params.num_terms) {
             essentials::logger("building forward_index...");
 
             uint64_t num_completions = params.num_completions;
@@ -39,6 +40,7 @@ struct forward_index {
                 uint32_t n = 0;
                 input >> n;
                 assert(n > 0 and n < constants::MAX_NUM_TERMS_PER_QUERY);
+                m_num_integers += n;
                 list.reserve(n);
                 sorted_permutation.reserve(n);
 
@@ -77,12 +79,14 @@ struct forward_index {
         }
 
         void swap(forward_index::builder& other) {
+            std::swap(other.m_num_integers, m_num_integers);
             std::swap(other.m_num_terms, m_num_terms);
             other.m_pointers.swap(m_pointers);
             other.m_bvb.swap(m_bvb);
         }
 
         void build(forward_index<ListType, Pointers>& fi) {
+            fi.m_num_integers = m_num_integers;
             fi.m_num_terms = m_num_terms;
             fi.m_pointers.build(m_pointers);
             fi.m_data.build(&m_bvb);
@@ -90,6 +94,7 @@ struct forward_index {
         }
 
     private:
+        uint64_t m_num_integers;
         uint64_t m_num_terms;
         std::vector<uint64_t> m_pointers;
         bit_vector_builder m_bvb;
@@ -154,6 +159,10 @@ struct forward_index {
         return permuting_iterator_type(it_sorted, it_permutation);
     }
 
+    uint64_t num_integers() const {
+        return m_num_integers;
+    }
+
     uint64_t num_terms() const {
         return m_num_terms;
     }
@@ -163,18 +172,21 @@ struct forward_index {
     }
 
     size_t bytes() const {
-        return essentials::pod_bytes(m_num_terms) + m_pointers.bytes() +
+        return essentials::pod_bytes(m_num_integers) +
+               essentials::pod_bytes(m_num_terms) + m_pointers.bytes() +
                m_data.bytes();
     }
 
     template <typename Visitor>
     void visit(Visitor& visitor) {
+        visitor.visit(m_num_integers);
         visitor.visit(m_num_terms);
         visitor.visit(m_pointers);
         visitor.visit(m_data);
     }
 
 private:
+    uint64_t m_num_integers;
     uint64_t m_num_terms;
     Pointers m_pointers;
     bit_vector m_data;

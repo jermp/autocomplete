@@ -11,6 +11,10 @@ void print(std::string const& what, size_t bytes, size_t total_bytes) {
     std::cout << "(" << (bytes * 100.0) / total_bytes << "%)" << std::endl;
 }
 
+void print_bpi(size_t bytes, size_t integers) {
+    std::cout << '\t' << (bytes * 8.0) / integers << " [bpi]" << std::endl;
+}
+
 template <typename Completions, typename UnsortedDocsList, typename Dictionary,
           typename InvertedIndex, typename ForwardIndex>
 void autocomplete<Completions, UnsortedDocsList, Dictionary, InvertedIndex,
@@ -24,7 +28,9 @@ void autocomplete<Completions, UnsortedDocsList, Dictionary, InvertedIndex,
           total_bytes);
     print("dictionary", m_dictionary.bytes(), total_bytes);
     print("inverted index", m_inverted_index.bytes(), total_bytes);
+    print_bpi(m_inverted_index.bytes(), m_inverted_index.num_integers());
     print("forward index", m_forward_index.bytes(), total_bytes);
+    print_bpi(m_forward_index.bytes(), m_forward_index.num_integers());
 }
 
 template <typename Completions, typename UnsortedDocsList, typename Dictionary,
@@ -40,6 +46,7 @@ void autocomplete2<Completions, UnsortedDocsList, Dictionary,
           total_bytes);
     print("dictionary", m_dictionary.bytes(), total_bytes);
     print("inverted index", m_inverted_index.bytes(), total_bytes);
+    print_bpi(m_inverted_index.bytes(), m_inverted_index.num_integers());
     print("map from docid to lexid", essentials::vec_bytes(m_docid_to_lexid),
           total_bytes);
 }
@@ -55,6 +62,7 @@ void autocomplete3<Completions, UnsortedDocsList, Dictionary,
     print("unsorted docs list", m_unsorted_docs_list.bytes(), total_bytes);
     print("dictionary", m_dictionary.bytes(), total_bytes);
     print("inverted index", m_inverted_index.bytes(), total_bytes);
+    print_bpi(m_inverted_index.bytes(), m_inverted_index.num_integers());
     print("map from docid to lexid", essentials::vec_bytes(m_docid_to_lexid),
           total_bytes);
 }
@@ -70,6 +78,7 @@ void autocomplete4<Completions, UnsortedDocsList, Dictionary,
     print("unsorted docs list", m_unsorted_docs_list.bytes(), total_bytes);
     print("dictionary", m_dictionary.bytes(), total_bytes);
     print("blocked inverted index", m_inverted_index.bytes(), total_bytes);
+    print_bpi(m_inverted_index.bytes(), m_inverted_index.num_integers());
     print("map from docid to lexid", essentials::vec_bytes(m_docid_to_lexid),
           total_bytes);
 }

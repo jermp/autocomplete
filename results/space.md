@@ -14,6 +14,14 @@ in decreasing frequency order (ties broken lexicographically).
 	  inverted index: 0.154881 [GiB] (14.1483%)
 	  forward index: 0.330038 [GiB] (30.1489%)
 
+	using 0.420024 [GiB]
+	  completions: 0.0867222 [GiB] (20.647%)
+	  unsorted docs list: 0.0409812 [GiB] (9.75686%)
+	  unsorted minimal docs list: 0.0154568 [GiB] (3.67997%)
+	  dictionary: 0.0328479 [GiB] (7.82049%)
+	  inverted index: 0.0732451 [GiB] (17.4383%)
+	  forward index: 0.170771 [GiB] (40.6574%)
+
 #### Solution 2
 
 	using 0.377843 [GiB]

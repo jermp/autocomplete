@@ -17,7 +17,8 @@ struct blocked_inverted_index {
         builder() {}
 
         builder(parameters const& params, float c)
-            : m_num_docs(params.num_completions)
+            : m_num_integers(0)
+            , m_num_docs(params.num_completions)
             , m_num_terms(params.num_terms) {
             assert(c > 0.0);
             essentials::logger("building blocked_inverted_index with c = " +
@@ -50,6 +51,7 @@ struct blocked_inverted_index {
                 uint32_t n = 0;
                 input >> n;
                 num_postings_in_block += n;
+                m_num_integers += n;
 
                 for (uint64_t k = 0; k != n; ++k) {
                     id_type doc_id;
@@ -126,6 +128,7 @@ struct blocked_inverted_index {
         }
 
         void swap(blocked_inverted_index::builder& other) {
+            std::swap(other.m_num_integers, m_num_integers);
             std::swap(other.m_num_docs, m_num_docs);
             std::swap(other.m_num_terms, m_num_terms);
 
@@ -144,6 +147,7 @@ struct blocked_inverted_index {
 
         void build(blocked_inverted_index<InvertedListType, OffsetListType,
                                           TermListType, Pointers>& ii) {
+            ii.m_num_integers = m_num_integers;
             ii.m_num_docs = m_num_docs;
             ii.m_num_terms = m_num_terms;
 
@@ -161,6 +165,7 @@ struct blocked_inverted_index {
         }
 
     private:
+        uint64_t m_num_integers;
         uint64_t m_num_docs;
         uint64_t m_num_terms;
 
@@ -179,6 +184,10 @@ struct blocked_inverted_index {
 
     blocked_inverted_index() {}
 
+    uint64_t num_integers() const {
+        return m_num_integers;
+    }
+
     uint64_t num_terms() const {
         return m_num_terms;
     }
@@ -192,10 +201,12 @@ struct blocked_inverted_index {
     }
 
     size_t bytes() const {
-        return essentials::pod_bytes(m_num_docs) + m_pointers_to_lists.bytes() +
-               m_lists.bytes() + m_pointers_to_offsets.bytes() +
-               m_offsets.bytes() + m_pointers_to_terms.bytes() +
-               m_terms.bytes();
+        return essentials::pod_bytes(m_num_integers) +
+               essentials::pod_bytes(m_num_docs) +
+               essentials::pod_bytes(m_num_terms) +
+               m_pointers_to_lists.bytes() + m_lists.bytes() +
+               m_pointers_to_offsets.bytes() + m_offsets.bytes() +
+               m_pointers_to_terms.bytes() + m_terms.bytes();
     }
 
     uint32_t block_id(id_type term_id) const {
@@ -384,6 +395,7 @@ struct blocked_inverted_index {
 
     template <typename Visitor>
     void visit(Visitor& visitor) {
+        visitor.visit(m_num_integers);
         visitor.visit(m_num_docs);
         visitor.visit(m_num_terms);
         visitor.visit(m_blocks);
@@ -396,6 +408,7 @@ struct blocked_inverted_index {
     }
 
 private:
+    uint64_t m_num_integers;
     uint64_t m_num_docs;
     uint64_t m_num_terms;
 
