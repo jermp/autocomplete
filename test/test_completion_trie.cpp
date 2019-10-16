@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "types.hpp"
+#include "statistics.hpp"
 
 using namespace autocomplete;
 
@@ -54,6 +55,7 @@ int main(int argc, char** argv) {
         completion_trie_type::builder builder(params);
         completion_trie_type ct;
         builder.build(ct);
+        ct.print_stats();
 
         if (output_filename) {
             essentials::logger("saving data structure to disk...");

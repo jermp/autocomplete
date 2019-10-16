@@ -1,3 +1,6 @@
+#pragma once
+
+#include "completion_trie.hpp"
 #include "autocomplete.hpp"
 #include "autocomplete2.hpp"
 #include "autocomplete3.hpp"
@@ -21,6 +24,19 @@ void print_bps(std::string const& what, size_t bytes, size_t strings) {
               << std::endl;
 }
 
+template <typename Nodes, typename Pointers, typename LeftExtremes,
+          typename Sizes>
+void completion_trie<Nodes, Pointers, LeftExtremes, Sizes>::print_stats()
+    const {
+    size_t total_bytes = bytes();
+    std::cout << "using " << convert(total_bytes, essentials::GiB) << " [GiB]"
+              << std::endl;
+    print_bps("nodes", nodes_bytes(), size());
+    print_bps("pointers", pointers_bytes(), size());
+    print_bps("left extremes", left_extremes_bytes(), size());
+    print_bps("sizes", sizes_bytes(), size());
+}
+
 template <typename Completions, typename UnsortedDocsList, typename Dictionary,
           typename InvertedIndex, typename ForwardIndex>
 void autocomplete<Completions, UnsortedDocsList, Dictionary, InvertedIndex,
@@ -28,7 +44,14 @@ void autocomplete<Completions, UnsortedDocsList, Dictionary, InvertedIndex,
     size_t total_bytes = bytes();
     std::cout << "using " << convert(total_bytes, essentials::GiB) << " [GiB]"
               << std::endl;
+
     print("completions", m_completions.bytes(), total_bytes);
+    print_bps("nodes", m_completions.nodes_bytes(), m_completions.size());
+    print_bps("pointers", m_completions.pointers_bytes(), m_completions.size());
+    print_bps("left extremes", m_completions.left_extremes_bytes(),
+              m_completions.size());
+    print_bps("sizes", m_completions.sizes_bytes(), m_completions.size());
+
     print("unsorted docs list", m_unsorted_docs_list.bytes(), total_bytes);
     print("unsorted minimal docs list", m_unsorted_minimal_docs_list.bytes(),
           total_bytes);

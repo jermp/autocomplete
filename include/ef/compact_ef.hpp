@@ -104,7 +104,7 @@ struct compact_ef {
             }
         }
 
-        uint64_t operator*() {
+        uint64_t operator*() const {
             return m_value;
         }
 
@@ -193,6 +193,10 @@ struct compact_ef {
 
         uint64_t position() const {
             return m_position;
+        }
+
+        uint64_t value() const {
+            return m_value;
         }
 
         bool intersects(const range r) {

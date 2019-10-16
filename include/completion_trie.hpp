@@ -12,7 +12,8 @@ struct completion_trie {
         builder() {}
 
         builder(parameters const& params)
-            : m_nodes(params.num_levels)
+            : m_size(params.num_completions)
+            , m_nodes(params.num_levels)
             , m_pointers(params.num_levels - 1)
             , m_left_extremes(params.num_levels)
             , m_sizes(params.num_levels) {
@@ -127,6 +128,7 @@ struct completion_trie {
 
         void build(completion_trie<Nodes, Pointers, LeftExtremes, Sizes>& ct) {
             uint32_t levels = m_nodes.size();
+            ct.m_size = m_size;
             ct.m_nodes.resize(levels);
             ct.m_pointers.resize(levels - 1);
             ct.m_left_extremes.resize(levels);
@@ -153,6 +155,7 @@ struct completion_trie {
         }
 
     private:
+        uint32_t m_size;
         std::vector<std::vector<uint32_t>> m_nodes;
         std::vector<std::vector<uint32_t>> m_pointers;
         std::vector<std::vector<uint32_t>> m_left_extremes;
@@ -208,8 +211,11 @@ struct completion_trie {
         return true;
     }
 
+    void print_stats() const;
+
     size_t bytes() const {
-        size_t bytes = sizeof(size_t) * 4;  // for std::vector's size()
+        size_t bytes = sizeof(m_size);
+        bytes += sizeof(size_t) * 4;  // for std::vector's size()
         uint32_t levels = m_nodes.size();
         for (uint32_t i = 0; i != levels; ++i) {
             bytes += m_nodes[i].bytes();
@@ -222,8 +228,39 @@ struct completion_trie {
         return bytes;
     }
 
+    size_t nodes_bytes() const {
+        size_t bytes = sizeof(size_t);
+        for (auto const& v : m_nodes) bytes += v.bytes();
+        return bytes;
+    }
+
+    size_t pointers_bytes() const {
+        size_t bytes = sizeof(size_t);
+        for (uint32_t i = 0; i != m_nodes.size() - 1; ++i) {
+            bytes += m_pointers[i].bytes();
+        }
+        return bytes;
+    }
+
+    size_t left_extremes_bytes() const {
+        size_t bytes = sizeof(size_t);
+        for (auto const& v : m_left_extremes) bytes += v.bytes();
+        return bytes;
+    }
+
+    size_t sizes_bytes() const {
+        size_t bytes = sizeof(size_t);
+        for (auto const& v : m_sizes) bytes += v.bytes();
+        return bytes;
+    }
+
+    uint32_t size() const {
+        return m_size;
+    }
+
     template <typename Visitor>
     void visit(Visitor& visitor) {
+        visitor.visit(m_size);
         visitor.visit(m_nodes);
         visitor.visit(m_pointers);
         visitor.visit(m_left_extremes);
@@ -231,6 +268,7 @@ struct completion_trie {
     }
 
 private:
+    uint32_t m_size;
     std::vector<Nodes> m_nodes;
     std::vector<Pointers> m_pointers;
     std::vector<LeftExtremes> m_left_extremes;
