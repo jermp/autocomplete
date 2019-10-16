@@ -216,6 +216,15 @@ struct compact_vector {
         , m_width(0)
         , m_mask(0) {}
 
+    template <typename T>
+    void build(std::vector<T> const& from) {
+        uint64_t max = *std::max_element(from.begin(), from.end());
+        uint64_t width = util::ceil_log2(max + 1);
+        std::cout << "\tusing " << width << " [bpi]" << std::endl;
+        compact_vector::builder builder(from.begin(), from.size(), width);
+        builder.build(*this);
+    }
+
     inline uint64_t operator[](uint64_t i) const {
         assert(i < size());
         uint64_t pos = i * m_width;

@@ -32,7 +32,7 @@ in decreasing frequency order (ties broken lexicographically).
 		data: 32.866 [bpi]
 		pointers: 5.41964 [bpi]
 	
-	+ Elias-Fano and forward_index2
+	+ Elias-Fano and compact_forward_index
 	using 0.318008 [GiB]
 	  completions: 0.0867222 [GiB] (27.2704%)
 	  unsorted docs list: 0.0409812 [GiB] (12.8868%)
@@ -44,6 +44,21 @@ in decreasing frequency order (ties broken lexicographically).
 	  forward index: 0.0824065 [GiB] (25.9133%)
 		data: 22 [bpi]
 		pointers: 1.35762 [bpi]
+	
+	+ Elias-Fano and delta_forward_index
+	using 0.350595 [GiB]
+	  completions: 0.086722 [GiB] (24.7356%)
+	  unsorted docs list: 0.0409812 [GiB] (11.689%)
+	  unsorted minimal docs list: 0.0154568 [GiB] (4.40872%)
+	  dictionary: 0.0328479 [GiB] (9.36919%)
+		data: 69.9866 [bps]
+		pointers: 3.76476 [bps]
+	  inverted index: 0.0595939 [GiB] (16.9979%)
+		data: 15.7999 [bpi]
+		pointers: 1.20819 [bpi]
+	  forward index: 0.114994 [GiB] (32.7995%)
+		data: 29.6008 [bpi]
+		pointers: 2.99348 [bpi]
 	
 #### Solution 2
 

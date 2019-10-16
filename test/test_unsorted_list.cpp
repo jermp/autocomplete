@@ -93,7 +93,7 @@ int main(int argc, char** argv) {
             }
         }
 
-        unsorted_list_succinct_rmq list;
+        succinct_rmq list;
         list.build(doc_ids);
         assert(list.size() == doc_ids.size());
         std::cout << "using " << list.bytes() << " bytes" << std::endl;
@@ -101,14 +101,14 @@ int main(int argc, char** argv) {
         if (output_filename) {
             // essentials::print_size(list);
             essentials::logger("saving data structure to disk...");
-            essentials::save<unsorted_list_succinct_rmq>(list, output_filename);
+            essentials::save<succinct_rmq>(list, output_filename);
             essentials::logger("DONE");
         }
     }
 
     {
         if (output_filename) {
-            unsorted_list_succinct_rmq list;
+            succinct_rmq list;
             essentials::logger("loading data structure from disk...");
             essentials::load(list, output_filename);
             essentials::logger("DONE");

@@ -19,6 +19,7 @@
 #include "autocomplete3.hpp"
 #include "autocomplete4.hpp"
 
+#include "compact_vector.hpp"
 #include "ef/ef_sequence.hpp"
 #include "ef/compact_ef.hpp"
 #include "succinct_rmq/cartesian_tree.hpp"
@@ -38,7 +39,7 @@ typedef completion_trie<ef::ef_sequence, ef::ef_sequence, ef::ef_sequence,
 typedef fc_dictionary<> fc_dictionary_type;
 typedef integer_fc_dictionary<> integer_fc_dictionary_type;
 
-typedef unsorted_list<uint32_vec, cartesian_tree> unsorted_list_succinct_rmq;
+typedef unsorted_list<cartesian_tree> succinct_rmq;
 typedef uncompressed_list<uint32_t> uncompressed_list32_t;
 
 typedef inverted_index<uncompressed_list32_t> uncompressed_inverted_index;
@@ -51,29 +52,28 @@ typedef blocked_inverted_index<uncompressed_list32_t, uncompressed_list32_t,
                                uncompressed_list32_t, uint64_vec>
     uncompressed_blocked_inverted_index;
 
-typedef autocomplete<uint64_completion_trie, unsorted_list_succinct_rmq,
-                     fc_dictionary_type, uncompressed_inverted_index,
-                     uncompressed_forward_index>
+typedef autocomplete<uint64_completion_trie, succinct_rmq, fc_dictionary_type,
+                     uncompressed_inverted_index, uncompressed_forward_index>
     uncompressed_autocomplete_type;
 
-typedef autocomplete2<integer_fc_dictionary_type, unsorted_list_succinct_rmq,
+typedef autocomplete2<integer_fc_dictionary_type, succinct_rmq,
                       fc_dictionary_type, uncompressed_inverted_index>
     uncompressed_autocomplete_type2;
 
-typedef autocomplete3<integer_fc_dictionary_type, unsorted_list_succinct_rmq,
+typedef autocomplete3<integer_fc_dictionary_type, succinct_rmq,
                       fc_dictionary_type, uncompressed_inverted_index>
     uncompressed_autocomplete_type3;
 
-typedef autocomplete4<integer_fc_dictionary_type, unsorted_list_succinct_rmq,
+typedef autocomplete4<integer_fc_dictionary_type, succinct_rmq,
                       fc_dictionary_type, uncompressed_blocked_inverted_index>
     uncompressed_autocomplete_type4;
 
 /* compressed indexes */
-typedef autocomplete<ef_completion_trie, unsorted_list_succinct_rmq,
-                     fc_dictionary_type, ef_inverted_index, delta_forward_index>
+typedef autocomplete<ef_completion_trie, succinct_rmq, fc_dictionary_type,
+                     ef_inverted_index, compact_forward_index>
     ef_autocomplete_type;
 
-typedef autocomplete2<integer_fc_dictionary_type, unsorted_list_succinct_rmq,
+typedef autocomplete2<integer_fc_dictionary_type, succinct_rmq,
                       fc_dictionary_type, ef_inverted_index>
     ef_autocomplete_type2;
 }  // namespace autocomplete

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "compact_vector.hpp"
+
 namespace autocomplete {
 
 struct scored_byte_range {
@@ -41,7 +43,7 @@ private:
     std::vector<scored_range> m_q;
 };
 
-template <typename ListType, typename RMQ>
+template <typename RMQ>
 struct unsorted_list {
     static const uint32_t SCAN_THRESHOLD = 64;
 
@@ -132,7 +134,7 @@ struct unsorted_list {
 private:
     topk_queue m_q;
     RMQ m_rmq;
-    ListType m_list;
+    compact_vector m_list;
 
     uint64_t rmq(uint64_t lo, uint64_t hi) {  // inclusive endpoints
         uint64_t pos = lo;
