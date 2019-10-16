@@ -12,63 +12,13 @@ namespace ef {
 struct compact_ef {
     static constexpr bool is_byte_aligned = false;
 
-    struct offsets {
-        offsets() {}
-
-        offsets(uint64_t base_offset, uint64_t universe, uint64_t n,
-                ef_parameters const& params)
-            : universe(universe)
-            , n(n)
-            , log_sampling0(params.ef_log_sampling0)
-            , log_sampling1(params.ef_log_sampling1)
-
-            , lower_bits(universe > n ? util::msb(universe / n) : 0)
-            , mask((uint64_t(1) << lower_bits) - 1)
-            // pad with a zero on both sides as sentinels
-            , higher_bits_length(n + (universe >> lower_bits) + 2)
-            , pointer_size(util::ceil_log2(higher_bits_length))
-            , pointers0((higher_bits_length - n) >> log_sampling0)  // XXX
-            , pointers1(n >> log_sampling1)
-
-            , pointers0_offset(base_offset)
-            , pointers1_offset(pointers0_offset + pointers0 * pointer_size)
-            , higher_bits_offset(pointers1_offset + pointers1 * pointer_size)
-            , lower_bits_offset(higher_bits_offset + higher_bits_length)
-            , end(lower_bits_offset + n * lower_bits) {
-            assert(n > 0);
-        }
-
-        uint64_t universe;
-        uint64_t n;
-        uint64_t log_sampling0;
-        uint64_t log_sampling1;
-
-        uint64_t lower_bits;
-        uint64_t mask;
-        uint64_t higher_bits_length;
-        uint64_t pointer_size;
-        uint64_t pointers0;
-        uint64_t pointers1;
-
-        uint64_t pointers0_offset;
-        uint64_t pointers1_offset;
-        uint64_t higher_bits_offset;
-        uint64_t lower_bits_offset;
-        uint64_t end;
-    };
-
-    // static uint64_t bitsize(ef_parameters const& params, uint64_t universe,
-    //                         uint64_t n) {
-    //     return offsets(0, universe, n, params).end;
-    // }
-
     template <typename Iterator>
     static void build(bit_vector_builder& bvb, Iterator begin,
                       uint64_t universe, uint64_t n) {
         using util::ceil_div;
         ef_parameters params;
         uint64_t base_offset = bvb.size();
-        offsets of(base_offset, universe, n, params);
+        ef_offsets of(base_offset, universe, n, params);
         // initialize all the bits to 0
         bvb.zero_extend(of.end - base_offset);
 
@@ -96,9 +46,7 @@ struct compact_ef {
         Iterator it = begin;
         for (size_t i = 0; i < n; ++i) {
             uint64_t v = *it++;
-            if (i && v < last) {
-                std::cout << "at position " << i << "/" << n << std::endl;
-                std::cout << v << " < " << last << std::endl;
+            if (i and v < last) {
                 throw std::runtime_error("sequence is not sorted");
             }
             assert(v <= universe);
@@ -112,7 +60,7 @@ struct compact_ef {
             assert(offset + of.lower_bits <= of.end);
             bvb.set_bits(offset, low, of.lower_bits);
 
-            if (i && (i & sample1_mask) == 0) {
+            if (i and (i & sample1_mask) == 0) {
                 uint64_t ptr1 = i >> of.log_sampling1;
                 assert(ptr1 > 0);
                 offset = of.pointers1_offset + (ptr1 - 1) * of.pointer_size;
@@ -138,7 +86,7 @@ struct compact_ef {
             : m_bv(&bv)
             , m_position(0) {
             ef_parameters params;
-            m_of = offsets(offset, universe, n, params);
+            m_of = ef_offsets(offset, universe, n, params);
             m_value = access(m_position);
         }
 
@@ -148,17 +96,20 @@ struct compact_ef {
 
         void operator++() {
             m_position += 1;
+            assert(m_position <= size());
+            if (LIKELY(m_position < size())) {
+                m_value = read_next();
+            } else {
+                m_value = m_of.universe;
+            }
         }
 
         uint64_t operator*() {
-            m_value = access(m_position);
             return m_value;
         }
 
         uint64_t access(uint64_t position) {
             assert(position <= size());
-            // if (position == m_position) return m_value;
-
             uint64_t skip = position - m_position;
             if (LIKELY(position > m_position &&
                        skip <= linear_scan_threshold)) {
@@ -178,13 +129,10 @@ struct compact_ef {
                 }
                 return m_value;
             }
-
             return slow_access(position);
         }
 
         uint64_t next_geq(uint64_t lower_bound) {
-            // if (lower_bound == m_value) return m_value;
-
             uint64_t high_lower_bound = lower_bound >> m_of.lower_bits;
             uint64_t cur_high = m_value >> m_of.lower_bits;
             uint64_t high_diff = high_lower_bound - cur_high;
@@ -247,10 +195,6 @@ struct compact_ef {
             return m_position;
         }
 
-        // offsets const& of() {
-        //     return m_of;
-        // }
-
         bool intersects(const range r) {
             uint64_t val = access(0);
             if (val > r.end) return false;
@@ -303,7 +247,7 @@ struct compact_ef {
             uint64_t to_skip;
             if (lower_bound > m_value &&
                 (high_diff >> m_of.log_sampling0) == 0) {
-                // note: at the current position in the bitvector there
+                // NOTE: at the current position in the bitvector there
                 // should be a 1, but since we already consumed it, it
                 // is 0 in the enumerator, so we need to skip it
                 to_skip = high_diff;
@@ -396,7 +340,7 @@ struct compact_ef {
         }
 
         bit_vector const* m_bv;
-        offsets m_of;
+        ef_offsets m_of;
 
         uint64_t m_position;
         uint64_t m_value;

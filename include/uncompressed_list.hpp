@@ -1,7 +1,5 @@
 #pragma once
 
-#include <vector>
-
 #include "util.hpp"
 #include "bit_vector.hpp"
 
@@ -49,11 +47,6 @@ struct uncompressed_list {
             m_id = m_data[m_position];
             return m_id;
         }
-
-        // uint64_t decode(UintType* out) {
-        //     memcpy(out, m_data, size() * sizeof(UintType));
-        //     return size();
-        // }
 
         UintType access(uint64_t i) {
             assert(i < size());

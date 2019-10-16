@@ -22,10 +22,9 @@
 
 namespace autocomplete {
 
-// assume 32 bits are enough to store
+// NOTE: assume 32 bits are enough to store
 // both a term_id and a doc_id
 typedef uint32_t id_type;
-typedef std::pair<id_type, uint32_t> value_type;  // (position, value)
 
 namespace global {
 static const id_type invalid_term_id = id_type(-1);

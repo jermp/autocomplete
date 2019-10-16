@@ -4,7 +4,6 @@
 #include "util.hpp"
 
 namespace autocomplete {
-
 namespace detail {
 
 template <typename WordGetter>
