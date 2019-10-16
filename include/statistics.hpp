@@ -92,8 +92,7 @@ void autocomplete3<Completions, UnsortedDocsList, Dictionary,
               m_inverted_index.num_integers());
     print_bpi("pointers", m_inverted_index.pointer_bytes(),
               m_inverted_index.num_integers());
-    print("map from docid to lexid", essentials::vec_bytes(m_docid_to_lexid),
-          total_bytes);
+    print("map from docid to lexid", m_docid_to_lexid.bytes(), total_bytes);
 }
 
 template <typename Completions, typename UnsortedDocsList, typename Dictionary,
@@ -109,8 +108,7 @@ void autocomplete4<Completions, UnsortedDocsList, Dictionary,
     print("blocked inverted index", m_inverted_index.bytes(), total_bytes);
     print_bpi("data+pointers", m_inverted_index.bytes(),
               m_inverted_index.num_integers());
-    print("map from docid to lexid", essentials::vec_bytes(m_docid_to_lexid),
-          total_bytes);
+    print("map from docid to lexid", m_docid_to_lexid.bytes(), total_bytes);
 }
 
 }  // namespace autocomplete

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "building_util.hpp"
+#include "compact_vector.hpp"
 #include "autocomplete_common.hpp"
 #include "scored_string_pool.hpp"
 #include "scored_completion_set.hpp"
@@ -9,11 +11,9 @@
 namespace autocomplete {
 
 /*
-
 During the conjunctive step, maintain a min-heap of iterators,
 one iterator for each termID in the lexicographic range of the
 last token of the query.
-
 */
 
 template <typename Completions, typename UnsortedDocsList, typename Dictionary,
@@ -42,19 +42,22 @@ struct autocomplete3 {
         m_unsorted_docs_list.build(doc_ids);
 
         {
+            essentials::logger("building map from doc_id to lex_id...");
             uint64_t n = doc_ids.size();
-            std::vector<std::pair<id_type, id_type>> ids;
+            typedef std::vector<std::pair<id_type, id_type>> id_map_type;
+            id_map_type ids;
             ids.reserve(n);
-            m_docid_to_lexid.reserve(n);
             for (id_type lex_id = 0; lex_id != n; ++lex_id) {
                 ids.emplace_back(lex_id, doc_ids[lex_id]);
             }
             std::sort(ids.begin(), ids.end(), [](auto const& l, auto const& r) {
                 return l.second < r.second;
             });
-            for (id_type doc_id = 0; doc_id != n; ++doc_id) {
-                m_docid_to_lexid.push_back(ids[doc_id].first);
-            }
+            m_docid_to_lexid.build(
+                util::first_iterator<typename id_map_type::const_iterator>(
+                    ids.begin()),
+                ids.size());
+            essentials::logger("DONE");
         }
 
         cm_builder.build(m_completions);
@@ -236,7 +239,7 @@ struct autocomplete3 {
 
     size_t bytes() const {
         return m_completions.bytes() + m_unsorted_docs_list.bytes() +
-               m_dictionary.bytes() + essentials::vec_bytes(m_docid_to_lexid) +
+               m_dictionary.bytes() + m_docid_to_lexid.bytes() +
                m_inverted_index.bytes();
     }
 
@@ -256,7 +259,7 @@ private:
     UnsortedDocsList m_unsorted_docs_list;
     Dictionary m_dictionary;
     InvertedIndex m_inverted_index;
-    std::vector<uint32_t> m_docid_to_lexid;
+    compact_vector m_docid_to_lexid;
     scored_string_pool m_pool;
 
     scored_completion_set m_topk_completion_set;

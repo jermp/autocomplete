@@ -87,15 +87,19 @@ in decreasing frequency order (ties broken lexicographically).
 	  
 	  
 	+ Elias-Fano
-	using 0.282347 [GiB]
-	  completions: 0.0956841 [GiB] (33.8888%)
-	  unsorted docs list: 0.0409812 [GiB] (14.5145%)
-	  unsorted minimal docs list: 0.0154568 [GiB] (5.47438%)
-	  dictionary: 0.0328479 [GiB] (11.6339%)
-	  inverted index: 0.0595939 [GiB] (21.1066%)
+	using 0.259893 [GiB]
+	  completions: 0.0956841 [GiB] (36.8168%)
+		data: 73.5086 [bps]
+		pointers: 7.52944 [bps]
+	  unsorted docs list: 0.0315353 [GiB] (12.134%)
+	  unsorted minimal docs list: 0.0118937 [GiB] (4.57639%)
+	  dictionary: 0.0328479 [GiB] (12.639%)
+		data: 69.9866 [bps]
+		pointers: 3.76476 [bps]
+	  inverted index: 0.0595939 [GiB] (22.9302%)
 		data: 15.7999 [bpi]
 		pointers: 1.20819 [bpi]
-	  map from docid to lexid: 0.0377834 [GiB] (13.3819%)
+	  map from docid to lexid: 0.0283376 [GiB] (10.9036%)
   	  
 
 MSN 2006 query log
@@ -114,6 +118,20 @@ in decreasing frequency order (ties broken lexicographically).
       inverted index: 0.107578 [GiB] (13.9785%)
       forward index: 0.230677 [GiB] (29.9739%)
       
+     + compression 
+	 using 0.213269 [GiB]
+	  completions: 0.0617906 [GiB] (28.973%)
+	  unsorted docs list: 0.0211964 [GiB] (9.9388%)
+	  unsorted minimal docs list: 0.00775427 [GiB] (3.6359%)
+	  dictionary: 0.0219463 [GiB] (10.2904%)
+		data: 68.9954 [bps]
+		pointers: 3.7648 [bps]
+	  inverted index: 0.0429281 [GiB] (20.1286%)
+		data: 16.2938 [bpi]
+		pointers: 1.1785 [bpi]
+	  forward index: 0.0576538 [GiB] (27.0333%)
+		data: 22 [bpi]
+		pointers: 1.35605 [bpi]
  
 #### Solution 2
 
@@ -124,3 +142,18 @@ in decreasing frequency order (ties broken lexicographically).
 	  dictionary: 0.0220881 [GiB] (8.39036%)
 	  inverted index: 0.107578 [GiB] (40.8643%)
 	  map from docid to lexid: 0.0263876 [GiB] (10.0236%)
+	  
+	+ compression
+	using 0.180907 [GiB]
+	  completions: 0.0681161 [GiB] (37.6525%)
+		data: 75.0743 [bps]
+		pointers: 7.52946 [bps]
+	  unsorted docs list: 0.0211964 [GiB] (11.7167%)
+	  unsorted minimal docs list: 0.00775427 [GiB] (4.28633%)
+	  dictionary: 0.0219463 [GiB] (12.1312%)
+		data: 68.9954 [bps]
+		pointers: 3.7648 [bps]
+	  inverted index: 0.0429281 [GiB] (23.7293%)
+		data: 16.2938 [bpi]
+		pointers: 1.1785 [bpi]
+	  map from docid to lexid: 0.0189661 [GiB] (10.4839%)
