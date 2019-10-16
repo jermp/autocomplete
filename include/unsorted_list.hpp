@@ -52,7 +52,7 @@ struct unsorted_list {
     void build(std::vector<id_type> const& list) {
         essentials::logger("building unsorted_list...");
         m_rmq.build(list, std::less<id_type>());
-        m_list.build(list);
+        m_list.build(list.begin(), list.size());
         essentials::logger("DONE");
     }
 

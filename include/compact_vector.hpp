@@ -216,12 +216,12 @@ struct compact_vector {
         , m_width(0)
         , m_mask(0) {}
 
-    template <typename T>
-    void build(std::vector<T> const& from) {
-        uint64_t max = *std::max_element(from.begin(), from.end());
+    template <typename Iterator>
+    void build(Iterator begin, uint64_t n) {
+        uint64_t max = *std::max_element(begin, begin + n);
         uint64_t width = util::ceil_log2(max + 1);
         std::cout << "\tusing " << width << " [bpi]" << std::endl;
-        compact_vector::builder builder(from.begin(), from.size(), width);
+        compact_vector::builder builder(begin, n, width);
         builder.build(*this);
     }
 

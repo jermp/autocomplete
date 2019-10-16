@@ -60,6 +60,21 @@ in decreasing frequency order (ties broken lexicographically).
 		data: 29.6008 [bpi]
 		pointers: 2.99348 [bpi]
 	
+	+ Elias-Fano + compact_forward_index + compact_unsorted_lists
+	using 0.304999 [GiB]
+	  completions: 0.086722 [GiB] (28.4335%)
+	  unsorted docs list: 0.0315353 [GiB] (10.3395%)
+	  unsorted minimal docs list: 0.0118937 [GiB] (3.89958%)
+	  dictionary: 0.0328479 [GiB] (10.7698%)
+		data: 69.9866 [bps]
+		pointers: 3.76476 [bps]
+	  inverted index: 0.0595939 [GiB] (19.539%)
+		data: 15.7999 [bpi]
+		pointers: 1.20819 [bpi]
+	  forward index: 0.0824065 [GiB] (27.0186%)
+		data: 22 [bpi]
+		pointers: 1.35762 [bpi]
+	
 #### Solution 2
 
 	using 0.377843 [GiB]
