@@ -25,33 +25,35 @@ int main(int argc, char** argv) {
     params.collection_basename = argv[1];
     params.load();
 
-    // {
-    //     // build, print and write
-    //     uncompressed_inverted_index::builder builder(params);
-    //     uncompressed_inverted_index ii;
-    //     builder.build(ii);
-    //     std::cout << "using " << ii.bytes() << " bytes" << std::endl;
-    //     std::cout << "num docs " << ii.num_docs() << std::endl;
-    //     std::cout << "num terms " << ii.num_terms() << std::endl;
+    typedef ef_inverted_index inverted_index_type;
 
-    //     if (output_filename) {
-    //         essentials::logger("saving data structure to disk...");
-    //         essentials::save<uncompressed_inverted_index>(ii,
-    //         output_filename); essentials::logger("DONE");
-    //     }
-    // }
+    {
+        // build, print and write
+        inverted_index_type::builder builder(params);
+        inverted_index_type index;
+        builder.build(index);
+        std::cout << "using " << index.bytes() << " bytes" << std::endl;
+        std::cout << "num docs " << index.num_docs() << std::endl;
+        std::cout << "num terms " << index.num_terms() << std::endl;
+
+        if (output_filename) {
+            essentials::logger("saving data structure to disk...");
+            essentials::save<inverted_index_type>(index, output_filename);
+            essentials::logger("DONE");
+        }
+    }
 
     {
         if (output_filename) {
-            uncompressed_inverted_index ii;
+            inverted_index_type index;
             essentials::logger("loading data structure from disk...");
-            essentials::load(ii, output_filename);
+            essentials::load(index, output_filename);
             essentials::logger("DONE");
-            std::cout << "using " << ii.bytes() << " bytes" << std::endl;
-            std::cout << "num docs " << ii.num_docs() << std::endl;
-            std::cout << "num terms " << ii.num_terms() << std::endl;
+            std::cout << "using " << index.bytes() << " bytes" << std::endl;
+            std::cout << "num docs " << index.num_docs() << std::endl;
+            std::cout << "num terms " << index.num_terms() << std::endl;
 
-            std::vector<id_type> intersection(ii.num_docs());  // at most
+            std::vector<id_type> intersection(index.num_docs());  // at most
             std::vector<id_type> term_ids;
             term_ids.reserve(2);
 
@@ -63,13 +65,13 @@ int main(int argc, char** argv) {
             id_type j = 1752198 - 1;
             term_ids.push_back(i + 1);
             term_ids.push_back(j + 1);
-            // uint64_t size = ii.intersect(term_ids, intersection);
+            // uint64_t size = index.intersect(term_ids, intersection);
 
             {
                 std::cout << "intersection between " << i << " and " << j
                           << " is: ";
                 uint32_t i = 0;
-                auto intersec_it = ii.intersection_iterator(term_ids);
+                auto intersec_it = index.intersection_iterator(term_ids);
                 while (intersec_it.has_next()) {
                     id_type doc_id = *intersec_it;
                     std::cout << doc_id << " ";
@@ -81,7 +83,7 @@ int main(int argc, char** argv) {
 
             std::vector<id_type> a;
             {
-                auto it = ii.iterator(i);
+                auto it = index.iterator(i);
                 a.resize(it.size());
                 for (uint32_t i = 0; i != a.size(); ++i) {
                     a[i] = it.access(i);
@@ -90,7 +92,7 @@ int main(int argc, char** argv) {
 
             std::vector<id_type> b;
             {
-                auto it = ii.iterator(j);
+                auto it = index.iterator(j);
                 b.resize(it.size());
                 for (uint32_t i = 0; i != b.size(); ++i) {
                     b[i] = it.access(i);
@@ -107,12 +109,12 @@ int main(int argc, char** argv) {
             }
             std::cout << std::endl;
 
-            // for (uint32_t i = 1; i != ii.num_terms() + 1; ++i) {
-            //     for (uint32_t j = i; j != ii.num_terms() + 1; ++j) {
+            // for (uint32_t i = 1; i != index.num_terms() + 1; ++i) {
+            //     for (uint32_t j = i; j != index.num_terms() + 1; ++j) {
             //         term_ids.clear();
             //         term_ids.push_back(i);
             //         term_ids.push_back(j);
-            //         uint64_t size = ii.intersect(term_ids, intersection);
+            //         uint64_t size = index.intersect(term_ids, intersection);
             //         std::cout << "size of intersection between " << i << "
             //         and "
             //                   << j << " is " << size << std::endl;

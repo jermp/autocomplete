@@ -29,8 +29,8 @@ namespace autocomplete {
 typedef uint_vec<uint32_t> uint32_vec;
 typedef uint_vec<uint64_t> uint64_vec;
 
-typedef completion_trie<uint64_vec, uint32_vec, uint32_vec, uint32_vec>
-    uint64_completion_trie;
+// typedef completion_trie<uint64_vec, uint32_vec, uint32_vec, uint32_vec>
+//     uint64_completion_trie;
 
 typedef completion_trie<ef::ef_sequence, ef::ef_sequence, ef::ef_sequence,
                         ef::ef_sequence>
@@ -42,27 +42,24 @@ typedef integer_fc_dictionary<> integer_fc_dictionary_type;
 typedef unsorted_list<cartesian_tree> succinct_rmq;
 typedef uncompressed_list<uint32_t> uncompressed_list32_t;
 
-typedef inverted_index<uncompressed_list32_t> uncompressed_inverted_index;
+// typedef inverted_index<uncompressed_list32_t> uncompressed_inverted_index;
 typedef inverted_index<ef::compact_ef> ef_inverted_index;
 
-typedef forward_index<uncompressed_list32_t> uncompressed_forward_index;
-typedef forward_index<ef::compact_ef> ef_forward_index;
+// typedef forward_index<uncompressed_list32_t> uncompressed_forward_index;
+// typedef forward_index<ef::compact_ef> ef_forward_index;
 
 typedef blocked_inverted_index<uncompressed_list32_t, uncompressed_list32_t,
                                uncompressed_list32_t, uint64_vec>
     uncompressed_blocked_inverted_index;
 
-typedef autocomplete<uint64_completion_trie, succinct_rmq, fc_dictionary_type,
-                     uncompressed_inverted_index, uncompressed_forward_index>
-    uncompressed_autocomplete_type;
+// typedef autocomplete<uint64_completion_trie, succinct_rmq,
+// fc_dictionary_type,
+//                      uncompressed_inverted_index, uncompressed_forward_index>
+//     uncompressed_autocomplete_type;
 
-typedef autocomplete2<integer_fc_dictionary_type, succinct_rmq,
-                      fc_dictionary_type, uncompressed_inverted_index>
-    uncompressed_autocomplete_type2;
-
-typedef autocomplete3<integer_fc_dictionary_type, succinct_rmq,
-                      fc_dictionary_type, uncompressed_inverted_index>
-    uncompressed_autocomplete_type3;
+// typedef autocomplete2<integer_fc_dictionary_type, succinct_rmq,
+//                       fc_dictionary_type, uncompressed_inverted_index>
+//     uncompressed_autocomplete_type2;
 
 typedef autocomplete4<integer_fc_dictionary_type, succinct_rmq,
                       fc_dictionary_type, uncompressed_blocked_inverted_index>
@@ -76,4 +73,8 @@ typedef autocomplete<ef_completion_trie, succinct_rmq, fc_dictionary_type,
 typedef autocomplete2<integer_fc_dictionary_type, succinct_rmq,
                       fc_dictionary_type, ef_inverted_index>
     ef_autocomplete_type2;
+
+typedef autocomplete3<integer_fc_dictionary_type, succinct_rmq,
+                      fc_dictionary_type, ef_inverted_index>
+    ef_autocomplete_type3;
 }  // namespace autocomplete

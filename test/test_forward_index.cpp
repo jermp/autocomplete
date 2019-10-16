@@ -25,31 +25,32 @@ int main(int argc, char** argv) {
     params.collection_basename = argv[1];
     params.load();
 
+    typedef compact_forward_index forward_index_type;
+
     {
-        // build, print and write
-        uncompressed_forward_index::builder builder(params);
-        uncompressed_forward_index fi;
-        builder.build(fi);
-        std::cout << "using " << fi.bytes() << " bytes" << std::endl;
-        std::cout << "num docs " << fi.num_docs() << std::endl;
-        std::cout << "num terms " << fi.num_terms() << std::endl;
+        forward_index_type::builder builder(params);
+        forward_index_type index;
+        builder.build(index);
+        std::cout << "using " << index.bytes() << " bytes" << std::endl;
+        std::cout << "num docs " << index.num_docs() << std::endl;
+        std::cout << "num terms " << index.num_terms() << std::endl;
 
         if (output_filename) {
             essentials::logger("saving data structure to disk...");
-            essentials::save<uncompressed_forward_index>(fi, output_filename);
+            essentials::save<forward_index_type>(index, output_filename);
             essentials::logger("DONE");
         }
     }
 
     {
         if (output_filename) {
-            uncompressed_forward_index fi;
+            forward_index_type index;
             essentials::logger("loading data structure from disk...");
-            essentials::load(fi, output_filename);
+            essentials::load(index, output_filename);
             essentials::logger("DONE");
-            std::cout << "using " << fi.bytes() << " bytes" << std::endl;
-            std::cout << "num docs " << fi.num_docs() << std::endl;
-            std::cout << "num terms " << fi.num_terms() << std::endl;
+            std::cout << "using " << index.bytes() << " bytes" << std::endl;
+            std::cout << "num docs " << index.num_docs() << std::endl;
+            std::cout << "num terms " << index.num_terms() << std::endl;
         }
     }
 
