@@ -6,8 +6,11 @@
 #include "uint_vec.hpp"
 #include "unsorted_list.hpp"
 #include "uncompressed_list.hpp"
+
 #include "forward_index.hpp"
-#include "forward_index2.hpp"
+#include "compact_forward_index.hpp"
+#include "delta_forward_index.hpp"
+
 #include "inverted_index.hpp"
 #include "blocked_inverted_index.hpp"
 
@@ -36,15 +39,13 @@ typedef fc_dictionary<> fc_dictionary_type;
 typedef integer_fc_dictionary<> integer_fc_dictionary_type;
 
 typedef unsorted_list<uint32_vec, cartesian_tree> unsorted_list_succinct_rmq;
-
 typedef uncompressed_list<uint32_t> uncompressed_list32_t;
 
-typedef forward_index<uncompressed_list32_t> uncompressed_forward_index;
 typedef inverted_index<uncompressed_list32_t> uncompressed_inverted_index;
-
-typedef forward_index2 compact_forward_index;
-typedef forward_index<ef::compact_ef> ef_forward_index;
 typedef inverted_index<ef::compact_ef> ef_inverted_index;
+
+typedef forward_index<uncompressed_list32_t> uncompressed_forward_index;
+typedef forward_index<ef::compact_ef> ef_forward_index;
 
 typedef blocked_inverted_index<uncompressed_list32_t, uncompressed_list32_t,
                                uncompressed_list32_t, uint64_vec>
@@ -69,8 +70,7 @@ typedef autocomplete4<integer_fc_dictionary_type, unsorted_list_succinct_rmq,
 
 /* compressed indexes */
 typedef autocomplete<ef_completion_trie, unsorted_list_succinct_rmq,
-                     fc_dictionary_type, ef_inverted_index,
-                     compact_forward_index>
+                     fc_dictionary_type, ef_inverted_index, delta_forward_index>
     ef_autocomplete_type;
 
 typedef autocomplete2<integer_fc_dictionary_type, unsorted_list_succinct_rmq,

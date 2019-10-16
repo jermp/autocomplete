@@ -30,7 +30,7 @@ Average among 10 runs.
 	
 	+ Elias-Fano and forward_index2
 	{"num_terms_per_query": "1", "num_queries": "10000", "ns_per_query": "5336"}
-	{"num_terms_per_query": "2", "num_queries": "10000", "ns_per_query": "7884"}
+	{"num_terms_per_query": "2", "num_queries": "10000", "ns_per_query": "7573"}
 	{"num_terms_per_query": "3", "num_queries": "10000", "ns_per_query": "26278"}
 	{"num_terms_per_query": "4", "num_queries": "10000", "ns_per_query": "35664"}
 	{"num_terms_per_query": "5", "num_queries": "10000", "ns_per_query": "35189"}

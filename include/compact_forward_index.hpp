@@ -6,7 +6,7 @@
 
 namespace autocomplete {
 
-struct forward_index2 {
+struct compact_forward_index {
     struct builder {
         builder() {}
 
@@ -48,14 +48,14 @@ struct forward_index2 {
             essentials::logger("DONE");
         }
 
-        void swap(forward_index2::builder& other) {
+        void swap(compact_forward_index::builder& other) {
             std::swap(other.m_num_integers, m_num_integers);
             std::swap(other.m_num_terms, m_num_terms);
             other.m_pointers.swap(m_pointers);
             other.m_data.swap(m_data);
         }
 
-        void build(forward_index2& fi) {
+        void build(compact_forward_index& fi) {
             fi.m_num_integers = m_num_integers;
             fi.m_num_terms = m_num_terms;
             fi.m_pointers.build(m_pointers);
@@ -70,7 +70,7 @@ struct forward_index2 {
         compact_vector::builder m_data;
     };
 
-    forward_index2() {}
+    compact_forward_index() {}
 
     struct forward_list_iterator_type {
         forward_list_iterator_type(compact_vector const& cv, uint64_t pos,
