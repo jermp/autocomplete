@@ -18,12 +18,11 @@ void build(parameters const& params, char const* output_filename) {
 
 void build_type4(parameters const& params, const float c,
                  char const* output_filename) {
-    uncompressed_autocomplete_type4 index(params, c);
+    ef_autocomplete_type4 index(params, c);
     index.print_stats();
     if (output_filename) {
         essentials::logger("saving data structure to disk...");
-        essentials::save<uncompressed_autocomplete_type4>(index,
-                                                          output_filename);
+        essentials::save<ef_autocomplete_type4>(index, output_filename);
         essentials::logger("DONE");
     }
 }
@@ -65,7 +64,7 @@ int main(int argc, char** argv) {
         //     build<uncompressed_autocomplete_type2>(params, output_filename);
     } else if (type == "ef_type3") {
         build<ef_autocomplete_type3>(params, output_filename);
-    } else if (type == "type4") {
+    } else if (type == "ef_type4") {
         if (c == 0.0) {
             std::cerr << "c must be greater than 0.0" << std::endl;
             return 1;

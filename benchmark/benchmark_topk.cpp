@@ -72,18 +72,12 @@ int main(int argc, char** argv) {
     } else if (type == "ef_type2") {
         benchmark_topk<ef_autocomplete_type2>(binary_filename, k,
                                               max_num_queries, breakdowns);
-        // } else if (type == "type1") {
-        //     benchmark_topk<uncompressed_autocomplete_type>(
-        //         binary_filename, k, max_num_queries, breakdowns);
-        // } else if (type == "type2") {
-        //     benchmark_topk<uncompressed_autocomplete_type2>(
-        //         binary_filename, k, max_num_queries, breakdowns);
     } else if (type == "ef_type3") {
         benchmark_topk<ef_autocomplete_type3>(binary_filename, k,
                                               max_num_queries, breakdowns);
-    } else if (type == "type4") {
-        benchmark_topk<uncompressed_autocomplete_type4>(
-            binary_filename, k, max_num_queries, breakdowns);
+    } else if (type == "ef_type4") {
+        benchmark_topk<ef_autocomplete_type4>(binary_filename, k,
+                                              max_num_queries, breakdowns);
     } else {
         return 1;
     }

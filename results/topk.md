@@ -70,6 +70,16 @@ Average among 10 runs.
 	{"num_terms_per_query": "7", "num_queries": "1000", "ns_per_query": "7939661"}
 	{"num_terms_per_query": "8+", "num_queries": "1000", "ns_per_query": "6980226"}
 
+	+ Elias-Fano
+	{"num_terms_per_query": "1", "num_queries": "1000", "ns_per_query": "6024"}
+	{"num_terms_per_query": "2", "num_queries": "1000", "ns_per_query": "20553345"}
+	{"num_terms_per_query": "3", "num_queries": "1000", "ns_per_query": "32495295"}
+	{"num_terms_per_query": "4", "num_queries": "1000", "ns_per_query": "30929833"}
+	{"num_terms_per_query": "5", "num_queries": "1000", "ns_per_query": "27103519"}
+	{"num_terms_per_query": "6", "num_queries": "1000", "ns_per_query": "19912460"}
+	{"num_terms_per_query": "7", "num_queries": "1000", "ns_per_query": "20956205"}
+	{"num_terms_per_query": "8+", "num_queries": "1000", "ns_per_query": "19643570"}
+
 #### Solution 4
 
 	c = 0.005

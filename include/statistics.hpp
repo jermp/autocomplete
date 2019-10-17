@@ -128,9 +128,20 @@ void autocomplete4<Completions, UnsortedDocsList, Dictionary,
     print("completions", m_completions.bytes(), total_bytes);
     print("unsorted docs list", m_unsorted_docs_list.bytes(), total_bytes);
     print("dictionary", m_dictionary.bytes(), total_bytes);
+
     print("blocked inverted index", m_inverted_index.bytes(), total_bytes);
-    print_bpi("data+pointers", m_inverted_index.bytes(),
+    std::cout << "  num blocks: " << m_inverted_index.num_blocks() << std::endl;
+    print_bpi("blocks", m_inverted_index.blocks_bytes(),
               m_inverted_index.num_integers());
+    print_bpi("pointers", m_inverted_index.pointers_bytes(),
+              m_inverted_index.num_integers());
+    print_bpi("docs", m_inverted_index.docs_bytes(),
+              m_inverted_index.num_integers());
+    print_bpi("terms", m_inverted_index.terms_bytes(),
+              m_inverted_index.num_integers());
+    print_bpi("offsets", m_inverted_index.offsets_bytes(),
+              m_inverted_index.num_integers());
+
     print("map from docid to lexid", m_docid_to_lexid.bytes(), total_bytes);
 }
 

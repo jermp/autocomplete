@@ -2,16 +2,19 @@
 
 #include <algorithm>
 #include <unordered_map>
+
+#include "bit_vector.hpp"
+#include "ef/ef_sequence.hpp"
+#include "ef/compact_ef.hpp"
 #include "parameters.hpp"
 
 namespace autocomplete {
 
-template <typename InvertedListType, typename OffsetListType,
-          typename TermListType, typename Pointers>
+template <typename InvertedListType>
 struct blocked_inverted_index {
     typedef typename InvertedListType::iterator docs_iterator_type;
-    typedef typename OffsetListType::iterator offsets_iterator_type;
-    typedef typename TermListType::iterator terms_iterator_type;
+    typedef typename ef::compact_ef::iterator offsets_iterator_type;
+    typedef bits_getter terms_iterator_type;
 
     struct builder {
         builder() {}
@@ -47,6 +50,7 @@ struct blocked_inverted_index {
             union_of_lists.reserve(m);
             uint64_t num_postings_in_block = 0;
 
+            id_type lower_bound = 1;
             for (uint64_t term_id = 1; term_id <= num_terms; ++term_id) {
                 uint32_t n = 0;
                 input >> n;
@@ -57,19 +61,21 @@ struct blocked_inverted_index {
                     id_type doc_id;
                     input >> doc_id;
                     union_of_lists.push_back(doc_id);
-                    terms[doc_id].push_back(term_id);
+                    assert(term_id >= lower_bound);
+                    terms[doc_id].push_back(term_id - lower_bound);
                     if (k == 0) {
                         m_minimal_doc_ids.push_back(doc_id);
                     }
                 }
 
                 if (num_postings_in_block >= m or term_id == num_terms) {
+                    lower_bound = term_id;
                     m_blocks.push_back(term_id);
                     std::sort(union_of_lists.begin(), union_of_lists.end());
                     auto end = std::unique(union_of_lists.begin(),
                                            union_of_lists.end());
                     uint64_t size = std::distance(union_of_lists.begin(), end);
-                    std::cout << "union has size " << size << std::endl;
+                    // std::cout << "union has size " << size << std::endl;
 
                     m_lists.append_bits(size, 32);
                     InvertedListType::build(m_lists, union_of_lists.begin(),
@@ -87,11 +93,13 @@ struct blocked_inverted_index {
                                               set_of_term_ids.end()));
                         offset_list.push_back(offset);
 
+                        uint64_t n = set_of_term_ids.size();
+                        term_list.reserve(n);
                         for (auto t : set_of_term_ids) {
                             term_list.push_back(t);
                         }
 
-                        offset += set_of_term_ids.size();
+                        offset += n;
                         set_of_term_ids.clear();
                     }
 
@@ -99,14 +107,17 @@ struct blocked_inverted_index {
 
                     m_offsets.append_bits(offset_list.size(), 32);
                     m_offsets.append_bits(offset_list.back() + 1, 32);
-                    OffsetListType::build(m_offsets, offset_list.begin(),
+                    ef::compact_ef::build(m_offsets, offset_list.begin(),
                                           offset_list.back() + 1,
                                           offset_list.size());
                     m_pointers_to_offsets.push_back(m_offsets.size());
 
-                    m_terms.append_bits(term_list.size(), 32);
-                    TermListType::build(m_terms, term_list.begin(), m_num_terms,
-                                        term_list.size());
+                    auto max =
+                        *std::max_element(term_list.begin(), term_list.end());
+                    uint64_t width = util::ceil_log2(max + 1);
+                    // std::cout << "using " << width << " [bpi]" << std::endl;
+                    m_terms.append_bits(width, 6);
+                    for (auto t : term_list) m_terms.append_bits(t, width);
                     m_pointers_to_terms.push_back(m_terms.size());
 
                     num_postings_in_block = 0;
@@ -145,8 +156,7 @@ struct blocked_inverted_index {
             other.m_minimal_doc_ids.swap(m_minimal_doc_ids);
         }
 
-        void build(blocked_inverted_index<InvertedListType, OffsetListType,
-                                          TermListType, Pointers>& ii) {
+        void build(blocked_inverted_index<InvertedListType>& ii) {
             ii.m_num_integers = m_num_integers;
             ii.m_num_docs = m_num_docs;
             ii.m_num_terms = m_num_terms;
@@ -204,9 +214,31 @@ struct blocked_inverted_index {
         return essentials::pod_bytes(m_num_integers) +
                essentials::pod_bytes(m_num_docs) +
                essentials::pod_bytes(m_num_terms) +
-               m_pointers_to_lists.bytes() + m_lists.bytes() +
-               m_pointers_to_offsets.bytes() + m_offsets.bytes() +
-               m_pointers_to_terms.bytes() + m_terms.bytes();
+               essentials::vec_bytes(m_blocks) + m_pointers_to_lists.bytes() +
+               m_lists.bytes() + m_pointers_to_offsets.bytes() +
+               m_offsets.bytes() + m_pointers_to_terms.bytes() +
+               m_terms.bytes();
+    }
+
+    size_t blocks_bytes() const {
+        return essentials::vec_bytes(m_blocks);
+    }
+
+    size_t pointers_bytes() const {
+        return m_pointers_to_lists.bytes() + m_pointers_to_offsets.bytes() +
+               m_pointers_to_terms.bytes();
+    }
+
+    size_t docs_bytes() const {
+        return m_lists.bytes();
+    }
+
+    size_t offsets_bytes() const {
+        return m_offsets.bytes();
+    }
+
+    size_t terms_bytes() const {
+        return m_terms.bytes();
     }
 
     uint32_t block_id(id_type term_id) const {
@@ -221,6 +253,7 @@ struct blocked_inverted_index {
         offsets_iterator_type offsets_iterator;
         terms_iterator_type terms_iterator;
         std::vector<id_type> term_ids;
+        id_type lower_bound;
     };
 
     struct intersection_iterator_type {
@@ -319,8 +352,9 @@ struct blocked_inverted_index {
                     uint64_t begin = block.offsets_iterator.access(pos);
                     uint64_t end = block.offsets_iterator.access(pos + 1);
                     assert(end > begin);
+                    uint32_t lower_bound = block.lower_bound;
                     for (uint64_t i = begin; i != end; ++i) {
-                        auto t = block.terms_iterator.access(i);
+                        auto t = block.terms_iterator.access(i) + lower_bound;
                         if (t > m_suffix.end) break;
                         if (m_suffix.contains(t)) return true;
                     }
@@ -347,10 +381,12 @@ struct blocked_inverted_index {
             if (end - begin < m_iterators[m_i].term_ids.size()) return false;
 
             uint64_t i = begin;
+            uint32_t lower_bound = m_iterators[m_i].lower_bound;
             for (auto x : m_iterators[m_i].term_ids) {
                 bool found = false;
                 for (; i != end; ++i) {
-                    auto t = m_iterators[m_i].terms_iterator.access(i);
+                    auto t =
+                        m_iterators[m_i].terms_iterator.access(i) + lower_bound;
                     if (t == x) {
                         found = true;
                         break;
@@ -371,9 +407,8 @@ struct blocked_inverted_index {
                 }
             } else {
                 while (m_candidate < m_num_docs and m_i != m_iterators.size()) {
-                    // NOTE: since we work with (set) unions of posting lists,
-                    // next_geq by scan is considerably faster than a
-                    // traditional binary search
+                    // NOTE: since we work with unions of posting lists,
+                    // next_geq by scan runs faster
                     auto val = m_iterators[m_i].docs_iterator.next_geq_by_scan(
                         m_candidate);
                     bool is_in = in();
@@ -414,35 +449,36 @@ private:
 
     std::vector<uint32_t> m_blocks;
 
-    Pointers m_pointers_to_lists;
+    ef::ef_sequence m_pointers_to_lists;
     bit_vector m_lists;
-    Pointers m_pointers_to_offsets;
+    ef::ef_sequence m_pointers_to_offsets;
     bit_vector m_offsets;
-    Pointers m_pointers_to_terms;
+    ef::ef_sequence m_pointers_to_terms;
     bit_vector m_terms;
 
-    block_type block(uint32_t i) const {
-        assert(i < num_blocks());
+    block_type block(uint32_t block_id) const {
+        assert(block_id < num_blocks());
         block_type b;
         b.term_ids.resize(0);
+        b.lower_bound = block_id > 0 ? m_blocks[block_id - 1] : 1;
 
         {
-            uint64_t offset = m_pointers_to_lists.access(i);
+            uint64_t offset = m_pointers_to_lists.access(block_id);
             uint32_t n = m_lists.get_bits(offset, 32);
             docs_iterator_type it(m_lists, offset + 32, m_num_docs, n);
             b.docs_iterator = it;
         }
         {
-            uint64_t offset = m_pointers_to_offsets.access(i);
+            uint64_t offset = m_pointers_to_offsets.access(block_id);
             uint32_t n = m_offsets.get_bits(offset, 32);
             uint32_t universe = m_offsets.get_bits(offset + 32, 32);
             offsets_iterator_type it(m_offsets, offset + 32 + 32, universe, n);
             b.offsets_iterator = it;
         }
         {
-            uint64_t offset = m_pointers_to_terms.access(i);
-            uint32_t n = m_terms.get_bits(offset, 32);
-            terms_iterator_type it(m_terms, offset + 32, m_num_terms, n);
+            uint64_t offset = m_pointers_to_terms.access(block_id);
+            uint32_t width = m_terms.get_bits(offset, 6);
+            terms_iterator_type it(m_terms, offset + 6, width);
             b.terms_iterator = it;
         }
 

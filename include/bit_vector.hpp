@@ -5,12 +5,14 @@
 
 #include "util.hpp"
 
-// code based on succinct/bit_vector.hpp by Giuseppe Ottaviano
+// Credits: code based on succinct/bit_vector.hpp by Giuseppe Ottaviano
 
 namespace autocomplete {
 
 template <typename Data>
 struct bits_iterator {
+    bits_iterator() {}
+
     bits_iterator(Data const& data, size_t pos = 0)
         : m_data(&data)
         , m_pos(pos)
@@ -401,4 +403,33 @@ protected:
     size_t m_size;
     std::vector<uint64_t> m_bits;
 };
+
+struct bits_getter {
+    bits_getter() {}
+
+    bits_getter(bit_vector const& bits, uint64_t offset, uint32_t width)
+        : m_data(bits.data().data())
+        , m_base(offset)
+        , m_width(width)
+        , m_mask(-(width == 64) | ((uint64_t(1) << width) - 1)) {
+        util::prefetch(m_data + m_base / 64);
+    }
+
+    inline uint64_t access(uint64_t i) const {
+        uint64_t pos = m_base + i * m_width;
+        uint64_t block = pos / 64;
+        uint64_t shift = pos % 64;
+        return shift + m_width <= 64
+                   ? m_data[block] >> shift & m_mask
+                   : (m_data[block] >> shift) |
+                         (m_data[block + 1] << (64 - shift) & m_mask);
+    }
+
+private:
+    uint64_t const* m_data;
+    uint64_t m_base;
+    uint64_t m_width;
+    uint64_t m_mask;
+};
+
 }  // namespace autocomplete

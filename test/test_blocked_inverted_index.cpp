@@ -24,12 +24,12 @@ int main(int argc, char** argv) {
     parameters params;
     params.collection_basename = argv[1];
     params.load();
-    const float c = 1.0;
+    const float c = 0.01;
 
     {
         // build, print and write
-        uncompressed_blocked_inverted_index::builder builder(params, c);
-        uncompressed_blocked_inverted_index bii;
+        ef_blocked_inverted_index::builder builder(params, c);
+        ef_blocked_inverted_index bii;
         builder.build(bii);
         std::cout << "using " << bii.bytes() << " bytes" << std::endl;
         std::cout << "num docs " << bii.num_docs() << std::endl;

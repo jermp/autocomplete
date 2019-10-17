@@ -79,6 +79,8 @@ struct compact_ef {
     }
 
     struct iterator {
+        static const uint64_t linear_scan_threshold = 8;
+
         iterator() {}
 
         iterator(bit_vector const& bv, uint64_t offset, uint64_t universe,
@@ -132,6 +134,19 @@ struct compact_ef {
             return slow_access(position);
         }
 
+        uint64_t next_geq_by_scan(uint64_t lower_bound) {
+            assert(access(m_position) == m_value);
+            while (m_position != size()) {
+                assert(m_position < size());
+                auto m_value = operator*();
+                if (m_value >= lower_bound) return m_value;
+                operator++();
+            }
+            assert(m_position == size());
+            m_value = m_of.universe;
+            return m_value;
+        }
+
         uint64_t next_geq(uint64_t lower_bound) {
             uint64_t high_lower_bound = lower_bound >> m_of.lower_bits;
             uint64_t cur_high = m_value >> m_of.lower_bits;
@@ -139,7 +154,6 @@ struct compact_ef {
 
             if (LIKELY(lower_bound > m_value &&
                        high_diff <= linear_scan_threshold)) {
-                // optimize small skips
                 next_reader next_value(*this, m_position + 1);
                 uint64_t val;
                 do {
@@ -151,7 +165,6 @@ struct compact_ef {
                         break;
                     }
                 } while (val < lower_bound);
-
                 m_value = val;
                 return m_value;
             } else {
@@ -247,7 +260,6 @@ struct compact_ef {
             uint64_t cur_high = m_value >> m_of.lower_bits;
             uint64_t high_diff = high_lower_bound - cur_high;
 
-            // XXX bounds checking!
             uint64_t to_skip;
             if (lower_bound > m_value &&
                 (high_diff >> m_of.log_sampling0) == 0) {
@@ -283,8 +295,6 @@ struct compact_ef {
                 m_position++;
             }
         }
-
-        static const uint64_t linear_scan_threshold = 8;
 
         inline uint64_t read_low() {
             return m_bv->get_word56(m_of.lower_bits_offset +
