@@ -27,7 +27,7 @@ Average among 10 runs.
 	{"num_terms_per_query": "6", "num_queries": "10000", "ns_per_query": "31718"}
 	{"num_terms_per_query": "7", "num_queries": "10000", "ns_per_query": "29992"}
 	{"num_terms_per_query": "8+", "num_queries": "10000", "ns_per_query": "27313"}
-	
+
 	+ Elias-Fano and forward_index2
 	{"num_terms_per_query": "1", "num_queries": "10000", "ns_per_query": "5336"}
 	{"num_terms_per_query": "2", "num_queries": "10000", "ns_per_query": "7573"}
@@ -37,7 +37,7 @@ Average among 10 runs.
 	{"num_terms_per_query": "6", "num_queries": "10000", "ns_per_query": "32033"}
 	{"num_terms_per_query": "7", "num_queries": "10000", "ns_per_query": "29950"}
 	{"num_terms_per_query": "8+", "num_queries": "10000", "ns_per_query": "27332"}
-	
+
 #### Solution 2
 
 	{"num_terms_per_query": "1", "num_queries": "50000", "ns_per_query": "5812"}
@@ -58,7 +58,7 @@ Average among 10 runs.
 	{"num_terms_per_query": "6", "num_queries": "10000", "ns_per_query": "30319"}
 	{"num_terms_per_query": "7", "num_queries": "10000", "ns_per_query": "28181"}
 	{"num_terms_per_query": "8+", "num_queries": "10000", "ns_per_query": "24757"}
-	
+
 #### Solution 3
 
 	{"num_terms_per_query": "1", "num_queries": "1000", "ns_per_query": "5899"}
@@ -101,6 +101,16 @@ Average among 10 runs.
 	{"num_terms_per_query": "6", "num_queries": "100", "ns_per_query": "1858965"}
 	{"num_terms_per_query": "7", "num_queries": "100", "ns_per_query": "2304761"}
 	{"num_terms_per_query": "8+", "num_queries": "100", "ns_per_query": "2254481"}
+
+	c = 0.01, + Elias-Fano
+	{"num_terms_per_query": "1", "num_queries": "1000", "ns_per_query": "5879"}
+	{"num_terms_per_query": "2", "num_queries": "1000", "ns_per_query": "1754176"}
+	{"num_terms_per_query": "3", "num_queries": "1000", "ns_per_query": "3435481"}
+	{"num_terms_per_query": "4", "num_queries": "1000", "ns_per_query": "4442784"}
+	{"num_terms_per_query": "5", "num_queries": "1000", "ns_per_query": "4946228"}
+	{"num_terms_per_query": "6", "num_queries": "1000", "ns_per_query": "4818169"}
+	{"num_terms_per_query": "7", "num_queries": "1000", "ns_per_query": "5157776"}
+	{"num_terms_per_query": "8+", "num_queries": "1000", "ns_per_query": "5431935"}
 
 	c = 0.025
 	{"num_terms_per_query": "1", "num_queries": "100", "ns_per_query": "6528"}
