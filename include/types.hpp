@@ -64,7 +64,7 @@ typedef blocked_inverted_index<ef::compact_ef> ef_blocked_inverted_index;
 /* compressed indexes */
 typedef autocomplete<ef_completion_trie, succinct_rmq, fc_dictionary_type,
                      ef_inverted_index, compact_forward_index>
-    ef_autocomplete_type;
+    ef_autocomplete_type1;
 
 typedef autocomplete2<integer_fc_dictionary_type, succinct_rmq,
                       fc_dictionary_type, ef_inverted_index>

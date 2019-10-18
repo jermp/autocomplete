@@ -55,13 +55,9 @@ int main(int argc, char** argv) {
     }
 
     if (type == "ef_type1") {
-        build<ef_autocomplete_type>(params, output_filename);
+        build<ef_autocomplete_type1>(params, output_filename);
     } else if (type == "ef_type2") {
         build<ef_autocomplete_type2>(params, output_filename);
-        // } else if (type == "type1") {
-        //     build<uncompressed_autocomplete_type>(params, output_filename);
-        // } else if (type == "type2") {
-        //     build<uncompressed_autocomplete_type2>(params, output_filename);
     } else if (type == "ef_type3") {
         build<ef_autocomplete_type3>(params, output_filename);
     } else if (type == "ef_type4") {

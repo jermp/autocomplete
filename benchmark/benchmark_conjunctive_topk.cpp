@@ -20,7 +20,7 @@ void benchmark_conjunctive_topk(char const* binary_filename, uint32_t k,
     std::vector<std::string> queries;
     essentials::logger("loading queries...");
     uint32_t num_queries =
-        load_queries(queries, max_num_queries, true, std::cin);
+        load_queries(queries, max_num_queries, 0.25, std::cin);
     essentials::logger("loaded " + std::to_string(num_queries) + " queries");
 
     auto ns_x_query = [&](double time) {
@@ -95,7 +95,7 @@ int main(int argc, char** argv) {
     breakdowns.add("num_terms_per_query", num_terms_per_query);
 
     if (type == "type1") {
-        benchmark_conjunctive_topk<ef_autocomplete_type>(
+        benchmark_conjunctive_topk<ef_autocomplete_type1>(
             binary_filename, k, max_num_queries, breakdowns, breakdown);
     } else if (type == "type2") {
         benchmark_conjunctive_topk<ef_autocomplete_type2>(
