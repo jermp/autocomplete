@@ -143,6 +143,74 @@ struct autocomplete {
         return extract_strings(num_completions);
     }
 
+    iterator_type topk(std::string const& query, const uint32_t k,
+                       std::vector<timer_type>& timers) {
+        assert(k <= constants::MAX_K);
+
+        // step 1: parsing
+        timers[0].start();
+        init();
+        completion_type prefix;
+        byte_range suffix;
+        uint32_t num_terms = parse(m_dictionary, query, prefix, suffix);
+        assert(num_terms > 0);
+        timers[0].stop();
+
+        // step 2: prefix search
+        timers[1].start();
+        range suffix_lex_range = m_dictionary.locate_prefix(suffix);
+        if (suffix_lex_range.is_invalid()) return m_pool.begin();
+        suffix_lex_range.begin += 1;
+        suffix_lex_range.end += 1;
+        range r = m_completions.locate_prefix(prefix, suffix_lex_range);
+        uint32_t num_pref_topk_completions = 0;
+        if (!r.is_invalid()) {
+            num_pref_topk_completions =
+                m_unsorted_docs_list.topk(r, k, m_pref_topk_scores);
+        }
+        timers[1].stop();
+
+        // step 3: conjunctive search
+        timers[2].start();
+        uint32_t num_completions = 0;
+        if (num_pref_topk_completions < k) {
+            uint32_t num_conj_topk_completions = 0;
+
+            if (num_terms == 1) {  // special case
+                suffix_lex_range.begin -= 1;
+                num_conj_topk_completions = m_unsorted_minimal_docs_list.topk(
+                    suffix_lex_range, k, m_conj_topk_scores,
+                    true  // must return unique results
+                );
+            } else {
+                if (prefix.size() == 1) {  // we've got nothing to intersect
+                    auto it = m_inverted_index.iterator(prefix.front() - 1);
+                    num_conj_topk_completions = conjunctive_topk(
+                        it, suffix_lex_range, k, m_conj_topk_scores);
+                } else {
+                    auto it = m_inverted_index.intersection_iterator(prefix);
+                    num_conj_topk_completions = conjunctive_topk(
+                        it, suffix_lex_range, k, m_conj_topk_scores);
+                }
+            }
+
+            num_completions = merge_scores(num_pref_topk_completions,
+                                           num_conj_topk_completions, k);
+
+        } else {
+            num_completions = num_pref_topk_completions;
+            m_pool.scores().swap(m_pref_topk_scores);
+        }
+        timers[2].stop();
+
+        // step 4: reporting
+        timers[3].start();
+        auto it = extract_strings(num_completions);
+        timers[3].stop();
+
+        return it;
+    }
+
     // for benchmarking
     iterator_type prefix_topk(std::string const& query, uint32_t const k,
                               std::vector<timer_type>& timers) {
