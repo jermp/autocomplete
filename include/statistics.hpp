@@ -44,9 +44,9 @@ template <typename Completions, typename UnsortedDocsList, typename Dictionary,
 void autocomplete<Completions, UnsortedDocsList, Dictionary, InvertedIndex,
                   ForwardIndex>::print_stats() const {
     size_t total_bytes = bytes();
-    std::cout << "num completions = " << m_completions.size() << std::endl;
-    std::cout << "using " << convert(total_bytes, essentials::MiB) << " [MiB]"
-              << std::endl;
+    std::cout << "using " << convert(total_bytes, essentials::MiB) << " [MiB]: "
+              << static_cast<double>(total_bytes) / m_completions.size()
+              << " [bytes per completion] " << std::endl;
 
     print("completions", m_completions.bytes(), total_bytes,
           m_completions.size());
@@ -85,8 +85,10 @@ template <typename Completions, typename UnsortedDocsList, typename Dictionary,
 void autocomplete2<Completions, UnsortedDocsList, Dictionary,
                    InvertedIndex>::print_stats() const {
     size_t total_bytes = bytes();
-    std::cout << "using " << convert(total_bytes, essentials::MiB) << " [MiB]"
-              << std::endl;
+    std::cout << "using " << convert(total_bytes, essentials::MiB) << " [MiB]: "
+              << static_cast<double>(total_bytes) / m_completions.size()
+              << " [bytes per completion] " << std::endl;
+
     print("completions", m_completions.bytes(), total_bytes,
           m_completions.size());
     print_bps("data", m_completions.data_bytes(), m_completions.size());
@@ -118,8 +120,10 @@ template <typename Completions, typename UnsortedDocsList, typename Dictionary,
 void autocomplete3<Completions, UnsortedDocsList, Dictionary,
                    InvertedIndex>::print_stats() const {
     size_t total_bytes = bytes();
-    std::cout << "using " << convert(total_bytes, essentials::MiB) << " [MiB]"
-              << std::endl;
+    std::cout << "using " << convert(total_bytes, essentials::MiB) << " [MiB]: "
+              << static_cast<double>(total_bytes) / m_completions.size()
+              << " [bytes per completion] " << std::endl;
+
     print("completions", m_completions.bytes(), total_bytes,
           m_completions.size());
     print("unsorted docs list", m_unsorted_docs_list.bytes(), total_bytes,
@@ -141,8 +145,10 @@ template <typename Completions, typename UnsortedDocsList, typename Dictionary,
 void autocomplete4<Completions, UnsortedDocsList, Dictionary,
                    BlockedInvertedIndex>::print_stats() const {
     size_t total_bytes = bytes();
-    std::cout << "using " << convert(total_bytes, essentials::MiB) << " [MiB]"
-              << std::endl;
+    std::cout << "using " << convert(total_bytes, essentials::MiB) << " [MiB]: "
+              << static_cast<double>(total_bytes) / m_completions.size()
+              << " [bytes per completion] " << std::endl;
+
     print("completions", m_completions.bytes(), total_bytes,
           m_completions.size());
     print("unsorted docs list", m_unsorted_docs_list.bytes(), total_bytes,
