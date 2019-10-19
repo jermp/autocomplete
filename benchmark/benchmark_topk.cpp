@@ -38,12 +38,13 @@ void benchmark_topk(char const* binary_filename, uint32_t k,
     // essentials::logger("DONE");
     std::cout << reported_strings << std::endl;
 
-    auto ns_x_query = [&](double time) {
-        return uint64_t(time / (runs * num_queries) * 1000);
+    auto musec_per_query = [&](double time) {
+        return uint64_t(time / (runs * num_queries));
     };
 
     breakdowns.add("num_queries", std::to_string(num_queries));
-    breakdowns.add("ns_per_query", std::to_string(ns_x_query(timer.elapsed())));
+    breakdowns.add("ns_per_query",
+                   std::to_string(musec_per_query(timer.elapsed())));
 }
 
 int main(int argc, char** argv) {
