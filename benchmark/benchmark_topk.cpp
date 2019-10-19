@@ -11,21 +11,15 @@ void benchmark_topk(char const* binary_filename, uint32_t k,
                     uint32_t max_num_queries, float keep,
                     essentials::json_lines& breakdowns, bool breakdown) {
     Index index;
-    // essentials::logger("loading data structure from disk...");
     essentials::load(index, binary_filename);
-    // essentials::logger("DONE");
-    // index.print_stats();
 
     std::vector<std::string> queries;
-    // essentials::logger("loading queries...");
     uint32_t num_queries =
         load_queries(queries, max_num_queries, keep, std::cin);
-    // essentials::logger("loaded " + std::to_string(num_queries) + " queries");
 
-    // essentials::logger("benchmarking topk queries...");
     uint64_t reported_strings = 0;
     auto musec_per_query = [&](double time) {
-        return uint64_t(time / (runs * num_queries));
+        return time / (runs * num_queries);
     };
 
     breakdowns.add("num_queries", std::to_string(num_queries));
@@ -61,7 +55,6 @@ void benchmark_topk(char const* binary_filename, uint32_t k,
         }
         timer.stop();
 
-        // essentials::logger("DONE");
         std::cout << reported_strings << std::endl;
 
         breakdowns.add("musec_per_query",

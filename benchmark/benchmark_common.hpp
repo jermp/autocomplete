@@ -13,8 +13,8 @@ size_t load_queries(std::vector<std::string>& queries, uint32_t max_num_queries,
         if (!std::getline(is, line)) break;
 
         auto query = line.substr(line.find(' ') + 1, line.size());
-        uint32_t size = query.size() - 1;
-        while (query[size] != ' ') --size;
+        int32_t size = query.size() - 1;
+        while (size >= 0 and query[size] != ' ') --size;
         auto last_token = query.substr(size + 1, query.size() - size);
         uint32_t num_chars =
             last_token.size() - std::ceil(last_token.size() * percentage);
