@@ -173,7 +173,7 @@ struct autocomplete4 {
         timers[3].start();
         extract_completions(num_completions);
         auto it = extract_strings(num_completions);
-        timers[4].stop();
+        timers[3].stop();
 
         return it;
     }

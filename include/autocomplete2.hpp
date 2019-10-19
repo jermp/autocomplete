@@ -229,7 +229,7 @@ struct autocomplete2 {
 
         timers[3].start();
         auto it = extract_strings(num_completions);
-        timers[4].stop();
+        timers[3].stop();
 
         return it;
     }

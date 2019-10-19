@@ -67,7 +67,7 @@ int main(int argc, char** argv) {
     if (argc < mandatory + 1) {
         std::cout << argv[0]
                   << " <type> <k> <binary_filename> <num_terms_per_query> "
-                     "<max_num_queries> <percentage> [--breakdowns] < queries"
+                     "<max_num_queries> <percentage> [--breakdown] < queries"
                   << std::endl;
         std::cout << "<percentage> is a float in [0,1] and specifies how much "
                      "we keep of the last token in a query "
