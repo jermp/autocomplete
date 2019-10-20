@@ -170,7 +170,8 @@ struct autocomplete3 {
         init();
         completion_type prefix;
         byte_range suffix;
-        parse(m_dictionary, query, prefix, suffix);
+        uint32_t num_terms = parse(m_dictionary, query, prefix, suffix);
+        assert(num_terms > 0);
         timers[0].stop();
 
         timers[1].start();
