@@ -1,10 +1,10 @@
 #pragma once
 
+#include "util_types.hpp"
 #include "building_util.hpp"
 #include "compact_vector.hpp"
 #include "autocomplete_common.hpp"
 #include "scored_string_pool.hpp"
-#include "scored_completion_set.hpp"
 #include "min_heap.hpp"
 #include "constants.hpp"
 
@@ -84,13 +84,11 @@ struct autocomplete4 {
         byte_range suffix;
         parse(m_dictionary, query, prefix, suffix);
 
-        uint32_t num_completions = 0;
         range suffix_lex_range = m_dictionary.locate_prefix(suffix);
         if (suffix_lex_range.is_invalid()) return m_pool.begin();
 
-        num_completions =
+        uint32_t num_completions =
             conjunctive_topk(prefix, suffix_lex_range, k, m_pool.scores());
-
         extract_completions(num_completions);
         return extract_strings(num_completions);
     }
@@ -257,7 +255,7 @@ private:
     compact_vector m_docid_to_lexid;
 
     scored_string_pool m_pool;
-    scored_completion_set m_topk_completion_set;
+    completion_set m_topk_completion_set;
 
     void init() {
         m_pool.clear();

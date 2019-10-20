@@ -10,6 +10,28 @@ namespace autocomplete {
 
 typedef std::vector<id_type> completion_type;
 
+struct completion_set {
+    void resize(uint32_t k, uint32_t max_num_terms_per_completion) {
+        m_sizes.resize(k);
+        m_completions.resize(k);
+        for (auto& c : m_completions) {
+            c.resize(max_num_terms_per_completion);
+        }
+    }
+
+    auto& completions() {
+        return m_completions;
+    }
+
+    auto& sizes() {
+        return m_sizes;
+    }
+
+private:
+    std::vector<uint8_t> m_sizes;
+    std::vector<completion_type> m_completions;
+};
+
 struct range {
     uint64_t begin;
     uint64_t end;

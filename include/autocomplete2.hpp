@@ -1,10 +1,10 @@
 #pragma once
 
+#include "util_types.hpp"
 #include "building_util.hpp"
 #include "compact_vector.hpp"
 #include "autocomplete_common.hpp"
 #include "scored_string_pool.hpp"
-#include "scored_completion_set.hpp"
 #include "constants.hpp"
 
 namespace autocomplete {
@@ -320,7 +320,7 @@ private:
     compact_vector m_docid_to_lexid;
 
     scored_string_pool m_pool;
-    scored_completion_set m_topk_completion_set;
+    completion_set m_topk_completion_set;
 
     void init() {
         m_pool.clear();
@@ -347,7 +347,7 @@ private:
 
     template <typename Iterator>
     uint32_t conjunctive_topk(Iterator& it, const range r, const uint32_t k) {
-        auto& topk_scores = m_topk_completion_set.scores();
+        auto& topk_scores = m_pool.scores();
         auto& completions = m_topk_completion_set.completions();
         auto& sizes = m_topk_completion_set.sizes();
         uint32_t i = 0;

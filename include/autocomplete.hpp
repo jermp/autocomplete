@@ -1,5 +1,6 @@
 #pragma once
 
+#include "util_types.hpp"
 #include "autocomplete_common.hpp"
 #include "scored_string_pool.hpp"
 #include "constants.hpp"
@@ -74,12 +75,10 @@ struct autocomplete {
         } else {
             if (prefix.size() == 1) {  // we've got nothing to intersect
                 auto it = m_inverted_index.iterator(prefix.front() - 1);
-                num_completions =
-                    conjunctive_topk(it, suffix_lex_range, k, m_pool.scores());
+                num_completions = conjunctive_topk(it, suffix_lex_range, k);
             } else {
                 auto it = m_inverted_index.intersection_iterator(prefix);
-                num_completions =
-                    conjunctive_topk(it, suffix_lex_range, k, m_pool.scores());
+                num_completions = conjunctive_topk(it, suffix_lex_range, k);
             }
         }
 
@@ -117,12 +116,10 @@ struct autocomplete {
             } else {
                 if (prefix.size() == 1) {  // we've got nothing to intersect
                     auto it = m_inverted_index.iterator(prefix.front() - 1);
-                    num_completions = conjunctive_topk(it, suffix_lex_range, k,
-                                                       m_pool.scores());
+                    num_completions = conjunctive_topk(it, suffix_lex_range, k);
                 } else {
                     auto it = m_inverted_index.intersection_iterator(prefix);
-                    num_completions = conjunctive_topk(it, suffix_lex_range, k,
-                                                       m_pool.scores());
+                    num_completions = conjunctive_topk(it, suffix_lex_range, k);
                 }
             }
         }
@@ -168,12 +165,10 @@ struct autocomplete {
             } else {
                 if (prefix.size() == 1) {  // we've got nothing to intersect
                     auto it = m_inverted_index.iterator(prefix.front() - 1);
-                    num_completions = conjunctive_topk(it, suffix_lex_range, k,
-                                                       m_pool.scores());
+                    num_completions = conjunctive_topk(it, suffix_lex_range, k);
                 } else {
                     auto it = m_inverted_index.intersection_iterator(prefix);
-                    num_completions = conjunctive_topk(it, suffix_lex_range, k,
-                                                       m_pool.scores());
+                    num_completions = conjunctive_topk(it, suffix_lex_range, k);
                 }
             }
         }
@@ -258,12 +253,10 @@ struct autocomplete {
         } else {
             if (prefix.size() == 1) {  // we've got nothing to intersect
                 auto it = m_inverted_index.iterator(prefix.front() - 1);
-                num_completions =
-                    conjunctive_topk(it, suffix_lex_range, k, m_pool.scores());
+                num_completions = conjunctive_topk(it, suffix_lex_range, k);
             } else {
                 auto it = m_inverted_index.intersection_iterator(prefix);
-                num_completions =
-                    conjunctive_topk(it, suffix_lex_range, k, m_pool.scores());
+                num_completions = conjunctive_topk(it, suffix_lex_range, k);
             }
         }
         timers[2].stop();
@@ -311,8 +304,8 @@ private:
     }
 
     template <typename Iterator>
-    uint32_t conjunctive_topk(Iterator& it, const range r, uint32_t const k,
-                              std::vector<id_type>& topk_scores) {
+    uint32_t conjunctive_topk(Iterator& it, const range r, uint32_t const k) {
+        auto& topk_scores = m_pool.scores();
         uint32_t results = 0;
         for (; it.has_next(); ++it) {
             auto doc_id = *it;
