@@ -7,11 +7,14 @@ k = sys.argv[4]
 num_queries = sys.argv[5]
 collect_breakdowns = int(sys.argv[6]) # 0 or 1
 
+output_filename = dataset_name + "." + type
+
 breakdown = ""
 if collect_breakdowns != 0:
     breakdown = "--breakdown"
+    output_filename += ".breakdown"
 
-output_filename = dataset_name + "." + type + ".topk.timings.json"
+output_filename += ".topk.timings.json"
 
 percentages = ["0.0", "0.25", "0.50", "0.75"]
 
