@@ -116,7 +116,8 @@ struct autocomplete3 {
         init();
         completion_type prefix;
         byte_range suffix;
-        parse(m_dictionary, query, prefix, suffix);
+        uint32_t num_terms = parse(m_dictionary, query, prefix, suffix);
+        assert(num_terms > 0);
 
         range suffix_lex_range = m_dictionary.locate_prefix(suffix);
         if (suffix_lex_range.is_invalid()) return m_pool.begin();
@@ -136,7 +137,11 @@ struct autocomplete3 {
         if (num_pref_topk_completions < k) {
             uint32_t num_conj_topk_completions = 0;
 
-            if (prefix.size() == 1) {  // we've got nothing to intersect
+            if (num_terms == 1) {  // we've got nothing to intersect
+                iterator it(0, m_inverted_index.num_docs());
+                num_conj_topk_completions = conjunctive_topk(
+                    it, suffix_lex_range, k, m_conj_topk_scores);
+            } else if (prefix.size() == 1) {  // we've got nothing to intersect
                 auto it = m_inverted_index.iterator(prefix.front() - 1);
                 num_conj_topk_completions = conjunctive_topk(
                     it, suffix_lex_range, k, m_conj_topk_scores);

@@ -215,4 +215,25 @@ private:
 
 typedef timer<clock_type, duration_type> timer_type;
 
+struct iterator {
+    iterator(id_type begin, id_type end)
+        : m_begin(begin)
+        , m_end(end) {}
+
+    bool has_next() const {
+        return m_begin < m_end;
+    }
+
+    id_type operator*() const {
+        return m_begin;
+    }
+
+    void operator++() {
+        ++m_begin;
+    }
+
+private:
+    id_type m_begin, m_end;
+};
+
 }  // namespace autocomplete

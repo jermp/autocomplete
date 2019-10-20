@@ -399,6 +399,7 @@ struct blocked_inverted_index {
         }
 
         void next() {
+            if (m_iterators.empty()) return;
             if (m_iterators.size() == 1) {
                 while (m_candidate < m_num_docs and m_i != m_iterators.size()) {
                     assert(m_i == 0);
