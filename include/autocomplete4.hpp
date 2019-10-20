@@ -21,8 +21,6 @@ struct autocomplete4 {
         m_pool.resize(constants::POOL_SIZE, constants::MAX_K);
         m_topk_completion_set.resize(constants::MAX_K,
                                      2 * constants::MAX_NUM_TERMS_PER_QUERY);
-        m_pref_topk_scores.resize(constants::MAX_K);
-        m_conj_topk_scores.resize(constants::MAX_K);
     }
 
     autocomplete4(parameters const& params, float c)
@@ -111,22 +109,13 @@ struct autocomplete4 {
         suffix_lex_range.end += 1;
         range r = m_completions.locate_prefix(prefix, suffix_lex_range);
 
-        uint32_t num_pref_topk_completions = 0;
+        uint32_t num_completions = 0;
         if (!r.is_invalid()) {
-            num_pref_topk_completions =
-                m_unsorted_docs_list.topk(r, k, m_pref_topk_scores);
+            num_completions = m_unsorted_docs_list.topk(r, k, m_pool.scores());
         }
 
-        uint32_t num_completions = 0;
-
-        if (num_pref_topk_completions < k) {
-            uint32_t num_conj_topk_completions = conjunctive_topk(
-                prefix, suffix_lex_range, k, m_conj_topk_scores);
-            num_completions = merge_scores(num_pref_topk_completions,
-                                           num_conj_topk_completions, k);
-        } else {
-            num_completions = num_pref_topk_completions;
-            m_pool.scores().swap(m_pref_topk_scores);
+        if (num_completions < k) {
+            num_completions = conjunctive_topk(prefix, suffix_lex_range, k);
         }
 
         extract_completions(num_completions);
@@ -150,23 +139,15 @@ struct autocomplete4 {
         suffix_lex_range.begin += 1;
         suffix_lex_range.end += 1;
         range r = m_completions.locate_prefix(prefix, suffix_lex_range);
-        uint32_t num_pref_topk_completions = 0;
+        uint32_t num_completions = 0;
         if (!r.is_invalid()) {
-            num_pref_topk_completions =
-                m_unsorted_docs_list.topk(r, k, m_pref_topk_scores);
+            num_completions = m_unsorted_docs_list.topk(r, k, m_pool.scores());
         }
         timers[1].stop();
 
         timers[2].start();
-        uint32_t num_completions = 0;
-        if (num_pref_topk_completions < k) {
-            uint32_t num_conj_topk_completions = conjunctive_topk(
-                prefix, suffix_lex_range, k, m_conj_topk_scores);
-            num_completions = merge_scores(num_pref_topk_completions,
-                                           num_conj_topk_completions, k);
-        } else {
-            num_completions = num_pref_topk_completions;
-            m_pool.scores().swap(m_pref_topk_scores);
+        if (num_completions < k) {
+            num_completions = conjunctive_topk(prefix, suffix_lex_range, k);
         }
         timers[2].stop();
 
@@ -274,11 +255,9 @@ private:
     Dictionary m_dictionary;
     BlockedInvertedIndex m_inverted_index;
     compact_vector m_docid_to_lexid;
-    scored_string_pool m_pool;
 
+    scored_string_pool m_pool;
     scored_completion_set m_topk_completion_set;
-    std::vector<id_type> m_pref_topk_scores;
-    std::vector<id_type> m_conj_topk_scores;
 
     void init() {
         m_pool.clear();
@@ -304,8 +283,8 @@ private:
     }
 
     uint32_t conjunctive_topk(completion_type& prefix, const range suffix,
-                              const uint32_t k,
-                              std::vector<id_type>& topk_scores) {
+                              const uint32_t k) {
+        auto& topk_scores = m_pool.scores();
         auto it = m_inverted_index.intersection_iterator(prefix, suffix);
         uint32_t results = 0;
         for (; it.has_next(); ++it) {
@@ -340,14 +319,6 @@ private:
         }
         assert(m_pool.size() == num_completions);
         return m_pool.begin();
-    }
-
-    uint32_t merge_scores(const uint32_t num_pref_topk_completions,
-                          const uint32_t num_conj_topk_completions,
-                          const uint32_t k) {
-        return set_union(m_pref_topk_scores, num_pref_topk_completions,
-                         m_conj_topk_scores, num_conj_topk_completions,
-                         m_pool.scores(), k);
     }
 };
 }  // namespace autocomplete

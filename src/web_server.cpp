@@ -26,7 +26,7 @@ std::string escape_json(std::string const& s) {
 
 using namespace autocomplete;
 
-typedef ef_autocomplete_type4 topk_index_type;
+typedef ef_autocomplete_type3 topk_index_type;
 
 static std::string s_http_port("8000");
 static struct mg_serve_http_opts s_http_server_opts;
