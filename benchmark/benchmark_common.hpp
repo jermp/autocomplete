@@ -2,7 +2,7 @@
 
 namespace autocomplete {
 
-static const uint32_t runs = 10;
+static const uint32_t runs = 5;
 
 size_t load_queries(std::vector<std::string>& queries, uint32_t max_num_queries,
                     float percentage, std::istream& is = std::cin) {
