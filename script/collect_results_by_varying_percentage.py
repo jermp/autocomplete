@@ -5,12 +5,11 @@ index_filename = sys.argv[2]
 dataset_name = sys.argv[3]
 k = sys.argv[4]
 num_queries = sys.argv[5]
-collect_breakdowns = int(sys.argv[6]) # 0 or 1
 
 output_filename = dataset_name + "." + type
 
 breakdown = ""
-if collect_breakdowns != 0:
+if len(sys.argv) > 6 and sys.argv[6] == "--breakdown":
     breakdown = "--breakdown"
     output_filename += ".breakdown"
 
