@@ -21,6 +21,7 @@ num_docs = 0
 with open(input_filename + ".mapped.stats") as f:
     num_terms = int(f.readline())
     print num_terms
+    f.readline() # skip line containing max num. of query terms
     num_docs = int(f.readline())
     print num_docs
 
