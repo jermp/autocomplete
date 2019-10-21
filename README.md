@@ -119,7 +119,7 @@ preparing the datasets for indexing:
 
 1. The command
 	
-		$ extract_dict.py trec_05_efficiency_queries/trec_05_efficiency_queries.completions
+		$ python extract_dict.py trec_05_efficiency_queries/trec_05_efficiency_queries.completions
 	
 	extract the dictionary
 from a file listing all completions in textual form.
