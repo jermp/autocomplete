@@ -187,24 +187,24 @@ we first need some query logs.
 
 You can use
 
-	python partition_queries_by_length.py trec_05_efficiency_queries/trec_05_efficiency_queries.completions
+	$ python partition_queries_by_length.py trec_05_efficiency_queries/trec_05_efficiency_queries.completions
 
 to partition the input completions by number of query terms.
 
 Then the command
 
-	./benchmark_topk ef_type1 10 trec05.ef_type1.bin 3 1000 0.25 < ../test_data/trec_05_efficiency_queries/trec_05_efficiency_queries.completions.length=3
+	$ ./benchmark_topk ef_type1 10 trec05.ef_type1.bin 3 1000 0.25 < ../test_data/trec_05_efficiency_queries/trec_05_efficiency_queries.completions.length=3
 
 will execute 1000 top-10 queries with 3 terms, from which only 25%
 of the prefix of the last token is retained.
 (For no locality, it is suggested to shuffle the queries at random, for example using `gshuf` on Mac.)
 
-We automated the collection of results with the script `script/collected_results_by_varying_percentage.py`.
+We automated the collection of results with the script `script/collected_topk_results_by_varying_percentage.py`.
 From within the `/build` directory, run
 
-	$ python ../script/collect_results_by_varying_percentage.py ef_type1 trec05.ef_type3.bin trec_05_efficiency_queries 10 5000
+	$ python ../script/collect_topk_results_by_varying_percentage.py ef_type1 trec05.ef_type3.bin trec_05_efficiency_queries 10 5000
 	
-You can also specify the option "--breakdown" to record timings breakdowns.
+You can also specify the option `--breakdown` to record timings breakdowns.
 
 Live demo <a name="demo"></a>
 ----------

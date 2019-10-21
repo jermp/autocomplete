@@ -166,16 +166,16 @@ struct completion_trie {
     completion_trie() {}
 
     // If the last token of the query is not completely specified,
-    // then we search for its lexicographic range among the children of c.
+    // then we search for its lexicographic range among the children of prefix.
     // Return [a,b)
-    range locate_prefix(completion_type const& c,
+    range locate_prefix(completion_type const& prefix,
                         range suffix_lex_range) const {
         range r{global::not_found, global::not_found};
         range pointer{0, m_nodes.front().size()};
         uint32_t i = 0;
 
-        for (; i < c.size(); ++i) {
-            uint64_t pos = m_nodes[i].find(pointer, c[i]);
+        for (; i < prefix.size(); ++i) {
+            uint64_t pos = m_nodes[i].find(pointer, prefix[i]);
             if (pos == global::not_found) return global::invalid_range;
             pointer = m_pointers[i][pos];
         }
