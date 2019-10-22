@@ -100,7 +100,7 @@ For a testing environment, use the following instead:
     $ cd debug_build
     $ cmake .. -DCMAKE_BUILD_TYPE=Debug -DUSE_SANITIZERS=On
     $ make
-    
+
 Input data format <a name="input"></a>
 -----------------
 
@@ -119,28 +119,28 @@ The scripts in the directory `test_data` help in
 preparing the datasets for indexing:
 
 1. The command
-	
+
 		$ python extract_dict.py trec_05_efficiency_queries/trec_05_efficiency_queries.completions
-	
+
 	extract the dictionary
 from a file listing all completions in textual form.
 
 2. The command
 
 		$ python map_dataset.py trec_05_efficiency_queries/trec_05_efficiency_queries.completions
-		
+
 	maps strings to integer ids.
 
 3. The command
 
 		$ python build_stats.py trec_05_efficiency_queries/trec_05_efficiency_queries.completions.mapped
-		
+
 	calulcates the dataset statistics.
 
 4. The command
 
 		$ python build_inverted_and_forward.py trec_05_efficiency_queries/trec_05_efficiency_queries.completions
-		
+
 	builds the inverted and forward files.
 
 If you run the scripts in the reported order, you will get:
@@ -165,7 +165,7 @@ the data structures more efficiently.
 - `trec_05_efficiency_queries.completions.forward` is the forward file. Note that each list is *not* sorted, thus the lists are the same as the ones contained in `trec_05_efficiency_queries.completions.mapped` but sorted in docID order.
 
 Building an index <a name="building"></a>
------------ 
+-----------
 
 After compiling the code, run the program `./build` to build an index. You can specify the type of the index and the name of the file
 where the index will be written.
@@ -173,7 +173,7 @@ where the index will be written.
 For example, with
 
 	$ ./build ef_type1 ../test_data/trec_05_efficiency_queries/trec_05_efficiency_queries.completions -o trec05.ef_type1.bin
-	
+
 we can build an index of type `ef_type1` from the test file `../test_data/trec_05_efficiency_queries/trec_05_efficiency_queries.completions`, that will be serialized to the file `trec05.ef_type1.bin`.
 
 Possible types are `ef_type1`, `ef_type2`, `ef_type3` and `ef_type4`.
@@ -202,8 +202,8 @@ of the prefix of the last token is retained.
 We automated the collection of results with the script `script/collected_topk_results_by_varying_percentage.py`.
 From within the `/build` directory, run
 
-	$ python ../script/collect_topk_results_by_varying_percentage.py ef_type1 trec05.ef_type3.bin trec_05_efficiency_queries 10 5000
-	
+	$ python ../script/collect_topk_results_by_varying_percentage.py ef_type1 trec05.ef_type1.bin trec_05_efficiency_queries 10 5000
+
 You can also specify the option `--breakdown` to record timings breakdowns.
 
 Live demo <a name="demo"></a>
