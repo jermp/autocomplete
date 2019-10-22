@@ -50,4 +50,11 @@ include_directories(${AUTOCOMPLETE_SOURCE_DIR}/include)
 add_subdirectory(external)
 add_subdirectory(src)
 add_subdirectory(benchmark)
-add_subdirectory(test)
+
+enable_testing()
+file(GLOB TEST_SOURCES test/test_completion_trie.cpp test/test_locate_prefix.cpp test/test_fc_dictionary.cpp test/test_integer_fc_dictionary.cpp)
+foreach(TEST_SRC ${TEST_SOURCES})
+  get_filename_component (TEST_SRC_NAME ${TEST_SRC} NAME_WE) # without extension
+  add_executable(${TEST_SRC_NAME} ${TEST_SRC})
+  add_test(${TEST_SRC_NAME} ${TEST_SRC_NAME})
+endforeach(TEST_SRC)

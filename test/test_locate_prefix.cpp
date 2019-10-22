@@ -1,81 +1,35 @@
-#include <iostream>
-
-#include "types.hpp"
-#include "../benchmark/benchmark_common.hpp"
+#include "test_common.hpp"
 
 using namespace autocomplete;
 
-range locate_prefix(std::vector<std::string> const& strings,
-                    std::string const& p) {
-    auto comp_l = [](std::string const& l, std::string const& r) {
-        if (l.size() < r.size()) {
-            return strncmp(l.c_str(), r.c_str(), l.size()) <= 0;
-        }
-        return strcmp(l.c_str(), r.c_str()) < 0;
-    };
-
-    auto comp_r = [](std::string const& l, std::string const& r) {
-        if (l.size() < r.size()) {
-            return strncmp(l.c_str(), r.c_str(), l.size()) < 0;
-        }
-        return strcmp(l.c_str(), r.c_str()) < 0;
-    };
-
-    range r;
-    r.begin = std::distance(
-        strings.begin(),
-        std::lower_bound(strings.begin(), strings.end(), p, comp_l));
-    r.end = std::distance(
-        strings.begin(),
-        std::upper_bound(strings.begin(), strings.end(), p, comp_r));
-
-    return r;
-}
+typedef ef_completion_trie completion_trie_type;
 
 template <typename Dictionary, typename Index>
-int test_locate_prefix(Dictionary const& dict, Index const& index,
-                       std::vector<std::string> const& queries,
-                       std::vector<std::string> const& strings) {
+void test_locate_prefix(Dictionary const& dict, Index const& index,
+                        std::vector<std::string> const& queries,
+                        std::vector<std::string> const& strings) {
     for (auto const& query : queries) {
-        std::string query_copy = query;
-        range expected = locate_prefix(strings, query);
-
-        // std::cout << "query: '" << query << "'" << std::endl;
+        range expected = testing::locate_prefix(strings, query);
         completion_type prefix;
         byte_range suffix;
-        parse(dict, query_copy, prefix, suffix);
-
-        // print_completion(prefix);
-        // std::cout << std::endl;
-        // print(suffix);
-        // std::cout << std::endl;
+        parse(dict, query, prefix, suffix);
 
         range suffix_lex_range = dict.locate_prefix(suffix);
         suffix_lex_range.begin += 1;
         suffix_lex_range.end += 1;
         range got = index.locate_prefix(prefix, suffix_lex_range);
 
-        if ((got.begin != expected.begin) or (got.end != expected.end)) {
-            std::cout << "Error for query '" << query << "': ";
-            std::cout << "expected [" << expected.begin << "," << expected.end
-                      << ") but got [" << got.begin << "," << got.end << ")"
-                      << std::endl;
-            return 1;
-        }
+        REQUIRE_MESSAGE(
+            (got.begin == expected.begin and got.end == expected.end),
+            "Error for query '" << query << "': expected [" << expected.begin
+                                << "," << expected.end << ") but got ["
+                                << got.begin << "," << got.end << ")");
     }
-
-    return 0;
 }
 
-int main(int argc, char** argv) {
-    int mandatory = 2;
-    if (argc < mandatory) {
-        std::cout << argv[0] << " <collection_basename>" << std::endl;
-        return 1;
-    }
-
+TEST_CASE("test locate_prefix()") {
     parameters params;
-    params.collection_basename = argv[1];
+    params.collection_basename = testing::test_filename.c_str();
     params.load();
 
     fc_dictionary_type dict;
@@ -102,40 +56,41 @@ int main(int argc, char** argv) {
                            " strings");
     }
 
-    uint32_t max_num_queries = std::atoi(argv[2]);
+    constexpr uint32_t max_num_queries = 5000;
     std::vector<std::string> queries;
-    essentials::logger("loading queries...");
-    uint32_t num_queries =
-        load_queries(queries, max_num_queries, true, std::cin);
-    essentials::logger("loaded " + std::to_string(num_queries) + " queries");
+    static std::vector<float> percentages = {0.0, 0.25, 0.50, 0.75, 1.0};
+    static std::vector<uint32_t> query_terms = {1, 2, 3, 4, 5, 6, 7};
+
+    completion_trie_type ct_index;
+    integer_fc_dictionary_type fc_index;
 
     {
-        // typedef uint64_completion_trie completion_trie_type;
-        typedef ef_completion_trie completion_trie_type;
-
-        completion_trie_type index;
-        {
-            completion_trie_type::builder builder(params);
-            builder.build(index);
-        }
-        essentials::logger("testing locate_prefix() for completion_trie...");
-        int ret = test_locate_prefix(dict, index, queries, strings);
-        if (ret) return 1;
-        essentials::logger("it's all good");
+        completion_trie_type::builder builder(params);
+        builder.build(ct_index);
+        REQUIRE(ct_index.size() == params.num_completions);
     }
 
     {
-        integer_fc_dictionary_type index;
-        {
-            integer_fc_dictionary_type::builder builder(params);
-            builder.build(index);
-        }
-        essentials::logger(
-            "testing locate_prefix() for integer_fc_dictionary...");
-        int ret = test_locate_prefix(dict, index, queries, strings);
-        if (ret) return 1;
-        essentials::logger("it's all good");
+        integer_fc_dictionary_type::builder builder(params);
+        builder.build(fc_index);
+        REQUIRE(fc_index.size() == params.num_completions);
     }
 
-    return 0;
+    for (auto perc : percentages) {
+        for (auto num_terms : query_terms) {
+            std::cout << "percentage " << perc * 100.0 << "%, num_terms "
+                      << num_terms << std::endl;
+            {
+                queries.clear();
+                std::ifstream querylog((params.collection_basename +
+                                        ".length=" + std::to_string(num_terms))
+                                           .c_str());
+                load_queries(queries, max_num_queries, perc, querylog);
+                querylog.close();
+            }
+
+            test_locate_prefix(dict, ct_index, queries, strings);
+            test_locate_prefix(dict, fc_index, queries, strings);
+        }
+    }
 }

@@ -7,3 +7,6 @@
 [submodule "external/mongoose"]
 	path = external/mongoose
 	url = https://github.com/cesanta/mongoose.git
+[submodule "external/doctest"]
+	path = external/doctest
+	url = https://github.com/onqtam/doctest.git

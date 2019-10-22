@@ -166,8 +166,9 @@ struct integer_fc_dictionary {
             prefix.push_back(global::invalid_term_id);
         }
 
-        locate_bucket(completion_to_uint32_range(prefix), h_end, bucket_id_end,
-                      bucket_id_begin  // hint
+        locate_right_bucket(completion_to_uint32_range(prefix), h_end,
+                            bucket_id_end,
+                            bucket_id_begin  // hint
         );
         uint32_t p_end = bucket_id_end * (BucketSize + 1);
         p_end += right_locate(completion_to_uint32_range(prefix), h_end,
@@ -274,6 +275,33 @@ private:
         }
 
         return false;
+    }
+
+    void locate_right_bucket(uint32_range t, uint32_range& h,
+                             id_type& bucket_id,
+                             int lower_bound_hint = 0) const {
+        int lo = lower_bound_hint, hi = buckets() - 1, mi = 0, cmp = 0;
+        size_t n = t.end - t.begin;
+        while (lo <= hi) {
+            mi = (lo + hi) / 2;
+            h = header(mi);
+            cmp = uint32_range_compare(h, t, n);
+            if (cmp > 0) {
+                hi = mi - 1;
+            } else if (cmp < 0) {
+                lo = mi + 1;
+            } else {
+                bucket_id = mi;
+                return;
+            }
+        }
+
+        if (cmp < 0) {
+            bucket_id = mi;
+        } else {
+            bucket_id = mi - 1;
+            h = header(bucket_id);
+        }
     }
 
 #define INT_FC_DICT_LOCATE_INIT                                      \

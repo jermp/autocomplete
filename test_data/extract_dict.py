@@ -21,5 +21,5 @@ print("dictionary has " + str(len(tokens)) + " keys")
 
 dict_file = open(input_filename + ".dict", 'w')
 for key in sorted(tokens):
-    dict_file.write(key.encode('utf-8') + "\n")
+    dict_file.write(key + "\n")
 dict_file.close()
