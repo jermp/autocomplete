@@ -24,7 +24,7 @@ with open(input_filename, 'r') as f:
         string_len = 0;
         mapped = [x[0]]
         for i in range(1, len(x)): # x[0] stores the docID
-            t = x[i].encode('utf-8')
+            t = x[i]
             try:
                 id = tokens[t]
                 mapped.append(id)

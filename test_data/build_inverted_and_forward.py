@@ -36,7 +36,7 @@ with open(input_filename, 'r') as f:
         discard = False
         for i in range(1, len(x)):
             try:
-                term = x[i].encode('utf-8')
+                term = x[i]
                 try:
                     term_id = tokens[term]
                     if term_id not in mapped:
