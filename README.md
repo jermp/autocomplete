@@ -7,9 +7,10 @@ Query autocompletion in C++.
 1. [Description](#descr)
 2. [Compiling the code](#compiling)
 3. [Input data format](#input)
-4. [Building an index](#building)
-4. [Benchmarks](#benchmarks)
-5. [Live demo](#demo)
+4. [Running the unit tests](#testing)
+5. [Building an index](#building)
+6. [Benchmarks](#benchmarks)
+7. [Live demo](#demo)
 
 Description <a name="descr"></a>
 -----------
@@ -115,35 +116,14 @@ tokens separated by white spaces.
 fake, i.e., they do not take into account any
 particular assignment.)
 
-The scripts in the directory `test_data` help in
-preparing the datasets for indexing:
+The script `preprocess.sh` in the directory `test_data` helps
+in preparing the data for indexing.
+Thus, from within the directory `test_data`, it is sufficient
+to do:
+	
+	$ bash preprocess.sh
 
-1. The command
-
-		$ python extract_dict.py trec_05_efficiency_queries/trec_05_efficiency_queries.completions
-
-	extract the dictionary
-from a file listing all completions in textual form.
-
-2. The command
-
-		$ python map_dataset.py trec_05_efficiency_queries/trec_05_efficiency_queries.completions
-
-	maps strings to integer ids.
-
-3. The command
-
-		$ python build_stats.py trec_05_efficiency_queries/trec_05_efficiency_queries.completions.mapped
-
-	calulcates the dataset statistics.
-
-4. The command
-
-		$ python build_inverted_and_forward.py trec_05_efficiency_queries/trec_05_efficiency_queries.completions
-
-	builds the inverted and forward files.
-
-If you run the scripts in the reported order, you will get:
+If you run the script, you will get:
 
 - `trec_05_efficiency_queries.completions.dict`: lists all the distinct
 tokens in the completions sorted in lexicographical
@@ -163,6 +143,16 @@ the data structures more efficiently.
 - `trec05_efficiency_queries.completions.inverted` is the inverted file.
 
 - `trec_05_efficiency_queries.completions.forward` is the forward file. Note that each list is *not* sorted, thus the lists are the same as the ones contained in `trec_05_efficiency_queries.completions.mapped` but sorted in docID order.
+
+Running the unit tests <a name="testing"></a>
+-----------
+
+The unit tests are written using [doctest](https://github.com/onqtam/doctest).
+
+After compilation and preparation of the data for indexing (see Section [Input data format](#input)), it is advised
+to run the unit tests with:
+
+	$ make test
 
 Building an index <a name="building"></a>
 -----------
