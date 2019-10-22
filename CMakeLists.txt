@@ -52,7 +52,7 @@ add_subdirectory(src)
 add_subdirectory(benchmark)
 
 enable_testing()
-file(GLOB TEST_SOURCES test/test_completion_trie.cpp test/test_locate_prefix.cpp test/test_fc_dictionary.cpp test/test_integer_fc_dictionary.cpp)
+file(GLOB TEST_SOURCES test/test_completion_trie.cpp test/test_locate_prefix.cpp test/test_fc_dictionary.cpp test/test_integer_fc_dictionary.cpp test/test_unsorted_list.cpp test/test_cartesian_tree.cpp)
 foreach(TEST_SRC ${TEST_SOURCES})
   get_filename_component (TEST_SRC_NAME ${TEST_SRC} NAME_WE) # without extension
   add_executable(${TEST_SRC_NAME} ${TEST_SRC})
