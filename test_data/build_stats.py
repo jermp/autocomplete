@@ -36,3 +36,4 @@ output_file.write(str(len(nodes_per_level)) + "\n")
 for key, value in sorted(nodes_per_level.iteritems(), key = lambda kv: kv[0]):
     output_file.write(str(value) + "\n")
 output_file.close()
+
