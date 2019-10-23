@@ -5,12 +5,13 @@ Query autocompletion in C++.
 
 ##### Table of contents
 1. [Description](#descr)
-2. [Compiling the code](#compiling)
-3. [Input data format](#input)
-4. [Running the unit tests](#testing)
-5. [Building an index](#building)
-6. [Benchmarks](#benchmarks)
-7. [Live demo](#demo)
+2. [Installation](#install)
+3. [Compiling the code](#compiling)
+4. [Input data format](#input)
+5. [Running the unit tests](#testing)
+6. [Building an index](#building)
+7. [Benchmarks](#benchmarks)
+8. [Live demo](#demo)
 
 Description <a name="descr"></a>
 -----------
@@ -65,6 +66,15 @@ A recursive heap-based algorithm is used to produce the smallest docIDs in M[l,r
 
 The final string extraction step is identical to that of the
 prefix search.
+
+Installation <a name="install"></a>
+------------------
+
+Just run
+
+	$ ./install.sh
+	
+from the parent directory. The script builds the code; prepare the test data in the folder `test_data` for indexing; executes the unit tests.
 
 Compiling the code <a name="compiling"></a>
 ------------------
