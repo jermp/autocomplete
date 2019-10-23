@@ -50,5 +50,40 @@ range locate_prefix(std::vector<std::string> const& strings,
     return r;
 }
 
+typedef std::vector<id_type> term_ids;
+
+std::vector<term_ids> gen_random_queries(uint32_t num_queries,
+                                         uint32_t max_num_terms,
+                                         uint32_t max_range_len) {
+    assert(max_num_terms > 1);
+    std::vector<term_ids> queries;
+    queries.reserve(num_queries);
+    essentials::uniform_int_rng<uint32_t> random_num_terms(2, max_num_terms);
+    essentials::uniform_int_rng<uint32_t> random_term_id(1, max_range_len);
+
+    for (uint32_t i = 0; i != num_queries; ++i) {
+        term_ids q;
+        uint32_t num_terms = random_num_terms.gen();
+        q.reserve(num_terms);
+        uint32_t num_distinct_terms = 0;
+        while (true) {
+            q.clear();
+            for (uint32_t i = 0; i != num_terms; ++i) {
+                auto t = random_term_id.gen();
+                assert(t >= 1 and t <= max_range_len);
+                q.push_back(t);
+            }
+            std::sort(q.begin(), q.end());
+            auto end = std::unique(q.begin(), q.end());
+            num_distinct_terms = std::distance(q.begin(), end);
+            if (num_distinct_terms >= 2) break;
+        }
+        q.resize(num_distinct_terms);
+        queries.push_back(q);
+    }
+
+    return queries;
+}
+
 }  // namespace testing
 }  // namespace autocomplete

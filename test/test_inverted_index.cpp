@@ -3,40 +3,6 @@
 using namespace autocomplete;
 
 typedef ef_inverted_index inverted_index_type;
-typedef std::vector<id_type> term_ids;
-
-std::vector<term_ids> gen_random_queries(uint32_t num_queries,
-                                         uint32_t max_num_terms,
-                                         uint32_t max_range_len) {
-    assert(max_num_terms > 1);
-    std::vector<term_ids> queries;
-    queries.reserve(num_queries);
-    essentials::uniform_int_rng<uint32_t> random_num_terms(2, max_num_terms);
-    essentials::uniform_int_rng<uint32_t> random_term_id(1, max_range_len);
-
-    for (uint32_t i = 0; i != num_queries; ++i) {
-        term_ids q;
-        uint32_t num_terms = random_num_terms.gen();
-        q.reserve(num_terms);
-        uint32_t num_distinct_terms = 0;
-        while (true) {
-            q.clear();
-            for (uint32_t i = 0; i != num_terms; ++i) {
-                auto t = random_term_id.gen();
-                assert(t >= 1 and t <= max_range_len);
-                q.push_back(t);
-            }
-            std::sort(q.begin(), q.end());
-            auto end = std::unique(q.begin(), q.end());
-            num_distinct_terms = std::distance(q.begin(), end);
-            if (num_distinct_terms >= 2) break;
-        }
-        q.resize(num_distinct_terms);
-        queries.push_back(q);
-    }
-
-    return queries;
-}
 
 TEST_CASE("test inverted_index::iterator") {
     char const* output_filename = testing::tmp_filename.c_str();
@@ -105,8 +71,8 @@ TEST_CASE("test inverted_index::intersection_iterator") {
 
         static const uint32_t num_queries = 1000000;
         static const uint32_t max_num_terms = 5;
-        auto queries =
-            gen_random_queries(num_queries, max_num_terms, index.num_terms());
+        auto queries = testing::gen_random_queries(num_queries, max_num_terms,
+                                                   index.num_terms());
 
         std::vector<id_type> first(index.num_docs());
         std::vector<id_type> second(index.num_docs());

@@ -1,2 +1,0 @@
-add_executable(test_autocomplete test_autocomplete.cpp)
-add_executable(test_blocked_inverted_index test_blocked_inverted_index.cpp)
