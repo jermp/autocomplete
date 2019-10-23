@@ -5,7 +5,7 @@ Query autocompletion in C++.
 
 ##### Table of contents
 1. [Description](#descr)
-2. [Installation](#install)
+2. [Installation and quick start](#install)
 3. [Compiling the code](#compiling)
 4. [Input data format](#input)
 5. [Running the unit tests](#testing)
@@ -67,14 +67,20 @@ A recursive heap-based algorithm is used to produce the smallest docIDs in M[l,r
 The final string extraction step is identical to that of the
 prefix search.
 
-Installation <a name="install"></a>
+Installation and quick start <a name="install"></a>
 ------------------
 
 Just run
 
-	$ ./install.sh
+	$ bash ./install.sh
 	
 from the parent directory. The script builds the code; prepare the test data in the folder `test_data` for indexing; executes the unit tests.
+
+For having a minimal running example, just run
+
+	$ bash ./example.sh
+
+and then access the service [here](http://127.0.0.1:8000).
 
 Compiling the code <a name="compiling"></a>
 ------------------
