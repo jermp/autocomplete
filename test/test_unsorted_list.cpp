@@ -2,16 +2,21 @@
 
 using namespace autocomplete;
 
-std::vector<id_type> naive_topk(std::vector<id_type> const& input, range r,
-                                uint32_t k) {
+uint32_t naive_topk(std::vector<id_type> const& input, range r, uint32_t k,
+                    std::vector<id_type>& topk, bool unique = false) {
     uint32_t range_len = r.end - r.begin;
-    std::vector<id_type> topk(range_len);
     for (uint32_t i = 0; i != range_len; ++i) {
         topk[i] = input[r.begin + i];
     }
     std::sort(topk.begin(), topk.begin() + range_len);
-    topk.resize(std::min<uint32_t>(k, range_len));
-    return topk;
+    uint32_t results = 0;
+    if (unique) {
+        auto end = std::unique(topk.begin(), topk.begin() + range_len);
+        results = std::min<uint32_t>(k, std::distance(topk.begin(), end));
+    } else {
+        results = std::min<uint32_t>(k, range_len);
+    }
+    return results;
 }
 
 std::vector<range> gen_random_queries(uint32_t num_queries,
@@ -33,7 +38,7 @@ std::vector<range> gen_random_queries(uint32_t num_queries,
     return queries;
 }
 
-TEST_CASE("test unsorted_list") {
+TEST_CASE("test unsorted_list on doc_ids") {
     char const* output_filename = testing::tmp_filename.c_str();
     parameters params;
     params.collection_basename = testing::test_filename.c_str();
@@ -70,7 +75,6 @@ TEST_CASE("test unsorted_list") {
         succinct_rmq list;
         list.build(doc_ids);
         REQUIRE(list.size() == doc_ids.size());
-
         essentials::save<succinct_rmq>(list, output_filename);
     }
 
@@ -80,12 +84,78 @@ TEST_CASE("test unsorted_list") {
 
         std::vector<id_type> topk(constants::MAX_K);
         auto queries = gen_random_queries(num_queries, doc_ids.size());
+        std::vector<id_type> expected(params.num_completions);
 
         for (auto q : queries) {
-            auto expected = naive_topk(doc_ids, q, k);
+            uint32_t expected_results = naive_topk(doc_ids, q, k, expected);
             uint32_t results = list.topk(q, k, topk);
-            REQUIRE_MESSAGE(expected.size() == results,
-                            "Error: expected " << expected.size()
+            REQUIRE_MESSAGE(expected_results == results,
+                            "Error: expected " << expected_results
+                                               << " topk elements but got "
+                                               << results);
+            for (uint32_t i = 0; i != results; ++i) {
+                REQUIRE_MESSAGE(topk[i] == expected[i],
+                                "Error: expected " << expected[i] << " but got "
+                                                   << topk[i]);
+            }
+        }
+
+        std::remove(output_filename);
+    }
+}
+
+TEST_CASE("test unsorted_list on minimal doc_ids") {
+    char const* output_filename = testing::tmp_filename.c_str();
+    parameters params;
+    params.collection_basename = testing::test_filename.c_str();
+    params.load();
+
+    static const uint32_t k = 10;
+    static_assert(k <= constants::MAX_K, "k must be less than max allowed");
+    static const uint32_t num_queries = 5000;
+
+    std::vector<id_type> doc_ids;
+
+    {
+        doc_ids.reserve(params.num_terms);
+        std::ifstream input((params.collection_basename + ".inverted").c_str(),
+                            std::ios_base::in);
+        id_type first;
+        for (uint64_t i = 0; i != params.num_terms; ++i) {
+            uint32_t n = 0;
+            input >> n;
+            input >> first;
+            doc_ids.push_back(first);
+            for (uint64_t k = 1; k != n; ++k) {
+                id_type x;
+                input >> x;
+                (void)x;  // discard
+            }
+        }
+        input.close();
+        REQUIRE(doc_ids.size() == params.num_terms);
+
+        succinct_rmq list;
+        list.build(doc_ids);
+        REQUIRE(list.size() == doc_ids.size());
+        essentials::save<succinct_rmq>(list, output_filename);
+    }
+
+    {
+        succinct_rmq list;
+        essentials::load(list, output_filename);
+
+        std::vector<id_type> topk(constants::MAX_K);
+        auto queries = gen_random_queries(num_queries, doc_ids.size());
+        constexpr bool unique = true;
+        std::vector<id_type> expected(params.num_terms);
+
+        for (auto q : queries) {
+            uint32_t expected_results =
+                naive_topk(doc_ids, q, k, expected, unique);
+            uint32_t results = list.topk(q, k, topk, unique);
+            REQUIRE_MESSAGE(expected_results == results,
+                            "Error: expected " << expected_results
                                                << " topk elements but got "
                                                << results);
             for (uint32_t i = 0; i != results; ++i) {

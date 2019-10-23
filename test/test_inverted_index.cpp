@@ -1,127 +1,124 @@
-#include <iostream>
-
-#include "types.hpp"
+#include "test_common.hpp"
 
 using namespace autocomplete;
 
-int main(int argc, char** argv) {
-    int mandatory = 2;
-    if (argc < mandatory) {
-        std::cout << argv[0] << " <collection_basename> [-o output_filename]"
-                  << std::endl;
-        return 1;
-    }
+typedef ef_inverted_index inverted_index_type;
+typedef std::vector<id_type> term_ids;
 
-    char const* output_filename = nullptr;
+std::vector<term_ids> gen_random_queries(uint32_t num_queries,
+                                         uint32_t max_num_terms,
+                                         uint32_t max_range_len) {
+    assert(max_num_terms > 1);
+    std::vector<term_ids> queries;
+    queries.reserve(num_queries);
+    essentials::uniform_int_rng<uint32_t> random_num_terms(2, max_num_terms);
+    essentials::uniform_int_rng<uint32_t> random_term_id(1, max_range_len);
 
-    for (int i = mandatory; i != argc; ++i) {
-        if (std::string(argv[i]) == "-o") {
-            ++i;
-            output_filename = argv[i];
+    for (uint32_t i = 0; i != num_queries; ++i) {
+        term_ids q;
+        uint32_t num_terms = random_num_terms.gen();
+        q.reserve(num_terms);
+        uint32_t num_distinct_terms = 0;
+        while (true) {
+            q.clear();
+            for (uint32_t i = 0; i != num_terms; ++i) {
+                auto t = random_term_id.gen();
+                assert(t >= 1 and t <= max_range_len);
+                q.push_back(t);
+            }
+            std::sort(q.begin(), q.end());
+            auto end = std::unique(q.begin(), q.end());
+            num_distinct_terms = std::distance(q.begin(), end);
+            if (num_distinct_terms >= 2) break;
         }
+        q.resize(num_distinct_terms);
+        queries.push_back(q);
     }
 
+    return queries;
+}
+
+TEST_CASE("test inverted_index::intersection_iterator") {
+    char const* output_filename = testing::tmp_filename.c_str();
     parameters params;
-    params.collection_basename = argv[1];
+    params.collection_basename = testing::test_filename.c_str();
     params.load();
 
-    typedef ef_inverted_index inverted_index_type;
-
     {
-        // build, print and write
         inverted_index_type::builder builder(params);
         inverted_index_type index;
         builder.build(index);
-        std::cout << "using " << index.bytes() << " bytes" << std::endl;
-        std::cout << "num docs " << index.num_docs() << std::endl;
-        std::cout << "num terms " << index.num_terms() << std::endl;
-
-        if (output_filename) {
-            essentials::logger("saving data structure to disk...");
-            essentials::save<inverted_index_type>(index, output_filename);
-            essentials::logger("DONE");
-        }
+        REQUIRE(index.num_docs() == params.num_completions);
+        REQUIRE(index.num_terms() == params.num_terms);
+        essentials::save<inverted_index_type>(index, output_filename);
     }
 
     {
-        if (output_filename) {
-            inverted_index_type index;
-            essentials::logger("loading data structure from disk...");
-            essentials::load(index, output_filename);
-            essentials::logger("DONE");
-            std::cout << "using " << index.bytes() << " bytes" << std::endl;
-            std::cout << "num docs " << index.num_docs() << std::endl;
-            std::cout << "num terms " << index.num_terms() << std::endl;
+        inverted_index_type index;
+        essentials::load(index, output_filename);
+        REQUIRE(index.num_docs() == params.num_completions);
+        REQUIRE(index.num_terms() == params.num_terms);
 
-            std::vector<id_type> intersection(index.num_docs());  // at most
-            std::vector<id_type> term_ids;
-            term_ids.reserve(2);
+        static const uint32_t num_queries = 1000000;
+        static const uint32_t max_num_terms = 5;
+        auto queries =
+            gen_random_queries(num_queries, max_num_terms, index.num_terms());
 
-            // id_type i = 293;
-            // id_type j = 294;
-            // id_type i = 899;
-            // id_type j = 822;
-            id_type i = 2401599 - 1;
-            id_type j = 1752198 - 1;
-            term_ids.push_back(i + 1);
-            term_ids.push_back(j + 1);
-            // uint64_t size = index.intersect(term_ids, intersection);
+        std::vector<id_type> first(index.num_docs());
+        std::vector<id_type> second(index.num_docs());
+        std::vector<id_type> intersection(index.num_docs());
+
+        for (auto const& q : queries) {
+            uint32_t first_size = 0;
+            uint32_t second_size = 0;
+            assert(q.size() >= 2);
 
             {
-                std::cout << "intersection between " << i << " and " << j
-                          << " is: ";
-                uint32_t i = 0;
-                auto intersec_it = index.intersection_iterator(term_ids);
-                while (intersec_it.has_next()) {
-                    id_type doc_id = *intersec_it;
-                    std::cout << doc_id << " ";
-                    ++i;
-                    ++intersec_it;
-                }
-                std::cout << std::endl;
-            }
-
-            std::vector<id_type> a;
-            {
-                auto it = index.iterator(i);
-                a.resize(it.size());
-                for (uint32_t i = 0; i != a.size(); ++i) {
-                    a[i] = it.access(i);
+                auto it = index.iterator(q[0] - 1);
+                first_size = it.size();
+                for (uint32_t i = 0; i != first_size; ++i) {
+                    first[i] = it.access(i);
                 }
             }
 
-            std::vector<id_type> b;
             {
-                auto it = index.iterator(j);
-                b.resize(it.size());
-                for (uint32_t i = 0; i != b.size(); ++i) {
-                    b[i] = it.access(i);
+                auto it = index.iterator(q[1] - 1);
+                second_size = it.size();
+                for (uint32_t i = 0; i != second_size; ++i) {
+                    second[i] = it.access(i);
                 }
             }
 
-            auto it = std::set_intersection(a.begin(), a.end(), b.begin(),
-                                            b.end(), intersection.begin());
-            intersection.resize(it - intersection.begin());
-            std::cout << "intersection between " << i << " and " << j
-                      << " is: ";
-            for (auto x : intersection) {
-                std::cout << x << " ";
-            }
-            std::cout << std::endl;
+            auto end = std::set_intersection(
+                first.begin(), first.begin() + first_size, second.begin(),
+                second.begin() + second_size, intersection.begin());
+            first_size = std::distance(intersection.begin(), end);
+            first.swap(intersection);
 
-            // for (uint32_t i = 1; i != index.num_terms() + 1; ++i) {
-            //     for (uint32_t j = i; j != index.num_terms() + 1; ++j) {
-            //         term_ids.clear();
-            //         term_ids.push_back(i);
-            //         term_ids.push_back(j);
-            //         uint64_t size = index.intersect(term_ids, intersection);
-            //         std::cout << "size of intersection between " << i << "
-            //         and "
-            //                   << j << " is " << size << std::endl;
-            //     }
-            // }
+            for (uint32_t i = 2; i != q.size(); ++i) {
+                auto it = index.iterator(q[i] - 1);
+                second_size = it.size();
+                for (uint32_t i = 0; i != second_size; ++i) {
+                    second[i] = it.access(i);
+                }
+                end = std::set_intersection(
+                    first.begin(), first.begin() + first_size, second.begin(),
+                    second.begin() + second_size, intersection.begin());
+                first_size = std::distance(intersection.begin(), end);
+                first.swap(intersection);
+            }
+
+            auto it = index.intersection_iterator(q);
+            uint32_t n = 0;
+            for (; it.has_next(); ++n, ++it) {
+                auto doc_id = *it;
+                REQUIRE_MESSAGE(
+                    doc_id == first[n],
+                    "expected doc_id " << first[n] << " but got " << doc_id);
+            }
+            REQUIRE_MESSAGE(n == first_size, "expected " << first_size
+                                                         << " results, but got "
+                                                         << n);
         }
     }
-
-    return 0;
 }

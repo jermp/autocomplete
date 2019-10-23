@@ -1,4 +1,3 @@
-add_executable(test_inverted_index test_inverted_index.cpp)
 add_executable(test_forward_index test_forward_index.cpp)
 add_executable(test_autocomplete test_autocomplete.cpp)
 add_executable(test_blocked_inverted_index test_blocked_inverted_index.cpp)
