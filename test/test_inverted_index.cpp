@@ -38,6 +38,50 @@ std::vector<term_ids> gen_random_queries(uint32_t num_queries,
     return queries;
 }
 
+TEST_CASE("test inverted_index::iterator") {
+    char const* output_filename = testing::tmp_filename.c_str();
+    parameters params;
+    params.collection_basename = testing::test_filename.c_str();
+    params.load();
+
+    {
+        inverted_index_type::builder builder(params);
+        inverted_index_type index;
+        builder.build(index);
+        REQUIRE(index.num_docs() == params.num_completions);
+        REQUIRE(index.num_terms() == params.num_terms);
+        essentials::save<inverted_index_type>(index, output_filename);
+    }
+
+    {
+        inverted_index_type index;
+        essentials::load(index, output_filename);
+        REQUIRE(index.num_docs() == params.num_completions);
+        REQUIRE(index.num_terms() == params.num_terms);
+
+        std::ifstream input((params.collection_basename + ".inverted").c_str(),
+                            std::ios_base::in);
+        for (uint64_t i = 0; i != index.num_terms(); ++i) {
+            auto it = index.iterator(i);
+            uint32_t n = 0;
+            input >> n;
+            REQUIRE_MESSAGE(n == it.size(), "list has size " << it.size()
+                                                             << " instead of "
+                                                             << n);
+            for (uint64_t k = 0; k != n; ++k, ++it) {
+                id_type expected;
+                input >> expected;
+                auto got = *it;
+                REQUIRE_MESSAGE(got == expected,
+                                "got " << got << " but expected " << expected);
+            }
+        }
+        input.close();
+
+        std::remove(output_filename);
+    }
+};
+
 TEST_CASE("test inverted_index::intersection_iterator") {
     char const* output_filename = testing::tmp_filename.c_str();
     parameters params;
@@ -120,5 +164,6 @@ TEST_CASE("test inverted_index::intersection_iterator") {
                                                          << " results, but got "
                                                          << n);
         }
+        std::remove(output_filename);
     }
 }

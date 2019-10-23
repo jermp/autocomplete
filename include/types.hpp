@@ -3,13 +3,12 @@
 #include "completion_trie.hpp"
 #include "fc_dictionary.hpp"
 #include "integer_fc_dictionary.hpp"
-#include "uint_vec.hpp"
 #include "unsorted_list.hpp"
-#include "uncompressed_list.hpp"
 
-#include "forward_index.hpp"
+// #include "uint_vec.hpp"
+// #include "uncompressed_list.hpp"
+
 #include "compact_forward_index.hpp"
-#include "delta_forward_index.hpp"
 
 #include "inverted_index.hpp"
 #include "blocked_inverted_index.hpp"
@@ -40,13 +39,10 @@ typedef fc_dictionary<> fc_dictionary_type;
 typedef integer_fc_dictionary<> integer_fc_dictionary_type;
 
 typedef unsorted_list<cartesian_tree> succinct_rmq;
-typedef uncompressed_list<uint32_t> uncompressed_list32_t;
+// typedef uncompressed_list<uint32_t> uncompressed_list32_t;
 
 // typedef inverted_index<uncompressed_list32_t> uncompressed_inverted_index;
 typedef inverted_index<ef::compact_ef> ef_inverted_index;
-
-// typedef forward_index<uncompressed_list32_t> uncompressed_forward_index;
-// typedef forward_index<ef::compact_ef> ef_forward_index;
 
 // typedef blocked_inverted_index<uncompressed_list32_t>
 //     uncompressed_blocked_inverted_index;
@@ -77,4 +73,5 @@ typedef autocomplete3<integer_fc_dictionary_type, succinct_rmq,
 typedef autocomplete4<integer_fc_dictionary_type, succinct_rmq,
                       fc_dictionary_type, ef_blocked_inverted_index>
     ef_autocomplete_type4;
+
 }  // namespace autocomplete
