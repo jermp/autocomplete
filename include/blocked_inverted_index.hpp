@@ -270,7 +270,7 @@ struct blocked_inverted_index {
                 assert(std::unique(term_ids.begin(), term_ids.end()) ==
                        term_ids.end());
 
-                m_iterators.reserve(term_ids.size());  // at most
+                m_blocks.reserve(term_ids.size());  // at most
                 uint32_t current_block_id = ii->block_id(term_ids.front());
                 uint32_t i = 0;
                 uint32_t prev_i = 0;
@@ -284,7 +284,7 @@ struct blocked_inverted_index {
                         for (; prev_i != i; ++prev_i) {
                             block.term_ids.push_back(term_ids[prev_i]);
                         }
-                        m_iterators.push_back(std::move(block));
+                        m_blocks.push_back(std::move(block));
                     }
                     current_block_id = b;
                 }
@@ -294,16 +294,15 @@ struct blocked_inverted_index {
                 for (; prev_i != i; ++prev_i) {
                     block.term_ids.push_back(term_ids[prev_i]);
                 }
-                m_iterators.push_back(std::move(block));
+                m_blocks.push_back(std::move(block));
 
-                assert(m_iterators.size() > 0);
-                std::sort(m_iterators.begin(), m_iterators.end(),
+                std::sort(m_blocks.begin(), m_blocks.end(),
                           [](auto const& l, auto const& r) {
                               return l.docs_iterator.size() <
                                      r.docs_iterator.size();
                           });
 
-                m_candidate = m_iterators[0].docs_iterator.access(0);
+                m_candidate = m_blocks[0].docs_iterator.access(0);
             } else {
                 m_candidate = 0;
             }
@@ -334,10 +333,10 @@ struct blocked_inverted_index {
         }
 
         void operator++() {
-            assert(m_i == m_iterators.size());
-            if (!m_iterators.empty()) {
-                if (m_iterators.size() > 1) {
-                    m_candidate = m_iterators[0].docs_iterator.next();
+            assert(m_i == m_blocks.size());
+            if (!m_blocks.empty()) {
+                if (m_blocks.size() > 1) {
+                    m_candidate = m_blocks[0].docs_iterator.next();
                 }
             } else {
                 m_candidate += 1;
@@ -347,17 +346,16 @@ struct blocked_inverted_index {
         }
 
         bool intersects() {
-            for (auto& block : m_range) {
-                uint64_t val = block.docs_iterator.next_geq(m_candidate);
+            for (auto& b : m_range) {
+                uint64_t val = b.docs_iterator.next_geq(m_candidate);
                 if (val == m_candidate) {
-                    uint64_t pos = block.docs_iterator.position();
-                    assert(block.docs_iterator.access(pos) == m_candidate);
-                    uint64_t begin = block.offsets_iterator.access(pos);
-                    uint64_t end = block.offsets_iterator.access(pos + 1);
+                    uint64_t pos = b.docs_iterator.position();
+                    assert(b.docs_iterator.access(pos) == m_candidate);
+                    uint64_t begin = b.offsets_iterator.access(pos);
+                    uint64_t end = b.offsets_iterator.access(pos + 1);
                     assert(end > begin);
-                    uint32_t lower_bound = block.lower_bound;
                     for (uint64_t i = begin; i != end; ++i) {
-                        auto t = block.terms_iterator.access(i) + lower_bound;
+                        auto t = b.terms_iterator.access(i) + b.lower_bound;
                         if (t > m_suffix.end) break;
                         if (m_suffix.contains(t)) return true;
                     }
@@ -370,26 +368,25 @@ struct blocked_inverted_index {
         id_type m_candidate;
         size_t m_i;
         uint64_t m_num_docs;
-        std::vector<block_type> m_iterators;
+        std::vector<block_type> m_blocks;
         std::vector<block_type> m_range;
         range m_suffix;
 
         bool in() {  // is candidate doc in intersection?
 
-            uint64_t pos = m_iterators[m_i].docs_iterator.position();
-            if (pos == m_iterators[m_i].docs_iterator.size()) return false;
-            uint64_t begin = m_iterators[m_i].offsets_iterator.access(pos);
-            uint64_t end = m_iterators[m_i].offsets_iterator.access(pos + 1);
+            auto& b = m_blocks[m_i];
+            uint64_t pos = b.docs_iterator.position();
+            if (pos == b.docs_iterator.size()) return false;
+            uint64_t begin = b.offsets_iterator.access(pos);
+            uint64_t end = b.offsets_iterator.access(pos + 1);
             assert(end > begin);
-            if (end - begin < m_iterators[m_i].term_ids.size()) return false;
+            if (end - begin < b.term_ids.size()) return false;
 
             uint64_t i = begin;
-            uint32_t lower_bound = m_iterators[m_i].lower_bound;
-            for (auto x : m_iterators[m_i].term_ids) {
+            for (auto x : b.term_ids) {
                 bool found = false;
                 for (; i != end; ++i) {
-                    auto t =
-                        m_iterators[m_i].terms_iterator.access(i) + lower_bound;
+                    auto t = b.terms_iterator.access(i) + b.lower_bound;
                     if (t == x) {
                         found = true;
                         break;
@@ -402,18 +399,18 @@ struct blocked_inverted_index {
         }
 
         void next() {
-            if (m_iterators.empty()) return;
-            if (m_iterators.size() == 1) {
-                while (m_candidate < m_num_docs and m_i != m_iterators.size()) {
+            if (m_blocks.empty()) return;
+            if (m_blocks.size() == 1) {
+                while (m_candidate < m_num_docs and m_i != m_blocks.size()) {
                     assert(m_i == 0);
-                    m_candidate = m_iterators[m_i].docs_iterator.next();
+                    m_candidate = m_blocks[m_i].docs_iterator.next();
                     if (in()) ++m_i;
                 }
             } else {
-                while (m_candidate < m_num_docs and m_i != m_iterators.size()) {
+                while (m_candidate < m_num_docs and m_i != m_blocks.size()) {
                     // NOTE: since we work with unions of posting lists,
                     // next_geq by scan runs faster
-                    auto val = m_iterators[m_i].docs_iterator.next_geq_by_scan(
+                    auto val = m_blocks[m_i].docs_iterator.next_geq_by_scan(
                         m_candidate);
                     bool is_in = in();
                     if (val == m_candidate and is_in) {

@@ -11,21 +11,15 @@ size_t load_queries(std::vector<std::string>& queries, uint32_t max_num_queries,
     queries.reserve(max_num_queries);
     for (uint32_t i = 0; i != max_num_queries; ++i) {
         if (!std::getline(is, line)) break;
-
         auto query = line.substr(line.find(' ') + 1, line.size());
-        int32_t size = query.size() - 1;
-        while (size >= 0 and query[size] != ' ') --size;
-        auto last_token = query.substr(size + 1, query.size() - size);
-        uint32_t num_chars =
-            last_token.size() - std::ceil(last_token.size() * percentage);
-        char first = last_token.front();
-        for (uint32_t i = 0; i != num_chars; ++i) last_token.pop_back();
-
-        // retain at least one char
-        if (last_token.empty()) last_token.push_back(first);
-        assert(last_token.size() > 0);
-
-        queries.push_back(query.substr(0, size + 1) + last_token);
+        assert(query.size() > 0);
+        size_t size = query.size() - 1;
+        while (size > 0 and query[size] != ' ') --size;
+        size_t last_token_size = query.size() - size;
+        size_t end = size + std::ceil(last_token_size * percentage) + 1 +
+                     1;  // retain at least one char
+        for (size = query.size(); size > end; --size) query.pop_back();
+        queries.push_back(query);
     }
     return queries.size();
 }
