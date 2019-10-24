@@ -63,7 +63,7 @@ void perf_test(Dictionary const& dict,
             timer.stop();
         }
 
-        std::cout << "locate_prefix-" << p * 100.0
+        std::cout << "\tlocate_prefix-" << p * 100.0
                   << "%: " << (timer.average() * 1000.0) / queries.size()
                   << " [ns/string]" << std::endl;
     }
