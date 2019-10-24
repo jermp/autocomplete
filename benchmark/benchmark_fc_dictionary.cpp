@@ -8,7 +8,7 @@ using namespace autocomplete;
 template <typename Dictionary>
 void perf_test(Dictionary const& dict,
                std::vector<std::string> const& queries) {
-    std::vector<uint8_t> decoded(2 * constants::MAX_NUM_CHARS_PER_QUERY);
+    static std::vector<uint8_t> decoded(2 * constants::MAX_NUM_CHARS_PER_QUERY);
     essentials::timer_type timer;
 
     for (uint32_t i = 0; i != runs; ++i) {
@@ -43,6 +43,30 @@ void perf_test(Dictionary const& dict,
 
     std::cout << "extract: " << (timer.average() * 1000.0) / ids.size()
               << " [ns/string]" << std::endl;
+
+    static std::vector<float> percentages = {0.0, 0.25, 0.50, 0.75, 1.0};
+    // static std::vector<float> percentages = {0.1, 0.2, 0.3, 0.4, 0.5,
+    //                                          0.6, 0.7, 0.8, 0.9, 1.0};
+    for (auto p : percentages) {
+        timer.reset();
+        for (uint32_t i = 0; i != runs; ++i) {
+            timer.start();
+            for (auto const& query : queries) {
+                size_t size = query.size();
+                size_t n = size * p;
+                if (n == 0) n += 1;  // at least one char
+                uint8_t const* addr =
+                    reinterpret_cast<uint8_t const*>(query.data());
+                range r = dict.locate_prefix({addr, addr + n});
+                essentials::do_not_optimize_away(r.end - r.begin);
+            }
+            timer.stop();
+        }
+
+        std::cout << "locate_prefix-" << p * 100.0
+                  << "%: " << (timer.average() * 1000.0) / queries.size()
+                  << " [ns/string]" << std::endl;
+    }
 }
 
 #define exe(BUCKET_SIZE)                                                     \

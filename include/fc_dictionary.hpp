@@ -223,7 +223,8 @@ private:
         if (cmp < 0) {
             bucket_id = mi;
         } else {
-            bucket_id = mi - 1;
+            assert(cmp > 0);
+            bucket_id = hi;
             h = header(bucket_id);
         }
 
