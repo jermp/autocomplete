@@ -19,4 +19,10 @@ uint32_t parse(Dictionary const& dict, std::string const& query,
     return num_terms;
 }
 
+void deduplicate(completion_type& c) {
+    std::sort(c.begin(), c.end());
+    auto end = std::unique(c.begin(), c.end());
+    c.resize(std::distance(c.begin(), end));
+}
+
 }  // namespace autocomplete

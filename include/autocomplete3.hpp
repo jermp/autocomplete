@@ -89,20 +89,15 @@ struct autocomplete3 {
         init();
         completion_type prefix;
         byte_range suffix;
-        parse(m_dictionary, query, prefix, suffix);
+        uint32_t num_terms = parse(m_dictionary, query, prefix, suffix);
+        assert(num_terms > 0);
 
         uint32_t num_completions = 0;
         range suffix_lex_range = m_dictionary.locate_prefix(suffix);
         if (suffix_lex_range.is_invalid()) return m_pool.begin();
 
-        if (prefix.size() == 1) {  // we've got nothing to intersect
-            auto it = m_inverted_index.iterator(prefix.front() - 1);
-            num_completions = conjunctive_topk(it, suffix_lex_range, k);
-        } else {
-            auto it = m_inverted_index.intersection_iterator(prefix);
-            num_completions = conjunctive_topk(it, suffix_lex_range, k);
-        }
-
+        num_completions =
+            conjunctive_topk(num_terms, prefix, suffix_lex_range, k);
         extract_completions(num_completions);
         return extract_strings(num_completions);
     }
@@ -128,16 +123,8 @@ struct autocomplete3 {
         }
 
         if (num_completions < k) {
-            if (num_terms == 1) {  // we've got nothing to intersect
-                iterator it(0, m_inverted_index.num_docs());
-                num_completions = conjunctive_topk(it, suffix_lex_range, k);
-            } else if (prefix.size() == 1) {  // we've got nothing to intersect
-                auto it = m_inverted_index.iterator(prefix.front() - 1);
-                num_completions = conjunctive_topk(it, suffix_lex_range, k);
-            } else {
-                auto it = m_inverted_index.intersection_iterator(prefix);
-                num_completions = conjunctive_topk(it, suffix_lex_range, k);
-            }
+            num_completions =
+                conjunctive_topk(num_terms, prefix, suffix_lex_range, k);
         }
 
         extract_completions(num_completions);
@@ -170,16 +157,8 @@ struct autocomplete3 {
 
         timers[2].start();
         if (num_completions < k) {
-            if (num_terms == 1) {  // we've got nothing to intersect
-                iterator it(0, m_inverted_index.num_docs());
-                num_completions = conjunctive_topk(it, suffix_lex_range, k);
-            } else if (prefix.size() == 1) {  // we've got nothing to intersect
-                auto it = m_inverted_index.iterator(prefix.front() - 1);
-                num_completions = conjunctive_topk(it, suffix_lex_range, k);
-            } else {
-                auto it = m_inverted_index.intersection_iterator(prefix);
-                num_completions = conjunctive_topk(it, suffix_lex_range, k);
-            }
+            num_completions =
+                conjunctive_topk(num_terms, prefix, suffix_lex_range, k);
         }
         timers[2].stop();
 
@@ -238,7 +217,8 @@ struct autocomplete3 {
         init();
         completion_type prefix;
         byte_range suffix{0, 0};
-        parse(m_dictionary, query, prefix, suffix);
+        uint32_t num_terms = parse(m_dictionary, query, prefix, suffix);
+        assert(num_terms > 0);
         timers[0].stop();
 
         uint32_t num_completions = 0;
@@ -251,13 +231,8 @@ struct autocomplete3 {
 
         // step 2
         timers[2].start();
-        if (prefix.size() == 1) {  // we've got nothing to intersect
-            auto it = m_inverted_index.iterator(prefix.front() - 1);
-            num_completions = conjunctive_topk(it, suffix_lex_range, k);
-        } else {
-            auto it = m_inverted_index.intersection_iterator(prefix);
-            num_completions = conjunctive_topk(it, suffix_lex_range, k);
-        }
+        num_completions =
+            conjunctive_topk(num_terms, prefix, suffix_lex_range, k);
         timers[2].stop();
 
         // step 3
@@ -317,6 +292,21 @@ private:
             uint8_t size = m_completions.extract(lex_id, completions[i]);
             sizes[i] = size;
         }
+    }
+
+    uint32_t conjunctive_topk(uint32_t num_terms, completion_type& prefix,
+                              const range suffix_lex_range, const uint32_t k) {
+        if (num_terms == 1) {  // we've got nothing to intersect
+            iterator it(0, m_inverted_index.num_docs());
+            return conjunctive_topk(it, suffix_lex_range, k);
+        }
+        deduplicate(prefix);
+        if (prefix.size() == 1) {  // we've got nothing to intersect
+            auto it = m_inverted_index.iterator(prefix.front() - 1);
+            return conjunctive_topk(it, suffix_lex_range, k);
+        }
+        auto it = m_inverted_index.intersection_iterator(prefix);
+        return conjunctive_topk(it, suffix_lex_range, k);
     }
 
     template <typename Iterator>

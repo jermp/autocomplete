@@ -283,6 +283,7 @@ private:
     uint32_t conjunctive_topk(completion_type& prefix, const range suffix,
                               const uint32_t k) {
         auto& topk_scores = m_pool.scores();
+        deduplicate(prefix);
         auto it = m_inverted_index.intersection_iterator(prefix, suffix);
         uint32_t results = 0;
         for (; it.has_next(); ++it) {
@@ -319,4 +320,5 @@ private:
         return m_pool.begin();
     }
 };
+
 }  // namespace autocomplete

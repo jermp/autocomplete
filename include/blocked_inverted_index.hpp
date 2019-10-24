@@ -267,7 +267,6 @@ struct blocked_inverted_index {
 
             if (!term_ids.empty()) {
                 m_iterators.reserve(term_ids.size());  // at most
-                std::sort(term_ids.begin(), term_ids.end());
                 uint32_t current_block_id = ii->block_id(term_ids.front());
                 uint32_t i = 0;
                 uint32_t prev_i = 0;

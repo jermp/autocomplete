@@ -96,13 +96,7 @@ struct autocomplete2 {
             );
             extract_completions(num_completions);
         } else {
-            if (prefix.size() == 1) {  // we've got nothing to intersect
-                auto it = m_inverted_index.iterator(prefix.front() - 1);
-                num_completions = conjunctive_topk(it, suffix_lex_range, k);
-            } else {
-                auto it = m_inverted_index.intersection_iterator(prefix);
-                num_completions = conjunctive_topk(it, suffix_lex_range, k);
-            }
+            num_completions = conjunctive_topk(prefix, suffix_lex_range, k);
         }
 
         return extract_strings(num_completions);
@@ -137,13 +131,7 @@ struct autocomplete2 {
                 );
                 extract_completions(num_completions);
             } else {
-                if (prefix.size() == 1) {  // we've got nothing to intersect
-                    auto it = m_inverted_index.iterator(prefix.front() - 1);
-                    num_completions = conjunctive_topk(it, suffix_lex_range, k);
-                } else {
-                    auto it = m_inverted_index.intersection_iterator(prefix);
-                    num_completions = conjunctive_topk(it, suffix_lex_range, k);
-                }
+                num_completions = conjunctive_topk(prefix, suffix_lex_range, k);
             }
         } else {
             extract_completions(num_completions);
@@ -186,13 +174,7 @@ struct autocomplete2 {
                 );
                 extract_completions(num_completions);
             } else {
-                if (prefix.size() == 1) {  // we've got nothing to intersect
-                    auto it = m_inverted_index.iterator(prefix.front() - 1);
-                    num_completions = conjunctive_topk(it, suffix_lex_range, k);
-                } else {
-                    auto it = m_inverted_index.intersection_iterator(prefix);
-                    num_completions = conjunctive_topk(it, suffix_lex_range, k);
-                }
+                num_completions = conjunctive_topk(prefix, suffix_lex_range, k);
             }
         } else {
             extract_completions(num_completions);
@@ -275,13 +257,7 @@ struct autocomplete2 {
             );
             extract_completions(num_completions);
         } else {
-            if (prefix.size() == 1) {  // we've got nothing to intersect
-                auto it = m_inverted_index.iterator(prefix.front() - 1);
-                num_completions = conjunctive_topk(it, suffix_lex_range, k);
-            } else {
-                auto it = m_inverted_index.intersection_iterator(prefix);
-                num_completions = conjunctive_topk(it, suffix_lex_range, k);
-            }
+            num_completions = conjunctive_topk(prefix, suffix_lex_range, k);
         }
         timers[2].stop();
 
@@ -343,6 +319,17 @@ private:
             uint8_t size = m_completions.extract(lex_id, completions[i]);
             sizes[i] = size;
         }
+    }
+
+    uint32_t conjunctive_topk(completion_type& prefix, const range suffix,
+                              uint32_t const k) {
+        deduplicate(prefix);
+        if (prefix.size() == 1) {  // we've got nothing to intersect
+            auto it = m_inverted_index.iterator(prefix.front() - 1);
+            return conjunctive_topk(it, suffix, k);
+        }
+        auto it = m_inverted_index.intersection_iterator(prefix);
+        return conjunctive_topk(it, suffix, k);
     }
 
     template <typename Iterator>
