@@ -73,10 +73,10 @@ Installation and quick start <a name="install"></a>
 Just run
 
 	$ bash ./install.sh
-	
+
 from the parent directory. The script builds the code; prepare the test data in the folder `test_data` for indexing; executes the unit tests.
 
-For having a minimal running example, just run
+After that, for having a minimal running example, just run
 
 	$ bash ./example.sh
 
@@ -136,7 +136,7 @@ The script `preprocess.sh` in the directory `test_data` helps
 in preparing the data for indexing.
 Thus, from within the directory `test_data`, it is sufficient
 to do:
-	
+
 	$ bash preprocess.sh
 
 If you run the script, you will get:
@@ -195,7 +195,10 @@ You can use
 
 	$ python partition_queries_by_length.py trec_05_efficiency_queries/trec_05_efficiency_queries.completions
 
-to partition the input completions by number of query terms.
+to partition the input completions by number of query terms. Each partition
+of queries is shuffled at random to avoid locality of access.
+(By default, 8 shards will be created: the ones having [1,7] query terms and
+the one collecting all completions with >= 8 query terms).
 
 Then the command
 
@@ -203,7 +206,6 @@ Then the command
 
 will execute 1000 top-10 queries with 3 terms, from which only 25%
 of the prefix of the last token is retained.
-(For no locality, it is suggested to shuffle the queries at random, for example using `gshuf` on Mac.)
 
 We automated the collection of results with the script `script/collected_topk_results_by_varying_percentage.py`.
 From within the `/build` directory, run
