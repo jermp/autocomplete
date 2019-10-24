@@ -108,7 +108,7 @@ struct autocomplete4 {
         range r = m_completions.locate_prefix(prefix, suffix_lex_range);
 
         uint32_t num_completions = 0;
-        if (!r.is_invalid()) {
+        if (r.is_valid()) {
             num_completions = m_unsorted_docs_list.topk(r, k, m_pool.scores());
         }
 
@@ -138,7 +138,7 @@ struct autocomplete4 {
         suffix_lex_range.end += 1;
         range r = m_completions.locate_prefix(prefix, suffix_lex_range);
         uint32_t num_completions = 0;
-        if (!r.is_invalid()) {
+        if (r.is_valid()) {
             num_completions = m_unsorted_docs_list.topk(r, k, m_pool.scores());
         }
         timers[1].stop();
