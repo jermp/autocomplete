@@ -74,14 +74,14 @@ struct uint_vec {
     }
 
     uint64_t find(const range r, UintType id) const {
-        assert(!r.is_invalid());
+        assert(r.is_valid());
         assert(r.end <= size());
-        UintType prev_upper = previous_range_upperbound(r);
+        auto prev_upper = previous_range_upperbound(r);
         return util::find(*this, id + prev_upper, r.begin, r.end - 1);
     }
 
     range find(const range r, const range lex) const {
-        assert(!r.is_invalid());
+        assert(r.is_valid());
         assert(r.end <= size());
         auto prev_upper = previous_range_upperbound(r);
 
@@ -131,9 +131,9 @@ private:
     std::vector<UintType> m_data;
 
     UintType previous_range_upperbound(const range r) const {
-        assert(!r.is_invalid());
+        assert(r.is_valid());
         return r.begin ? access(r.begin - 1) : 0;
     }
-};  // namespace autocomplete
+};
 
 }  // namespace autocomplete

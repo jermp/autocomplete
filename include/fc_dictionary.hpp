@@ -307,10 +307,13 @@ private:
 
         // NOTE 1: excluding null terminators, allow us to use memcpy here
         // because we know exactly how many bytes to copy: this is much faster
-        // than looping until we hit '\0'. NOTE 2: always copying a fixed amount
+        // than looping until we hit '\0'.
+
+        // NOTE 2: always copying a fixed amount
         // of bytes (constants::MAX_NUM_CHARS_PER_QUERY) is much faster than
         // copying an exact amount, e.g., suffix_len (althoung it could be
         // less), so do not do: memcpy(out+ l, in, suffix_len).
+
         memcpy(out + l, in, constants::MAX_NUM_CHARS_PER_QUERY);
 
         return l + suffix_len;

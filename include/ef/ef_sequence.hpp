@@ -142,14 +142,14 @@ struct ef_sequence {
     }
 
     uint64_t find(const range r, uint64_t id) const {
-        assert(!r.is_invalid());
+        assert(r.is_valid());
         assert(r.end <= size());
         uint64_t prev_upper = previous_range_upperbound(r);
         return util::find(*this, id + prev_upper, r.begin, r.end - 1);
     }
 
     range find(const range r, const range lex) const {
-        assert(!r.is_invalid());
+        assert(r.is_valid());
         assert(r.end <= size());
         auto prev_upper = previous_range_upperbound(r);
 
@@ -251,7 +251,7 @@ private:
     }
 
     uint64_t previous_range_upperbound(const range r) const {
-        assert(!r.is_invalid());
+        assert(r.is_valid());
         return r.begin ? access(r.begin - 1) : 0;
     }
 };

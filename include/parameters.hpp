@@ -41,8 +41,11 @@ struct parameters {
         }
 
         nodes_per_level.resize(num_levels, 0);
-        for (uint32_t i = 0; i != num_levels; ++i) {
-            input >> nodes_per_level[i];
+        uint32_t i = 0;
+        for (; i != num_levels and input; ++i) input >> nodes_per_level[i];
+        if (i != num_levels) {
+            throw std::runtime_error(
+                "File with statistics may be truncated or malformed");
         }
     }
 

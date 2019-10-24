@@ -321,7 +321,7 @@ private:
 
     template <typename Iterator>
     uint32_t conjunctive_topk(Iterator& it, const range r, const uint32_t k) {
-        assert(!r.is_invalid());
+        assert(r.is_valid());
 
         auto& topk_scores = m_pool.scores();
         min_priority_queue_type q;

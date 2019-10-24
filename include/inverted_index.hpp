@@ -41,7 +41,7 @@ struct inverted_index {
                 }
                 m_minimal_doc_ids.push_back(list.front());
                 write_gamma_nonzero(m_bvb, n);
-                if (ListType::is_byte_aligned) util::push_pad(m_bvb);
+                if constexpr (ListType::is_byte_aligned) util::push_pad(m_bvb);
                 ListType::build(m_bvb, list.begin(), m_num_docs, list.size());
                 m_pointers.push_back(m_bvb.size());
             }
@@ -86,7 +86,7 @@ struct inverted_index {
         uint64_t offset = m_pointers.access(term_id);
         bits_iterator<bit_vector> it(m_data, offset);
         uint64_t n = read_gamma_nonzero(it);
-        if (ListType::is_byte_aligned) util::eat_pad(it);
+        if constexpr (ListType::is_byte_aligned) util::eat_pad(it);
         return {m_data, it.position(), m_num_docs, n};
     }
 

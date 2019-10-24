@@ -36,6 +36,7 @@ struct range {
     uint64_t begin;
     uint64_t end;
     bool is_invalid() const;
+    bool is_valid() const;
     bool contains(uint64_t val) const;
 };
 
@@ -46,6 +47,10 @@ static const range invalid_range{global::not_found, global::not_found};
 bool range::is_invalid() const {
     return begin == global::invalid_range.begin or
            end == global::invalid_range.end or begin > end;
+}
+
+bool range::is_valid() const {
+    return !is_invalid();
 }
 
 bool range::contains(uint64_t val) const {

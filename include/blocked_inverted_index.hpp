@@ -263,7 +263,7 @@ struct blocked_inverted_index {
             : m_i(0)
             , m_num_docs(ii->num_docs())
             , m_suffix(r) {
-            assert(!r.is_invalid());
+            assert(r.is_valid());
 
             if (!term_ids.empty()) {
                 m_iterators.reserve(term_ids.size());  // at most

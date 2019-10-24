@@ -277,7 +277,7 @@ struct compact_vector {
     }
 
     uint64_t find(const range r, uint64_t id) {
-        assert(!r.is_invalid());
+        assert(r.is_valid());
         assert(r.end <= size());
         return util::find(*this, id, r.begin, r.end - 1);
     }

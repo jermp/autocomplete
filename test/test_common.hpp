@@ -69,9 +69,7 @@ std::vector<term_ids> gen_random_queries(uint32_t num_queries,
         while (true) {
             q.clear();
             for (uint32_t i = 0; i != num_terms; ++i) {
-                auto t = random_term_id.gen();
-                assert(t >= 1 and t <= max_range_len);
-                q.push_back(t);
+                q.push_back(random_term_id.gen());
             }
             std::sort(q.begin(), q.end());
             auto end = std::unique(q.begin(), q.end());

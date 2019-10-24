@@ -170,7 +170,7 @@ struct completion_trie {
     // Return [a,b)
     range locate_prefix(completion_type const& prefix,
                         range suffix_lex_range) const {
-        range r{global::not_found, global::not_found};
+        range r = global::invalid_range;
         range pointer{0, m_nodes.front().size()};
         uint32_t i = 0;
 
@@ -195,10 +195,11 @@ struct completion_trie {
             r.end += size;
         }
 
-        assert(r.end > r.begin);
+        assert(r.is_valid());
         return r;
     }
 
+    // NOTE: not used
     bool is_member(completion_type const& c) const {
         assert(c.size() > 0);
         range pointer{0, m_nodes.front().size()};
