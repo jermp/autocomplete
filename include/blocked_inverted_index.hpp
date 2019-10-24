@@ -266,6 +266,10 @@ struct blocked_inverted_index {
             assert(r.is_valid());
 
             if (!term_ids.empty()) {
+                assert(std::is_sorted(term_ids.begin(), term_ids.end()));
+                assert(std::unique(term_ids.begin(), term_ids.end()) ==
+                       term_ids.end());
+
                 m_iterators.reserve(term_ids.size());  // at most
                 uint32_t current_block_id = ii->block_id(term_ids.front());
                 uint32_t i = 0;
