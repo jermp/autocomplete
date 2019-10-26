@@ -2,25 +2,25 @@
 
 #include "types.hpp"
 #include "statistics.hpp"
+#include "../external/cmd_line_parser/include/parser.hpp"
 
 using namespace autocomplete;
 
 template <typename Index>
-void print_stats(char const* index_filename) {
+void print_stats(std::string const& index_filename) {
     Index index;
-    essentials::load(index, index_filename);
+    essentials::load(index, index_filename.c_str());
     index.print_stats();
 }
 
 int main(int argc, char** argv) {
-    int mandatory = 2;
-    if (argc < mandatory + 1) {
-        std::cout << argv[0] << " <type> <index_filename>" << std::endl;
-        return 1;
-    }
+    cmd_line_parser::parser parser(argc, argv);
+    parser.add("type", "Index type.");
+    parser.add("index_filename", "Index filename.");
+    if (!parser.parse()) return 1;
 
-    std::string type(argv[1]);
-    char const* index_filename = argv[2];
+    auto type = parser.get<std::string>("type");
+    auto index_filename = parser.get<std::string>("index_filename");
 
     if (type == "ef_type1") {
         print_stats<ef_autocomplete_type1>(index_filename);

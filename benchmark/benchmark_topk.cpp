@@ -1,17 +1,16 @@
 #include <iostream>
 
 #include "types.hpp"
-#include "statistics.hpp"
 #include "benchmark_common.hpp"
 
 using namespace autocomplete;
 
 template <typename Index>
-void benchmark_topk(char const* binary_filename, uint32_t k,
-                    uint32_t max_num_queries, float keep,
-                    essentials::json_lines& breakdowns, bool breakdown) {
+void benchmark(std::string const& index_filename, uint32_t k,
+               uint32_t max_num_queries, float keep,
+               essentials::json_lines& breakdowns, bool breakdown) {
     Index index;
-    essentials::load(index, binary_filename);
+    essentials::load(index, index_filename.c_str());
 
     std::vector<std::string> queries;
     uint32_t num_queries =
@@ -32,9 +31,7 @@ void benchmark_topk(char const* binary_filename, uint32_t k,
                 reported_strings += it.size();
             }
         }
-
         std::cout << reported_strings << std::endl;
-
         breakdowns.add("parsing_musec_per_query",
                        std::to_string(musec_per_query(timers[0].elapsed())));
         breakdowns.add("prefix_search_musec_per_query",
@@ -43,7 +40,6 @@ void benchmark_topk(char const* binary_filename, uint32_t k,
                        std::to_string(musec_per_query(timers[2].elapsed())));
         breakdowns.add("reporting_musec_per_query",
                        std::to_string(musec_per_query(timers[3].elapsed())));
-
     } else {
         essentials::timer_type timer;
         timer.start();
@@ -54,58 +50,42 @@ void benchmark_topk(char const* binary_filename, uint32_t k,
             }
         }
         timer.stop();
-
         std::cout << reported_strings << std::endl;
-
         breakdowns.add("musec_per_query",
                        std::to_string(musec_per_query(timer.elapsed())));
     }
 }
 
 int main(int argc, char** argv) {
-    int mandatory = 6;
-    if (argc < mandatory + 1) {
-        std::cout << argv[0]
-                  << " <type> <k> <binary_filename> <num_terms_per_query> "
-                     "<max_num_queries> <percentage> [--breakdown] < queries"
-                  << std::endl;
-        std::cout << "<percentage> is a float in [0,1] and specifies how much "
-                     "we keep of the last token in a query "
-                  << std::endl;
-        return 1;
-    }
+    cmd_line_parser::parser parser(argc, argv);
+    configure_parser_for_benchmarking(parser);
+    if (!parser.parse()) return 1;
 
-    std::string type(argv[1]);
-    uint32_t k = std::atoi(argv[2]);
-    char const* binary_filename = argv[3];
-    std::string num_terms_per_query(argv[4]);
-    uint32_t max_num_queries = std::atoi(argv[5]);
-    float keep = std::atof(argv[6]);
-
-    bool breakdown = false;
-    for (int i = mandatory + 1; i != argc; ++i) {
-        if (std::string(argv[i]) == "--breakdown") {
-            breakdown = true;
-        }
-    }
+    auto type = parser.get<std::string>("type");
+    auto k = parser.get<uint32_t>("k");
+    auto index_filename = parser.get<std::string>("index_filename");
+    auto max_num_queries = parser.get<uint32_t>("max_num_queries");
+    auto keep = parser.get<float>("percentage");
+    auto breakdown = parser.get<bool>("breakdown");
 
     essentials::json_lines breakdowns;
     breakdowns.new_line();
-    breakdowns.add("num_terms_per_query", num_terms_per_query);
+    breakdowns.add("num_terms_per_query",
+                   parser.get<std::string>("num_terms_per_query"));
     breakdowns.add("percentage", std::to_string(keep));
 
     if (type == "ef_type1") {
-        benchmark_topk<ef_autocomplete_type1>(
-            binary_filename, k, max_num_queries, keep, breakdowns, breakdown);
+        benchmark<ef_autocomplete_type1>(index_filename, k, max_num_queries,
+                                         keep, breakdowns, breakdown);
     } else if (type == "ef_type2") {
-        benchmark_topk<ef_autocomplete_type2>(
-            binary_filename, k, max_num_queries, keep, breakdowns, breakdown);
+        benchmark<ef_autocomplete_type2>(index_filename, k, max_num_queries,
+                                         keep, breakdowns, breakdown);
     } else if (type == "ef_type3") {
-        benchmark_topk<ef_autocomplete_type3>(
-            binary_filename, k, max_num_queries, keep, breakdowns, breakdown);
+        benchmark<ef_autocomplete_type3>(index_filename, k, max_num_queries,
+                                         keep, breakdowns, breakdown);
     } else if (type == "ef_type4") {
-        benchmark_topk<ef_autocomplete_type4>(
-            binary_filename, k, max_num_queries, keep, breakdowns, breakdown);
+        benchmark<ef_autocomplete_type4>(index_filename, k, max_num_queries,
+                                         keep, breakdowns, breakdown);
     } else {
         return 1;
     }

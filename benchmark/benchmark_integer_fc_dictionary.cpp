@@ -8,7 +8,7 @@ using namespace autocomplete;
 
 template <typename Dictionary>
 void perf_test(Dictionary const& dict, std::vector<id_type> const& queries) {
-    completion_type decoded(2 * constants::MAX_NUM_CHARS_PER_QUERY);
+    static completion_type decoded(2 * constants::MAX_NUM_CHARS_PER_QUERY);
     essentials::timer_type timer;
 
     for (uint32_t i = 0; i != runs; ++i) {
