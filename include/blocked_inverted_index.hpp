@@ -23,7 +23,10 @@ struct blocked_inverted_index {
             : m_num_integers(0)
             , m_num_docs(params.num_completions)
             , m_num_terms(params.num_terms) {
-            assert(c > 0.0);
+            if (!(c > 0.0 and c <= 1.0)) {
+                throw std::runtime_error("c must be in (0,1]");
+            }
+
             essentials::logger("building blocked_inverted_index with c = " +
                                std::to_string(c) + "...");
 

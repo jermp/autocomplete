@@ -10,3 +10,6 @@
 [submodule "external/doctest"]
 	path = external/doctest
 	url = https://github.com/onqtam/doctest.git
+[submodule "external/cmd_line_parser"]
+	path = external/cmd_line_parser
+	url = https://github.com/jermp/cmd_line_parser.git
