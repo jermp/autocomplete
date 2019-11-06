@@ -16,16 +16,14 @@ with open(input_filename, 'r') as f:
     for line in f:
         x = line.rstrip('\n').split()
         l = len(x) - 1
-
+        string = ' '.join(x[1:l+1]) + '\n'
         if l > num_shards:
-            all_others_strings.append(line)
+            all_others_strings.append(string)
         else:
-            strings[l - 1].append(line)
-
+            strings[l - 1].append(string)
         lines += 1
         if lines % 1000000 == 0:
             print("processed " + str(lines) + " lines")
-
 
 for i in range(0, num_shards):
     random.shuffle(strings[i])
@@ -37,4 +35,3 @@ random.shuffle(all_others_strings)
 for s in all_others_strings:
     all_others.write(s)
 all_others.close()
-

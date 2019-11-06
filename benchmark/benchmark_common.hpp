@@ -9,11 +9,10 @@ static const uint32_t runs = 5;
 size_t load_queries(std::vector<std::string>& queries, uint32_t max_num_queries,
                     float percentage, std::istream& is = std::cin) {
     assert(percentage >= 0.0 and percentage <= 1.0);
-    std::string line;
+    std::string query;
     queries.reserve(max_num_queries);
     for (uint32_t i = 0; i != max_num_queries; ++i) {
-        if (!std::getline(is, line)) break;
-        auto query = line.substr(line.find(' ') + 1, line.size());
+        if (!std::getline(is, query)) break;
         assert(query.size() > 0);
         size_t size = query.size() - 1;
         while (size > 0 and query[size] != ' ') --size;
@@ -34,7 +33,7 @@ void configure_parser_for_benchmarking(cmd_line_parser::parser& parser) {
     parser.add("max_num_queries", "Maximum number of queries to execute.");
     parser.add("percentage",
                "A float in [0,1] specifying how much we keep of the last token "
-               "in a query.");
+               "in a query: n x 100 <=> n%, for n in [0,1].");
     parser.add("breakdown", "Collect timings breakdown.", "--breakdown");
 }
 
