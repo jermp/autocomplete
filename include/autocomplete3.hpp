@@ -277,11 +277,6 @@ private:
         assert(m_pool.size() == 0);
     }
 
-    // NOTE: this can be done more efficienctly exploiting
-    // the fact that the strings to be extracted share a common
-    // prefix, thus this task should be delegated to the
-    // integer_fc_dictionary... (enchance the locality of the operation)
-    // NOTE: this only work when used during the prefix_topk step.
     void extract_completions(const uint32_t num_completions) {
         auto const& topk_scores = m_pool.scores();
         auto& completions = m_topk_completion_set.completions();
