@@ -1,6 +1,4 @@
-import sys
-import numpy as np
-import random
+import sys, random
 
 input_filename = sys.argv[1]
 

@@ -1,5 +1,4 @@
 import sys
-import numpy as np
 
 input_filename = sys.argv[1]
 
