@@ -19,11 +19,11 @@ void test_locate_prefix(Dictionary const& dict, Index const& index,
         suffix_lex_range.end += 1;
         range got = index.locate_prefix(prefix, suffix_lex_range);
 
-        REQUIRE_MESSAGE(
-            (got.begin == expected.begin and got.end == expected.end),
-            "Error for query '" << query << "': expected [" << expected.begin
-                                << "," << expected.end << ") but got ["
-                                << got.begin << "," << got.end << ")");
+        CHECK_MESSAGE((got.begin == expected.begin and got.end == expected.end),
+                      "Error for query '"
+                          << query << "': expected [" << expected.begin << ","
+                          << expected.end << ") but got [" << got.begin << ","
+                          << got.end << ")");
     }
 }
 
@@ -82,14 +82,20 @@ TEST_CASE("test locate_prefix()") {
                       << num_terms << std::endl;
             {
                 queries.clear();
-                std::ifstream querylog((params.collection_basename +
-                                        ".length=" + std::to_string(num_terms))
-                                           .c_str());
+                std::string filename = params.collection_basename +
+                                       ".length=" + std::to_string(num_terms) +
+                                       ".shuffled";
+                std::ifstream querylog(filename.c_str());
+                if (!querylog.is_open()) {
+                    std::cerr << "cannot open file '" << filename << "'"
+                              << std::endl;
+                    return;
+                }
                 load_queries(queries, max_num_queries, perc, querylog);
                 querylog.close();
             }
 
-            test_locate_prefix(dict, ct_index, queries, strings);
+            // test_locate_prefix(dict, ct_index, queries, strings);
             test_locate_prefix(dict, fc_index, queries, strings);
         }
     }

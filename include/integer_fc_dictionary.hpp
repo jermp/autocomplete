@@ -270,7 +270,7 @@ private:
         if (cmp < 0) {
             bucket_id = mi;
         } else {
-            bucket_id = mi - 1;
+            bucket_id = hi == -1 ? 0 : hi;
             h = header(bucket_id);
         }
 
@@ -288,18 +288,15 @@ private:
             cmp = uint32_range_compare(h, t, n);
             if (cmp > 0) {
                 hi = mi - 1;
-            } else if (cmp < 0) {
+            } else if (cmp <= 0) {
                 lo = mi + 1;
-            } else {
-                bucket_id = mi;
-                return;
             }
         }
 
         if (cmp < 0) {
             bucket_id = mi;
         } else {
-            bucket_id = mi - 1;
+            bucket_id = hi == -1 ? 0 : hi;
             h = header(bucket_id);
         }
     }

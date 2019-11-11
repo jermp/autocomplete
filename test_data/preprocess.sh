@@ -8,4 +8,5 @@ for collection in $collections; do
     python map_dataset.py $collection
     python build_stats.py $collection.mapped
     python build_inverted_and_forward.py $collection
+    python partition_queries_by_length.py $collection
 done

@@ -48,6 +48,7 @@ TEST_CASE("test integer_fc_dictionary") {
 
                 id_type got_id =
                     dict.locate({decoded.data(), decoded.data() + size});
+                REQUIRE(got_id != global::invalid_term_id);
                 REQUIRE_MESSAGE(got_id == id, "Error in locating the "
                                                   << id
                                                   << "-th string: expected id "
