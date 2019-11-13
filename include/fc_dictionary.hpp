@@ -223,8 +223,7 @@ private:
         if (cmp < 0) {
             bucket_id = mi;
         } else {
-            assert(cmp > 0);
-            bucket_id = hi;
+            bucket_id = hi == -1 ? 0 : hi;
             h = header(bucket_id);
         }
 
@@ -344,8 +343,7 @@ private:
             if (cmp < 0) return global::invalid_term_id;
             curr += l - lcp_len + 2;
         }
-        assert(false);
-        __builtin_unreachable();
+        return global::invalid_term_id;  // term does not exist in dictionary
     }
 
     id_type left_locate(byte_range p, byte_range h, id_type bucket_id) const {
