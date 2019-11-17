@@ -74,6 +74,10 @@ void autocomplete<Completions, UnsortedDocsList, Dictionary, InvertedIndex,
               m_inverted_index.num_integers());
     print("forward index", m_forward_index.bytes(), total_bytes,
           m_completions.size());
+    std::cout << "\tavg. number of terms per completion: "
+              << static_cast<double>(m_forward_index.num_integers()) /
+                     m_completions.size()
+              << std::endl;
     print_bpi("data", m_forward_index.data_bytes(),
               m_forward_index.num_integers());
     print_bpi("pointers", m_forward_index.pointer_bytes(),
