@@ -37,14 +37,17 @@ struct fc_dictionary {
             std::string curr;
             std::string header;
 
+            uint64_t total_characters = 0;
             for (uint32_t b = 0; b != buckets; ++b) {
                 input >> header;
+                total_characters += header.size();
                 write_header(header);
                 m_pointers_to_headers.push_back(m_headers.size());
                 prev.swap(header);
                 uint32_t size = b != buckets - 1 ? BucketSize : tail;
                 for (uint32_t i = 0; i != size; ++i) {
                     input >> curr;
+                    total_characters += curr.size();
                     uint32_t l = 0;  // |lcp(curr,prev)|
                     while (l != curr.size() and l != prev.size() and
                            curr[l] == prev[l]) {
@@ -60,6 +63,9 @@ struct fc_dictionary {
             for (uint32_t i = 0; i != constants::MAX_NUM_CHARS_PER_QUERY; ++i) {
                 m_buckets.push_back(0);
             }
+
+            std::cout << static_cast<double>(total_characters) / m_size
+                      << " characters per string" << std::endl;
 
             input.close();
             essentials::logger("DONE");

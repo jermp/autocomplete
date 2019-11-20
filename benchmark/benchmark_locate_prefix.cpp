@@ -6,36 +6,28 @@
 
 using namespace autocomplete;
 
+typedef std::pair<completion_type, range> query_type;
+
 template <typename Index>
-void benchmark(parameters const& params, fc_dictionary_type const& dict,
-               uint32_t max_num_queries, float keep,
-               essentials::json_lines& result) {
+void benchmark(parameters const& params, std::vector<query_type>& queries,
+               uint32_t num_queries, uint32_t num_terms_per_query, float keep) {
+    essentials::json_lines result;
+    result.new_line();
+    result.add("num_terms_per_query", std::to_string(num_terms_per_query));
+    result.add("percentage", std::to_string(keep));
+    result.add("num_queries", std::to_string(num_queries));
+
     Index index;
     {
         typename Index::builder builder(params);
         builder.build(index);
     }
 
-    typedef std::pair<completion_type, range> query_type;
-    std::vector<std::string> strings;
-    std::vector<query_type> queries;
-    uint32_t num_queries = 0;
-
-    {
-        num_queries = load_queries(strings, max_num_queries, keep, std::cin);
-        result.add("num_queries", std::to_string(num_queries));
-        for (auto const& string : strings) {
-            completion_type prefix;
-            byte_range suffix;
-            parse(dict, string, prefix, suffix);
-            range suffix_lex_range = dict.locate_prefix(suffix);
-            queries.emplace_back(prefix, suffix_lex_range);
-        }
-    }
-
-    auto musec_per_query = [&](double time) {
-        return time / (runs * num_queries);
-    };
+    result.add("MiB", std::to_string(static_cast<double>(index.bytes()) /
+                                     essentials::MiB));
+    result.add(
+        "bytes_per_completion",
+        std::to_string(static_cast<double>(index.bytes()) / index.size()));
 
     essentials::timer_type timer;
     timer.start();
@@ -47,7 +39,8 @@ void benchmark(parameters const& params, fc_dictionary_type const& dict,
     }
     timer.stop();
     result.add("musec_per_query",
-               std::to_string(musec_per_query(timer.elapsed())));
+               std::to_string(timer.elapsed() / (runs * num_queries)));
+    result.print();
 }
 
 int main(int argc, char** argv) {
@@ -67,6 +60,7 @@ int main(int argc, char** argv) {
 
     auto type = parser.get<std::string>("type");
     auto max_num_queries = parser.get<uint32_t>("max_num_queries");
+    auto num_terms_per_query = parser.get<uint32_t>("num_terms_per_query");
     auto keep = parser.get<float>("percentage");
 
     fc_dictionary_type dict;
@@ -75,22 +69,42 @@ int main(int argc, char** argv) {
         builder.build(dict);
     }
 
-    essentials::json_lines result;
-    result.new_line();
-    result.add("num_terms_per_query",
-               parser.get<std::string>("num_terms_per_query"));
-    result.add("percentage", std::to_string(keep));
+    std::vector<std::string> strings;
+    std::vector<query_type> queries;
+    uint32_t num_queries = 0;
+
+    {
+        num_queries = load_queries(strings, max_num_queries, keep, std::cin);
+        for (auto const& string : strings) {
+            completion_type prefix;
+            byte_range suffix;
+            parse(dict, string, prefix, suffix);
+            range suffix_lex_range = dict.locate_prefix(suffix);
+            queries.emplace_back(prefix, suffix_lex_range);
+        }
+    }
 
     if (type == "trie") {
-        benchmark<ef_completion_trie>(params, dict, max_num_queries, keep,
-                                      result);
+        benchmark<ef_completion_trie>(params, queries, num_queries,
+                                      num_terms_per_query, keep);
     } else if (type == "fc") {
-        benchmark<integer_fc_dictionary_type>(params, dict, max_num_queries,
-                                              keep, result);
+        benchmark<integer_fc_dictionary<4>>(params, queries, num_queries,
+                                            num_terms_per_query, keep);
+        benchmark<integer_fc_dictionary<8>>(params, queries, num_queries,
+                                            num_terms_per_query, keep);
+        benchmark<integer_fc_dictionary<16>>(params, queries, num_queries,
+                                             num_terms_per_query, keep);
+        benchmark<integer_fc_dictionary<32>>(params, queries, num_queries,
+                                             num_terms_per_query, keep);
+        benchmark<integer_fc_dictionary<64>>(params, queries, num_queries,
+                                             num_terms_per_query, keep);
+        benchmark<integer_fc_dictionary<128>>(params, queries, num_queries,
+                                              num_terms_per_query, keep);
+        benchmark<integer_fc_dictionary<256>>(params, queries, num_queries,
+                                              num_terms_per_query, keep);
     } else {
         return 1;
     }
 
-    result.print();
     return 0;
 }
