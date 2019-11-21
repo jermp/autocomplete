@@ -28,10 +28,18 @@ struct inverted_index {
 
             std::vector<id_type> list;
             m_pointers.push_back(0);
+
+            uint32_t max_list_size = 0;
+            uint32_t min_list_size = uint32_t(-1);
+
             for (uint64_t i = 0; i != num_terms; ++i) {
                 list.clear();
                 uint32_t n = 0;
                 input >> n;
+
+                if (n > max_list_size) max_list_size = n;
+                if (n < min_list_size) min_list_size = n;
+
                 list.reserve(n);
                 m_num_integers += n;
                 for (uint64_t k = 0; k != n; ++k) {
@@ -45,6 +53,12 @@ struct inverted_index {
                 ListType::build(m_bvb, list.begin(), m_num_docs, list.size());
                 m_pointers.push_back(m_bvb.size());
             }
+
+            std::cout << "avg. list size = "
+                      << static_cast<double>(m_num_integers) / num_terms
+                      << std::endl;
+            std::cout << "max_list_size = " << max_list_size << std::endl;
+            std::cout << "min_list_size = " << min_list_size << std::endl;
 
             m_pointers.pop_back();
             input.close();

@@ -88,20 +88,20 @@ int main(int argc, char** argv) {
         benchmark<ef_completion_trie>(params, queries, num_queries,
                                       num_terms_per_query, keep);
     } else if (type == "fc") {
-        benchmark<integer_fc_dictionary<4>>(params, queries, num_queries,
-                                            num_terms_per_query, keep);
-        benchmark<integer_fc_dictionary<8>>(params, queries, num_queries,
-                                            num_terms_per_query, keep);
+        // benchmark<integer_fc_dictionary<4>>(params, queries, num_queries,
+        //                                     num_terms_per_query, keep);
+        // benchmark<integer_fc_dictionary<8>>(params, queries, num_queries,
+        //                                     num_terms_per_query, keep);
         benchmark<integer_fc_dictionary<16>>(params, queries, num_queries,
                                              num_terms_per_query, keep);
-        benchmark<integer_fc_dictionary<32>>(params, queries, num_queries,
-                                             num_terms_per_query, keep);
-        benchmark<integer_fc_dictionary<64>>(params, queries, num_queries,
-                                             num_terms_per_query, keep);
-        benchmark<integer_fc_dictionary<128>>(params, queries, num_queries,
-                                              num_terms_per_query, keep);
-        benchmark<integer_fc_dictionary<256>>(params, queries, num_queries,
-                                              num_terms_per_query, keep);
+        // benchmark<integer_fc_dictionary<32>>(params, queries, num_queries,
+        //                                      num_terms_per_query, keep);
+        // benchmark<integer_fc_dictionary<64>>(params, queries, num_queries,
+        //                                      num_terms_per_query, keep);
+        // benchmark<integer_fc_dictionary<128>>(params, queries, num_queries,
+        //                                       num_terms_per_query, keep);
+        // benchmark<integer_fc_dictionary<256>>(params, queries, num_queries,
+        //                                       num_terms_per_query, keep);
     } else {
         return 1;
     }
