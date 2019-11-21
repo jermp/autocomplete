@@ -42,11 +42,11 @@ int main(int argc, char** argv) {
     for (uint32_t i = 0; i != num_queries; ++i) {
         if (!std::getline(std::cin, query)) break;
         auto completion = parse(dict, query);
-        std::cout << completion.front();
+        std::cerr << completion.front();
         for (size_t i = 1; i != completion.size(); ++i) {
-            std::cout << "\t" << completion[i];
+            std::cerr << "\t" << completion[i];
         }
-        std::cout << "\n";
+        std::cerr << "\n";
     }
 
     return 0;
