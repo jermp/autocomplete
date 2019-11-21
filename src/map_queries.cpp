@@ -8,9 +8,8 @@ template <typename Dictionary>
 completion_type parse(Dictionary const& dict, std::string const& query) {
     completion_type completion;
     byte_range_iterator it(string_to_byte_range(query));
-    while (true) {
+    while (it.has_next()) {
         byte_range term = it.next();
-        if (!it.has_next()) break;
         auto term_id = dict.locate(term);
         assert(term_id > 0);
         assert(term_id != global::invalid_term_id);
