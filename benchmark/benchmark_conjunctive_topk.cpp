@@ -27,7 +27,7 @@ void benchmark(std::string const& index_filename, uint32_t k,
         std::vector<timer_type> timers(4);
         for (uint32_t run = 0; run != runs; ++run) {
             for (auto const& query : queries) {
-                auto it = index.prefix_topk(query, k, timers);
+                auto it = index.conjunctive_topk(query, k, timers);
                 reported_strings += it.size();
             }
         }
@@ -45,7 +45,7 @@ void benchmark(std::string const& index_filename, uint32_t k,
         timer.start();
         for (uint32_t run = 0; run != runs; ++run) {
             for (auto const& query : queries) {
-                auto it = index.prefix_topk(query, k);
+                auto it = index.conjunctive_topk(query, k);
                 reported_strings += it.size();
             }
         }
