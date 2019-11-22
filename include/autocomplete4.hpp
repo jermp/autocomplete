@@ -88,7 +88,7 @@ struct autocomplete4 {
         if (suffix_lex_range.is_invalid()) return m_pool.begin();
 
         uint32_t num_completions =
-            conjunctive_topk(prefix, suffix_lex_range, k, m_pool.scores());
+            conjunctive_topk(prefix, suffix_lex_range, k);
         extract_completions(num_completions);
         return extract_strings(num_completions);
     }
@@ -217,8 +217,7 @@ struct autocomplete4 {
 
         // step 2
         timers[2].start();
-        num_completions =
-            conjunctive_topk(prefix, suffix_lex_range, k, m_pool.scores());
+        num_completions = conjunctive_topk(prefix, suffix_lex_range, k);
         timers[2].stop();
 
         // step 3
