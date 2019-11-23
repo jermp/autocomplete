@@ -118,6 +118,7 @@ struct blocked_inverted_index {
                     auto max =
                         *std::max_element(term_list.begin(), term_list.end());
                     uint64_t width = util::ceil_log2(max + 1);
+                    if (width == 0) width = 1;
                     // std::cout << "using " << width << " [bpi]" << std::endl;
                     m_terms.append_bits(width, 6);
                     for (auto t : term_list) m_terms.append_bits(t, width);

@@ -412,6 +412,7 @@ struct bits_getter {
         , m_base(offset)
         , m_width(width)
         , m_mask(-(width == 64) | ((uint64_t(1) << width) - 1)) {
+        assert(width > 0);
         util::prefetch(m_data + m_base / 64);
     }
 

@@ -73,24 +73,26 @@ struct compact_vector {
     };
 
     struct builder {
-        builder(uint64_t n = 0, uint64_t w = 0)
+        builder() {}
+
+        builder(uint64_t n, uint64_t w)
             : m_size(n)
-            , m_width(!w ? w + 1 : w)
+            , m_width(w)
             , m_mask(-(w == 64) | ((1ULL << w) - 1))
             , m_back(0)
             , m_cur_block(0)
             , m_cur_shift(0)
             , m_bits(essentials::words_for(m_size * m_width), 0) {
-            if (m_width > 64) {
-                throw std::runtime_error("width must be <= 64");
+            if (m_width == 0 or m_width > 64) {
+                throw std::runtime_error("width must be > 0 and <= 64");
             }
         }
 
         void resize(size_t n, uint64_t w) {
             m_size = n;
-            m_width = !w ? w + 1 : w;
-            if (m_width > 64) {
-                throw std::runtime_error("width must be <= 64");
+            m_width = w;
+            if (m_width == 0 or m_width > 64) {
+                throw std::runtime_error("width must be > 0 and <= 64");
             }
             m_mask = -(w == 64) | ((uint64_t(1) << w) - 1);
             m_bits.resize(essentials::words_for(m_size * m_width), 0);
