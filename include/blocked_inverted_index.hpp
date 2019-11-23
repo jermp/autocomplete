@@ -251,6 +251,11 @@ struct blocked_inverted_index {
         return id;
     }
 
+    uint32_t block_boundary(uint32_t block_id) const {
+        assert(block_id < m_blocks.size());
+        return m_blocks[block_id];
+    }
+
     struct block_type {
         docs_iterator_type docs_iterator;
         offsets_iterator_type offsets_iterator;
@@ -312,14 +317,16 @@ struct blocked_inverted_index {
 
             {
                 uint32_t current_block_id = ii->block_id(r.begin);
-                uint32_t i = r.begin;
-                for (; i != r.end; ++i) {
+                uint32_t current_block_boundary =
+                    ii->block_boundary(current_block_id);
+                for (uint32_t i = r.begin; i != r.end; ++i) {
                     assert(i > 0);
-                    uint32_t b = ii->block_id(i);
-                    if (b > current_block_id) {
+                    if (i > current_block_boundary) {
                         m_range.push_back(ii->block(current_block_id));
+                        current_block_id += 1;
+                        current_block_boundary =
+                            ii->block_boundary(current_block_id);
                     }
-                    current_block_id = b;
                 }
                 m_range.push_back(ii->block(current_block_id));
             }
