@@ -53,6 +53,14 @@ void benchmark(std::string const& index_filename, uint32_t k,
         std::cout << reported_strings << std::endl;
         breakdowns.add("musec_per_query",
                        std::to_string(musec_per_query(timer.elapsed())));
+
+        // for (auto const& query : queries) {
+        //     auto it = index.conjunctive_topk(query, k);
+        //     reported_strings += it.size();
+        // }
+        // breakdowns.add("avg_results_per_query",
+        //                std::to_string(static_cast<double>(reported_strings) /
+        //                               queries.size()));
     }
 }
 

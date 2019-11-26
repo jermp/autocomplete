@@ -320,9 +320,7 @@ private:
         uint32_t results = 0;
         for (; it.has_next() and !q.empty(); ++it) {
             auto doc_id = *it;
-
-            bool found = false;
-            while (!q.empty() and !found) {
+            while (!q.empty()) {
                 auto& z = q.top();
                 auto val = *z;
                 if (val > doc_id) break;
@@ -334,12 +332,12 @@ private:
                         q.heapify();
                     }
                 }
-                if (val == doc_id) found = true;
-            }
-
-            if (found) {
-                topk_scores[results++] = doc_id;
-                if (results == k) break;
+                if (val == doc_id) {  // NOTE: putting else here seems to slow
+                                      // down the code!
+                    topk_scores[results++] = doc_id;
+                    if (results == k) return results;
+                    break;
+                }
             }
         }
 

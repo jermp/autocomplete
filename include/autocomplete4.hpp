@@ -274,19 +274,75 @@ private:
         }
     }
 
+    typedef typename BlockedInvertedIndex::block_type block_t;
+
+    struct block_type_comparator {
+        bool operator()(block_t& l, block_t& r) {
+            return l.docs_iterator.operator*() > r.docs_iterator.operator*();
+        }
+    };
+
+    typedef min_heap<block_t, block_type_comparator> min_priority_queue_type;
+
     uint32_t conjunctive_topk(completion_type& prefix, const range suffix,
                               const uint32_t k) {
         auto& topk_scores = m_pool.scores();
         deduplicate(prefix);
-        auto it = m_inverted_index.intersection_iterator(prefix, suffix);
-        uint32_t results = 0;
-        for (; it.has_next(); ++it) {
-            auto doc_id = *it;
-            if (it.intersects()) {
-                topk_scores[results++] = doc_id;
-                if (results == k) break;
+
+        min_priority_queue_type q;
+        uint32_t current_block_id = m_inverted_index.block_id(suffix.begin);
+        uint32_t current_block_boundary =
+            m_inverted_index.block_boundary(current_block_id);
+        for (uint32_t i = suffix.begin; i != suffix.end; ++i) {
+            assert(i > 0);
+            if (i > current_block_boundary) {
+                q.push_back(m_inverted_index.block(current_block_id));
+                current_block_id += 1;
+                current_block_boundary =
+                    m_inverted_index.block_boundary(current_block_id);
             }
         }
+        q.push_back(m_inverted_index.block(current_block_id));
+        q.make_heap();
+
+        auto it = m_inverted_index.intersection_iterator(prefix, suffix);
+        uint32_t results = 0;
+        for (; it.has_next() and !q.empty(); ++it) {
+            auto doc_id = *it;
+
+            while (!q.empty()) {
+                auto& z = q.top();
+                auto val = z.docs_iterator.operator*();
+                if (val > doc_id) break;
+                if (val < doc_id) {
+                    val = z.docs_iterator.next_geq(doc_id);
+                    if (!z.docs_iterator.has_next()) {
+                        q.pop();
+                    } else {
+                        q.heapify();
+                    }
+                } else {
+                    if (val == doc_id) {
+                        uint64_t pos = z.docs_iterator.position();
+                        assert(z.docs_iterator.access(pos) == doc_id);
+                        uint64_t begin = z.offsets_iterator.access(pos);
+                        uint64_t end = z.offsets_iterator.access(pos + 1);
+                        assert(end > begin);
+                        for (uint64_t i = begin; i != end; ++i) {
+                            auto t = z.terms_iterator.access(i) + z.lower_bound;
+                            if (t > suffix.end) break;
+                            if (suffix.contains(t)) {
+                                topk_scores[results++] = doc_id;
+                                if (results == k) return results;
+                                break;
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+
         return results;
     }
 

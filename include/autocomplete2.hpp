@@ -209,19 +209,19 @@ struct autocomplete2 {
         suffix_lex_range.end += 1;
         range r = m_completions.locate_prefix(prefix, suffix_lex_range);
         if (r.is_invalid()) return m_pool.begin();
-        timers[1].stop();
+        // timers[1].stop();
 
         // step 2
-        timers[2].start();
+        // timers[2].start();
         uint32_t num_completions =
             m_unsorted_docs_list.topk(r, k, m_pool.scores());
-        timers[2].stop();
+        timers[1].stop();
 
         // step 3
-        timers[3].start();
+        timers[2].start();
         extract_completions(num_completions);
         auto it = extract_strings(num_completions);
-        timers[3].stop();
+        timers[2].stop();
 
         return it;
     }

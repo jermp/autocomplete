@@ -316,22 +316,6 @@ struct blocked_inverted_index {
                 m_candidate = 0;
             }
 
-            {
-                uint32_t current_block_id = ii->block_id(r.begin);
-                uint32_t current_block_boundary =
-                    ii->block_boundary(current_block_id);
-                for (uint32_t i = r.begin; i != r.end; ++i) {
-                    assert(i > 0);
-                    if (i > current_block_boundary) {
-                        m_range.push_back(ii->block(current_block_id));
-                        current_block_id += 1;
-                        current_block_boundary =
-                            ii->block_boundary(current_block_id);
-                    }
-                }
-                m_range.push_back(ii->block(current_block_id));
-            }
-
             next();
         }
 
@@ -354,25 +338,6 @@ struct blocked_inverted_index {
             }
             m_i = 0;
             next();
-        }
-
-        bool intersects() {
-            for (auto& b : m_range) {
-                uint64_t val = b.docs_iterator.next_geq(m_candidate);
-                if (val == m_candidate) {
-                    uint64_t pos = b.docs_iterator.position();
-                    assert(b.docs_iterator.access(pos) == m_candidate);
-                    uint64_t begin = b.offsets_iterator.access(pos);
-                    uint64_t end = b.offsets_iterator.access(pos + 1);
-                    assert(end > begin);
-                    for (uint64_t i = begin; i != end; ++i) {
-                        auto t = b.terms_iterator.access(i) + b.lower_bound;
-                        if (t > m_suffix.end) break;
-                        if (m_suffix.contains(t)) return true;
-                    }
-                }
-            }
-            return false;
         }
 
     private:
@@ -440,34 +405,6 @@ struct blocked_inverted_index {
         return intersection_iterator_type(this, term_ids, r);
     }
 
-    template <typename Visitor>
-    void visit(Visitor& visitor) {
-        visitor.visit(m_num_integers);
-        visitor.visit(m_num_docs);
-        visitor.visit(m_num_terms);
-        visitor.visit(m_blocks);
-        visitor.visit(m_pointers_to_lists);
-        visitor.visit(m_lists);
-        visitor.visit(m_pointers_to_offsets);
-        visitor.visit(m_offsets);
-        visitor.visit(m_pointers_to_terms);
-        visitor.visit(m_terms);
-    }
-
-private:
-    uint64_t m_num_integers;
-    uint64_t m_num_docs;
-    uint64_t m_num_terms;
-
-    std::vector<uint32_t> m_blocks;
-
-    ef::ef_sequence m_pointers_to_lists;
-    bit_vector m_lists;
-    ef::ef_sequence m_pointers_to_offsets;
-    bit_vector m_offsets;
-    ef::ef_sequence m_pointers_to_terms;
-    bit_vector m_terms;
-
     block_type block(uint32_t block_id) const {
         assert(block_id < num_blocks());
         block_type b;
@@ -496,6 +433,34 @@ private:
 
         return b;
     }
+
+    template <typename Visitor>
+    void visit(Visitor& visitor) {
+        visitor.visit(m_num_integers);
+        visitor.visit(m_num_docs);
+        visitor.visit(m_num_terms);
+        visitor.visit(m_blocks);
+        visitor.visit(m_pointers_to_lists);
+        visitor.visit(m_lists);
+        visitor.visit(m_pointers_to_offsets);
+        visitor.visit(m_offsets);
+        visitor.visit(m_pointers_to_terms);
+        visitor.visit(m_terms);
+    }
+
+private:
+    uint64_t m_num_integers;
+    uint64_t m_num_docs;
+    uint64_t m_num_terms;
+
+    std::vector<uint32_t> m_blocks;
+
+    ef::ef_sequence m_pointers_to_lists;
+    bit_vector m_lists;
+    ef::ef_sequence m_pointers_to_offsets;
+    bit_vector m_offsets;
+    ef::ef_sequence m_pointers_to_terms;
+    bit_vector m_terms;
 };
 
 }  // namespace autocomplete

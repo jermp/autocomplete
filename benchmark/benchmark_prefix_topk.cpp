@@ -34,12 +34,14 @@ void benchmark(std::string const& index_filename, uint32_t k,
         std::cout << reported_strings << std::endl;
         breakdowns.add("parsing_musec_per_query",
                        std::to_string(musec_per_query(timers[0].elapsed())));
-        breakdowns.add("completions_search_musec_per_query",
+        // breakdowns.add("completions_search_musec_per_query",
+        //                std::to_string(musec_per_query(timers[1].elapsed())));
+        // breakdowns.add("topk_rmq_musec_per_query",
+        //                std::to_string(musec_per_query(timers[2].elapsed())));
+        breakdowns.add("prefix_search_musec_per_query",
                        std::to_string(musec_per_query(timers[1].elapsed())));
-        breakdowns.add("topk_rmq_musec_per_query",
-                       std::to_string(musec_per_query(timers[2].elapsed())));
         breakdowns.add("reporting_musec_per_query",
-                       std::to_string(musec_per_query(timers[3].elapsed())));
+                       std::to_string(musec_per_query(timers[2].elapsed())));
     } else {
         essentials::timer_type timer;
         timer.start();
@@ -53,6 +55,14 @@ void benchmark(std::string const& index_filename, uint32_t k,
         std::cout << reported_strings << std::endl;
         breakdowns.add("musec_per_query",
                        std::to_string(musec_per_query(timer.elapsed())));
+
+        // for (auto const& query : queries) {
+        //     auto it = index.prefix_topk(query, k);
+        //     reported_strings += it.size();
+        // }
+        // breakdowns.add("avg_results_per_query",
+        //                std::to_string(static_cast<double>(reported_strings) /
+        //                               queries.size()));
     }
 }
 
