@@ -3,11 +3,11 @@ import sys, os
 index_type = sys.argv[1]
 query_mode = sys.argv[2] # topk, prefix_topk, conjunctive_topk
 index_filename = sys.argv[3]
-dataset_basename = sys.argv[4] # e.g., aol/aol.completions or aol/aol.completions.filtered
+collection_basename = sys.argv[4] # e.g., aol/aol.completions or aol/aol.completions.filtered
 k = sys.argv[5]
 num_queries = sys.argv[6]
 
-output_filename = dataset_basename + "." + index_type
+output_filename = collection_basename + "." + index_type
 
 breakdown = ""
 if len(sys.argv) > 7 and sys.argv[7] == "--breakdown":
@@ -15,7 +15,7 @@ if len(sys.argv) > 7 and sys.argv[7] == "--breakdown":
     output_filename += ".breakdown"
 
 output_filename += "." + query_mode + ".json"
-query_filename_prefix = dataset_basename + ".queries/queries."
+query_filename_prefix = collection_basename + ".queries/queries."
 
 percentages = ["0.0", "0.25", "0.50", "0.75"]
 for perc in percentages:

@@ -41,12 +41,10 @@ void perf_test(Dictionary const& dict,
         timer.stop();
     }
 
-    std::cout << "extract: " << (timer.average() * 1000.0) / ids.size()
-              << " [ns/string]" << std::endl;
+    std::cout << "extract: " << timer.average() / ids.size()
+              << " [musec/string]" << std::endl;
 
     static std::vector<float> percentages = {0.0, 0.25, 0.50, 0.75, 1.0};
-    // static std::vector<float> percentages = {0.1, 0.2, 0.3, 0.4, 0.5,
-    //                                          0.6, 0.7, 0.8, 0.9, 1.0};
     for (auto p : percentages) {
         timer.reset();
         for (uint32_t i = 0; i != runs; ++i) {
@@ -64,8 +62,8 @@ void perf_test(Dictionary const& dict,
         }
 
         std::cout << "\tlocate_prefix-" << p * 100.0
-                  << "%: " << (timer.average() * 1000.0) / queries.size()
-                  << " [ns/string]" << std::endl;
+                  << "%: " << timer.average() / queries.size()
+                  << " [musec/string]" << std::endl;
     }
 }
 
@@ -81,30 +79,29 @@ void perf_test(Dictionary const& dict,
     }
 
 int main(int argc, char** argv) {
-    int mandatory = 2 + 1;
-    if (argc < mandatory) {
-        std::cout << argv[0] << " <collection_basename> <num_queries> < queries"
-                  << std::endl;
-        return 1;
-    }
+    cmd_line_parser::parser parser(argc, argv);
+    parser.add("collection_basename", "Collection basename.");
+    parser.add("max_num_queries", "Maximum number of queries to execute.");
+    if (!parser.parse()) return 1;
 
     parameters params;
-    params.collection_basename = argv[1];
+    params.collection_basename = parser.get<std::string>("collection_basename");
     params.load();
 
-    uint32_t num_queries = std::atoi(argv[2]);
+    auto max_num_queries = parser.get<uint32_t>("max_num_queries");
 
     essentials::logger("loading queries...");
     std::vector<std::string> queries;
-    queries.reserve(num_queries);
+    queries.reserve(max_num_queries);
     std::string query;
     query.reserve(2 * constants::MAX_NUM_CHARS_PER_QUERY);
-    for (uint32_t i = 0; i != num_queries; ++i) {
+    for (uint32_t i = 0; i != max_num_queries; ++i) {
         if (!std::getline(std::cin, query)) break;
         queries.push_back(std::move(query));
     }
-    num_queries = queries.size();
-    essentials::logger("loaded " + std::to_string(num_queries) + " queries");
+    max_num_queries = queries.size();
+    essentials::logger("loaded " + std::to_string(max_num_queries) +
+                       " queries");
 
     exe(4) exe(8) exe(16) exe(32) exe(64) exe(128) exe(256) return 0;
 }
