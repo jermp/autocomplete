@@ -20,8 +20,8 @@ void perf_test(Dictionary const& dict,
         timer.stop();
     }
 
-    std::cout << "locate: " << (timer.average() * 1000.0) / queries.size()
-              << " [ns/string]" << std::endl;
+    std::cout << "locate: " << timer.average() / queries.size()
+              << " [musec/string]" << std::endl;
 
     std::vector<id_type> ids;
     ids.reserve(queries.size());

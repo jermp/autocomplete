@@ -169,6 +169,11 @@ From within the `/build` directory, run
 
 You can also specify the option `--breakdown` to record timings breakdowns.
 
+To benchmark the dictionaries (Front-Coding and trie), just run the following script from within
+the `script` directory:
+
+    bash benchmark_dictionaries.sh
+
 Live demo <a name="demo"></a>
 ----------
 
