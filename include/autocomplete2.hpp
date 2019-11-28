@@ -15,6 +15,8 @@ struct autocomplete2 {
     typedef scored_string_pool::iterator iterator_type;
 
     autocomplete2() {
+        // heap_size = 0;
+        // checked_docids = 0;
         m_pool.resize(constants::POOL_SIZE, constants::MAX_K);
         m_topk_completion_set.resize(constants::MAX_K,
                                      2 * constants::MAX_NUM_TERMS_PER_QUERY);
@@ -26,28 +28,12 @@ struct autocomplete2 {
         typename Dictionary::builder di_builder(params);
         typename InvertedIndex::builder ii_builder(params);
 
-        auto const& doc_ids = cm_builder.doc_ids();
-        m_unsorted_docs_list.build(doc_ids);
+        auto const& docid_to_lexid = cm_builder.docid_to_lexid();
+        m_docid_to_lexid.build(docid_to_lexid.begin(), docid_to_lexid.size(),
+                               util::ceil_log2(params.num_completions + 1));
+        m_unsorted_docs_list.build(
+            util::invert(docid_to_lexid, params.num_completions));
         m_unsorted_minimal_docs_list.build(ii_builder.minimal_doc_ids());
-
-        {
-            essentials::logger("building map from doc_id to lex_id...");
-            uint64_t n = doc_ids.size();
-            typedef std::vector<std::pair<id_type, id_type>> id_map_type;
-            id_map_type ids;
-            ids.reserve(n);
-            for (id_type lex_id = 0; lex_id != n; ++lex_id) {
-                ids.emplace_back(lex_id, doc_ids[lex_id]);
-            }
-            std::sort(ids.begin(), ids.end(), [](auto const& l, auto const& r) {
-                return l.second < r.second;
-            });
-            m_docid_to_lexid.build(
-                util::first_iterator<typename id_map_type::const_iterator>(
-                    ids.begin()),
-                ids.size());
-            essentials::logger("DONE");
-        }
 
         cm_builder.build(m_completions);
         di_builder.build(m_dictionary);
@@ -287,6 +273,9 @@ struct autocomplete2 {
         visitor.visit(m_docid_to_lexid);
     }
 
+    // uint64_t heap_size;
+    // uint64_t checked_docids;
+
 private:
     Completions m_completions;
     UnsortedDocsList m_unsorted_docs_list;
@@ -336,19 +325,17 @@ private:
 
         for (; it.has_next(); ++it) {
             auto doc_id = *it;
+            // ++checked_docids;
             auto lex_id = m_docid_to_lexid[doc_id];
             uint32_t size = m_completions.extract(lex_id, completions[i]);
-
-            bool found = false;
-            for (uint32_t j = 0; j != size and !found; ++j) {
-                if (r.contains(completions[i][j])) found = true;
-            }
-
-            if (found) {
-                topk_scores[i] = doc_id;
-                sizes[i] = size;
-                ++i;
-                if (i == k) break;
+            for (uint32_t j = 0; j != size; ++j) {
+                if (r.contains(completions[i][j])) {
+                    topk_scores[i] = doc_id;
+                    sizes[i] = size;
+                    ++i;
+                    if (i == k) return k;
+                    break;
+                }
             }
         }
 

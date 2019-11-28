@@ -14,7 +14,7 @@ TEST_CASE("test inverted_index::iterator") {
         inverted_index_type::builder builder(params);
         inverted_index_type index;
         builder.build(index);
-        REQUIRE(index.num_docs() == params.num_completions);
+        REQUIRE(index.num_docs() == params.universe);
         REQUIRE(index.num_terms() == params.num_terms);
         essentials::save<inverted_index_type>(index, output_filename);
     }
@@ -22,7 +22,7 @@ TEST_CASE("test inverted_index::iterator") {
     {
         inverted_index_type index;
         essentials::load(index, output_filename);
-        REQUIRE(index.num_docs() == params.num_completions);
+        REQUIRE(index.num_docs() == params.universe);
         REQUIRE(index.num_terms() == params.num_terms);
 
         std::ifstream input((params.collection_basename + ".inverted").c_str(),
@@ -58,7 +58,7 @@ TEST_CASE("test inverted_index::intersection_iterator") {
         inverted_index_type::builder builder(params);
         inverted_index_type index;
         builder.build(index);
-        REQUIRE(index.num_docs() == params.num_completions);
+        REQUIRE(index.num_docs() == params.universe);
         REQUIRE(index.num_terms() == params.num_terms);
         essentials::save<inverted_index_type>(index, output_filename);
     }
@@ -66,7 +66,7 @@ TEST_CASE("test inverted_index::intersection_iterator") {
     {
         inverted_index_type index;
         essentials::load(index, output_filename);
-        REQUIRE(index.num_docs() == params.num_completions);
+        REQUIRE(index.num_docs() == params.universe);
         REQUIRE(index.num_terms() == params.num_terms);
 
         static const uint32_t num_queries = 1000000;

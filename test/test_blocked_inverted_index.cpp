@@ -15,7 +15,7 @@ TEST_CASE("test blocked_inverted_index::intersection_iterator") {
     {
         inverted_index_type::builder ii_builder(params);
         ii_builder.build(ii);
-        REQUIRE(ii.num_docs() == params.num_completions);
+        REQUIRE(ii.num_docs() == params.universe);
         REQUIRE(ii.num_terms() == params.num_terms);
     }
 
@@ -37,7 +37,7 @@ TEST_CASE("test blocked_inverted_index::intersection_iterator") {
                 blocked_ii_builder.build(blocked_ii);
             }
 
-            REQUIRE(blocked_ii.num_docs() == params.num_completions);
+            REQUIRE(blocked_ii.num_docs() == params.universe);
             REQUIRE(blocked_ii.num_terms() == params.num_terms);
 
             for (auto& q : queries) {

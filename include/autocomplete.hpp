@@ -13,6 +13,9 @@ struct autocomplete {
     typedef scored_string_pool::iterator iterator_type;
 
     autocomplete() {
+        // heap_size = 0;
+        // checked_docids = 0;
+        // skipped_searches = 0;
         m_pool.resize(constants::POOL_SIZE, constants::MAX_K);
     }
 
@@ -218,7 +221,11 @@ struct autocomplete {
         // step 1
         timers[1].start();
         range suffix_lex_range = m_dictionary.locate_prefix(suffix);
-        if (suffix_lex_range.is_invalid()) return m_pool.begin();
+        if (suffix_lex_range.is_invalid()) {
+            // ++skipped_searches;
+            // std::cout << "'" << query << "'\n";
+            return m_pool.begin();
+        }
 
         timers[1].stop();
 
@@ -261,6 +268,10 @@ struct autocomplete {
         visitor.visit(m_forward_index);
     }
 
+    // uint64_t heap_size;
+    // uint64_t checked_docids;
+    // uint64_t skipped_searches;
+
 private:
     Completions m_completions;
     UnsortedDocsList m_unsorted_docs_list;
@@ -294,6 +305,7 @@ private:
         uint32_t results = 0;
         for (; it.has_next(); ++it) {
             auto doc_id = *it;
+            // ++checked_docids;
             if (m_forward_index.intersects(doc_id, r)) {
                 topk_scores[results++] = doc_id;
                 if (results == k) break;

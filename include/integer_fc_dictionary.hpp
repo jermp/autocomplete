@@ -19,7 +19,7 @@ struct integer_fc_dictionary {
             essentials::logger(
                 "building integer_fc_dictionary with bucket size " +
                 std::to_string(BucketSize) + "...");
-            m_doc_ids.reserve(params.num_completions);
+            m_docid_to_lexid.resize(params.universe, id_type(-1));
 
             uint32_t buckets = std::ceil(double(m_size) / (BucketSize + 1));
             m_pointers_to_buckets.reserve(buckets + 1);
@@ -35,9 +35,10 @@ struct integer_fc_dictionary {
                 std::ios_base::in);
             completion_iterator it(params, input);
 
+            id_type lex_id = 0;
             for (uint32_t b = 0; b != buckets; ++b) {
                 auto& header = *it;
-                m_doc_ids.push_back(header.doc_id);
+                m_docid_to_lexid[header.doc_id] = lex_id++;
                 write_header(header.completion);
                 m_pointers_to_headers.push_back(m_headers.size());
                 completion_type prev;
@@ -47,7 +48,7 @@ struct integer_fc_dictionary {
                 for (uint32_t i = 0; i != size; ++i, ++it) {
                     auto& record = *it;
                     auto& curr = record.completion;
-                    m_doc_ids.push_back(record.doc_id);
+                    m_docid_to_lexid[record.doc_id] = lex_id++;
                     uint32_t l = 0;  // |lcp(curr,prev)|
                     while (l != curr.size() and l != prev.size() and
                            curr[l] == prev[l]) {
@@ -76,7 +77,7 @@ struct integer_fc_dictionary {
             other.m_pointers_to_buckets.swap(m_pointers_to_buckets);
             other.m_headers.swap(m_headers);
             other.m_buckets.swap(m_buckets);
-            other.m_doc_ids.swap(m_doc_ids);
+            other.m_docid_to_lexid.swap(m_docid_to_lexid);
         }
 
         void build(integer_fc_dictionary<BucketSize, Pointers>& d) {
@@ -88,8 +89,8 @@ struct integer_fc_dictionary {
             builder().swap(*this);
         }
 
-        std::vector<id_type>& doc_ids() {
-            return m_doc_ids;
+        std::vector<id_type>& docid_to_lexid() {
+            return m_docid_to_lexid;
         }
 
     private:
@@ -98,7 +99,7 @@ struct integer_fc_dictionary {
         std::vector<uint64_t> m_pointers_to_buckets;
         std::vector<uint32_t> m_headers;
         std::vector<uint8_t> m_buckets;
-        std::vector<id_type> m_doc_ids;
+        std::vector<id_type> m_docid_to_lexid;
 
         void write_header(completion_type const& c) {
             assert(c.size() > 0 and

@@ -6,6 +6,11 @@ namespace autocomplete {
 
 static const uint32_t runs = 5;
 
+// void tolower(std::string& str) {
+//     std::transform(str.begin(), str.end(), str.begin(),
+//                    [](unsigned char c) { return std::tolower(c); });
+// }
+
 size_t load_queries(std::vector<std::string>& queries, uint32_t max_num_queries,
                     float percentage, std::istream& is = std::cin) {
     assert(percentage >= 0.0 and percentage <= 1.0);
@@ -20,6 +25,7 @@ size_t load_queries(std::vector<std::string>& queries, uint32_t max_num_queries,
         size_t end = size + std::ceil(last_token_size * percentage) + 1 +
                      1;  // retain at least one char
         for (size = query.size(); size > end; --size) query.pop_back();
+        // tolower(query);
         queries.push_back(query);
     }
     return queries.size();

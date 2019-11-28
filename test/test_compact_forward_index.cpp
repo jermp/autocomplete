@@ -12,7 +12,7 @@ TEST_CASE("test compact_forward_index::iterator") {
         compact_forward_index::builder builder(params);
         compact_forward_index index;
         builder.build(index);
-        REQUIRE(index.num_docs() == params.num_completions);
+        REQUIRE(index.num_docs() == params.universe);
         REQUIRE(index.num_terms() == params.num_terms);
         essentials::save<compact_forward_index>(index, output_filename);
     }
@@ -20,7 +20,7 @@ TEST_CASE("test compact_forward_index::iterator") {
     {
         compact_forward_index index;
         essentials::load(index, output_filename);
-        REQUIRE(index.num_docs() == params.num_completions);
+        REQUIRE(index.num_docs() == params.universe);
         REQUIRE(index.num_terms() == params.num_terms);
 
         std::ifstream input((params.collection_basename + ".forward").c_str(),

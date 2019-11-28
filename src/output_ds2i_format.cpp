@@ -27,7 +27,7 @@ int main(int argc, char** argv) {
 
     {  // write ds2i header
         uint32_t n = 1;
-        uint32_t universe = params.num_completions;
+        uint32_t universe = params.universe;
         docs.write(reinterpret_cast<const char*>(&n), sizeof(uint32_t));
         docs.write(reinterpret_cast<const char*>(&universe), sizeof(uint32_t));
     }

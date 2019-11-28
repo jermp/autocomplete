@@ -82,9 +82,9 @@ TEST_CASE("test locate_prefix()") {
                       << num_terms << std::endl;
             {
                 queries.clear();
-                std::string filename = params.collection_basename +
-                                       ".length=" + std::to_string(num_terms) +
-                                       ".shuffled";
+                std::string filename =
+                    params.collection_basename +
+                    ".queries/queries.length=" + std::to_string(num_terms);
                 std::ifstream querylog(filename.c_str());
                 if (!querylog.is_open()) {
                     std::cerr << "cannot open file '" << filename << "'"
@@ -95,7 +95,7 @@ TEST_CASE("test locate_prefix()") {
                 querylog.close();
             }
 
-            // test_locate_prefix(dict, ct_index, queries, strings);
+            test_locate_prefix(dict, ct_index, queries, strings);
             test_locate_prefix(dict, fc_index, queries, strings);
         }
     }

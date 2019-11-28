@@ -16,7 +16,7 @@ struct inverted_index {
 
         builder(parameters const& params)
             : m_num_integers(0)
-            , m_num_docs(params.num_completions) {
+            , m_num_docs(params.universe) {
             essentials::logger("building inverted_index...");
 
             uint64_t num_terms = params.num_terms;

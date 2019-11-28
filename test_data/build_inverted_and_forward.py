@@ -19,10 +19,11 @@ num_terms = 0
 num_docs = 0
 with open(input_filename + ".mapped.stats") as f:
     num_terms = int(f.readline())
-    print num_terms
-    f.readline() # skip line containing max num. of query terms
+    print("terms: " + str(num_terms))
+    f.readline() # skip line: max num. of query terms
+    f.readline() # skip line: num. of completions
     num_docs = int(f.readline())
-    print num_docs
+    print("universe: " + str(num_docs))
 
 inverted_index = [[] for i in range(num_terms + 1)] # id 0 is not assigned
 forward_index = [[] for i in range(num_docs)]

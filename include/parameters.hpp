@@ -24,10 +24,12 @@ struct parameters {
         input >> num_terms;
         input >> max_string_length;
         input >> num_completions;
+        input >> universe;
         input >> num_levels;
         assert(num_terms > 0);
         assert(max_string_length > 0);
         assert(num_completions > 0);
+        assert(universe >= num_completions);
         assert(num_levels > 0);
 
         if (max_string_length > constants::MAX_NUM_CHARS_PER_QUERY) {
@@ -52,6 +54,7 @@ struct parameters {
     uint32_t num_terms;
     uint32_t max_string_length;
     uint32_t num_completions;
+    uint32_t universe;
     uint32_t num_levels;
     std::vector<uint32_t> nodes_per_level;
     std::string collection_basename;

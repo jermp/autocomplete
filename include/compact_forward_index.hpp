@@ -14,20 +14,19 @@ struct compact_forward_index {
             : m_num_integers(0)
             , m_num_terms(params.num_terms) {
             essentials::logger("building forward_index...");
-            uint64_t num_completions = params.num_completions;
+            uint64_t universe = params.universe;
             std::ifstream input(
                 (params.collection_basename + ".forward").c_str(),
                 std::ios_base::in);
-
-            std::vector<uint32_t> terms;
-            terms.reserve(params.num_completions *
+            std::vector<id_type> terms;
+            terms.reserve(universe *
                           constants::MAX_NUM_TERMS_PER_QUERY);  // at most
             uint64_t size = 0;
             m_pointers.push_back(0);
-            for (uint64_t i = 0; i != num_completions; ++i) {
+            for (uint64_t i = 0; i != universe; ++i) {
                 uint32_t n = 0;
                 input >> n;
-                assert(n > 0 and n < constants::MAX_NUM_TERMS_PER_QUERY);
+                assert(n < constants::MAX_NUM_TERMS_PER_QUERY);
                 m_num_integers += n;
                 size += n;
                 for (uint64_t k = 0; k != n; ++k) {

@@ -73,7 +73,10 @@ struct compact_vector {
     };
 
     struct builder {
-        builder() {}
+        builder()
+            : m_back(0)
+            , m_cur_block(0)
+            , m_cur_shift(0) {}
 
         builder(uint64_t n, uint64_t w)
             : m_size(n)
@@ -95,6 +98,8 @@ struct compact_vector {
                 throw std::runtime_error("width must be > 0 and <= 64");
             }
             m_mask = -(w == 64) | ((uint64_t(1) << w) - 1);
+            std::cout << "using " << essentials::words_for(m_size * m_width)
+                      << " words" << std::endl;
             m_bits.resize(essentials::words_for(m_size * m_width), 0);
         }
 
@@ -110,7 +115,7 @@ struct compact_vector {
                 throw std::runtime_error("width must be greater than 0");
             }
 
-            for (uint64_t i = 0; i < n; ++i, ++begin) {
+            for (uint64_t i = 0; i != n; ++i, ++begin) {
                 push_back(*begin);
             }
         }
@@ -222,8 +227,13 @@ struct compact_vector {
     void build(Iterator begin, uint64_t n) {
         uint64_t max = *std::max_element(begin, begin + n);
         uint64_t width = util::ceil_log2(max + 1);
-        std::cout << "\tusing " << width << " [bpi]" << std::endl;
-        compact_vector::builder builder(begin, n, width);
+        build(begin, n, width);
+    }
+
+    template <typename Iterator>
+    void build(Iterator begin, uint64_t n, uint64_t w) {
+        std::cout << "\tusing " << w << " [bpi]" << std::endl;
+        compact_vector::builder builder(begin, n, w);
         builder.build(*this);
     }
 
@@ -314,4 +324,5 @@ private:
     uint64_t m_mask;
     std::vector<uint64_t> m_bits;
 };
+
 }  // namespace autocomplete

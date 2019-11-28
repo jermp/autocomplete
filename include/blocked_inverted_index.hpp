@@ -21,7 +21,7 @@ struct blocked_inverted_index {
 
         builder(parameters const& params, float c)
             : m_num_integers(0)
-            , m_num_docs(params.num_completions)
+            , m_num_docs(params.universe)
             , m_num_terms(params.num_terms) {
             if (!(c > 0.0 and c <= 1.0)) {
                 throw std::runtime_error("c must be in (0,1]");

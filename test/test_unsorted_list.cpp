@@ -62,15 +62,17 @@ TEST_CASE("test unsorted_list on doc_ids") {
         }
         input.close();
 
-        {
-            // must have all ids from 0 to doc_ids.size() - 1
-            std::vector<id_type> tmp = doc_ids;
-            std::sort(tmp.begin(), tmp.end());
-            for (id_type id = 0; id != doc_ids.size(); ++id) {
-                REQUIRE_MESSAGE(tmp[id] == id,
-                                "Error: id " << id << " not found");
-            }
-        }
+        // {
+        //     // must have all ids from 0 to doc_ids.size() - 1
+        //     // NOTE: not true if we filter out some strings to be used as
+        //     // queries
+        //     std::vector<id_type> tmp = doc_ids;
+        //     std::sort(tmp.begin(), tmp.end());
+        //     for (id_type id = 0; id != doc_ids.size(); ++id) {
+        //         REQUIRE_MESSAGE(tmp[id] == id,
+        //                         "Error: id " << id << " not found");
+        //     }
+        // }
 
         succinct_rmq list;
         list.build(doc_ids);
