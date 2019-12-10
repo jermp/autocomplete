@@ -83,7 +83,7 @@ in preparing the data for indexing.
 Thus, from within the directory `test_data`, it is sufficient
 to do:
 
-	bash preprocess.sh 300
+	bash preprocess.sh <test_collection> 300
 
 The second argument in the example, i.e., 300, represents the
 number of completions (per completion size) that are drawn at
