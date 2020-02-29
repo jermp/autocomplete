@@ -67,7 +67,15 @@ void benchmark(std::string const& index_filename, uint32_t k,
 
 int main(int argc, char** argv) {
     cmd_line_parser::parser parser(argc, argv);
-    configure_parser_for_benchmarking(parser);
+    parser.add("type", "Index type.");
+    parser.add("k", "top-k value.");
+    parser.add("index_filename", "Index filename.");
+    parser.add("num_terms_per_query", "Number of terms per query.");
+    parser.add("max_num_queries", "Maximum number of queries to execute.");
+    parser.add("percentage",
+               "A float in [0,1] specifying how much we keep of the last token "
+               "in a query: n x 100 <=> n%, for n in [0,1].");
+    parser.add("verbose", "Verbose output.", "--verbose");
     if (!parser.parse()) return 1;
 
     auto type = parser.get<std::string>("type");
