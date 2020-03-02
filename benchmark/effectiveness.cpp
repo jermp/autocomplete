@@ -21,6 +21,9 @@ void benchmark(std::string const& index_filename, uint32_t k,
 
     stats.add("num_queries", std::to_string(num_queries));
 
+    std::vector<uint64_t> difference;
+    difference.reserve(k);
+
     for (auto const& query : queries) {
         auto it1 = index1.prefix_topk(query, k);
         auto it2 = index2.conjunctive_topk(query, k);
@@ -28,30 +31,43 @@ void benchmark(std::string const& index_filename, uint32_t k,
 
         uint64_t more = 0;
         if (it2.size() >= it1.size()) {
-            more = it2.size() - it1.size();
-        }
+            auto const& prefix_search_scores = it1.pool()->const_scores();
+            auto const& conjunctive_search_scores = it2.pool()->const_scores();
+            assert(std::is_sorted(prefix_search_scores.begin(),
+                                  prefix_search_scores.begin() + it1.size()));
+            assert(
+                std::is_sorted(conjunctive_search_scores.begin(),
+                               conjunctive_search_scores.begin() + it2.size()));
 
-        if (verbose) {
-            {
-                auto it = it1;
-                std::cout << "prefix search scores: " << std::endl;
-                for (uint64_t i = 0; i != it.size(); ++i, ++it) {
-                    std::cout << (*it).score << " ";
+            if (verbose) {
+                {
+                    auto it = it1;
+                    std::cout << "prefix_search_scores: " << std::endl;
+                    for (uint64_t i = 0; i != it.size(); ++i, ++it) {
+                        std::cout << (*it).score << " ";
+                    }
+                    std::cout << std::endl;
                 }
-                std::cout << std::endl;
-            }
-            {
-                auto it = it2;
-                std::cout << "conjunctive search scores: " << std::endl;
-                for (uint64_t i = 0; i != it.size(); ++i, ++it) {
-                    std::cout << (*it).score << " ";
+                {
+                    auto it = it2;
+                    std::cout << "conjunctive_search_scores: " << std::endl;
+                    for (uint64_t i = 0; i != it.size(); ++i, ++it) {
+                        std::cout << (*it).score << " ";
+                    }
+                    std::cout << std::endl;
                 }
-                std::cout << std::endl;
             }
-            std::cout << "more: " << more << std::endl;
-        }
 
-        better_scored_strings_reported_by_conjunctive_search += more;
+            difference.clear();
+            auto it = std::set_difference(
+                conjunctive_search_scores.begin(),
+                conjunctive_search_scores.begin() + it2.size(),
+                prefix_search_scores.begin(),
+                prefix_search_scores.begin() + it1.size(), difference.begin());
+            more = std::distance(difference.begin(), it);
+            if (verbose) std::cout << "more: " << more << std::endl;
+            better_scored_strings_reported_by_conjunctive_search += more;
+        }
     }
 
     stats.add("strings_reported_by_prefix_search",

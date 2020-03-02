@@ -39,6 +39,10 @@ struct scored_string_pool {
         return m_scores;
     }
 
+    std::vector<id_type> const& const_scores() const {
+        return m_scores;
+    }
+
     scored_byte_range operator[](size_t i) const {
         assert(i < size());
         scored_byte_range sbr;
@@ -67,6 +71,10 @@ struct scored_string_pool {
 
         scored_byte_range operator*() {
             return m_pool->operator[](m_pos);
+        }
+
+        scored_string_pool const* pool() const {
+            return m_pool;
         }
 
     private:
