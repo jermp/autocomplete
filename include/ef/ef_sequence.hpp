@@ -152,23 +152,15 @@ struct ef_sequence {
         assert(r.is_valid());
         assert(r.end <= size());
         auto prev_upper = previous_range_upperbound(r);
-
-        uint64_t begin =
-            util::next_geq(*this, lex.begin + prev_upper, r.begin, r.end - 1);
-        if (begin == global::not_found) {
+        uint64_t id_begin = lex.begin + prev_upper;
+        uint64_t id_end = lex.end + prev_upper;
+        uint64_t begin = util::next_geq(*this, id_begin, r.begin, r.end - 1);
+        if (begin == global::not_found or access(begin) > id_end) {
             return {r.end, r.end};
         }
-
-        if (lex.begin == lex.end) {
-            return {begin, begin + 1};
-        }
-
-        uint64_t id_end = lex.end + prev_upper;
+        if (lex.begin == lex.end) return {begin, begin + 1};
         uint64_t end = util::next_geq(*this, id_end, begin, r.end - 1);
-        if (end == global::not_found) {
-            return {begin, r.end};
-        }
-
+        if (end == global::not_found) return {begin, r.end};
         return {begin, access(end) != id_end ? end : end + 1};
     }
 

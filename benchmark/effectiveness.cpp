@@ -30,44 +30,52 @@ void benchmark(std::string const& index_filename, uint32_t k,
         strings_reported_by_prefix_search += it1.size();
 
         uint64_t more = 0;
-        if (it2.size() >= it1.size()) {
-            auto const& prefix_search_scores = it1.pool()->const_scores();
-            auto const& conjunctive_search_scores = it2.pool()->const_scores();
-            assert(std::is_sorted(prefix_search_scores.begin(),
-                                  prefix_search_scores.begin() + it1.size()));
-            assert(
-                std::is_sorted(conjunctive_search_scores.begin(),
-                               conjunctive_search_scores.begin() + it2.size()));
+        assert(it2.size() >= it1.size());
 
-            if (verbose) {
-                {
-                    auto it = it1;
-                    std::cout << "prefix_search_scores: " << std::endl;
-                    for (uint64_t i = 0; i != it.size(); ++i, ++it) {
-                        std::cout << (*it).score << " ";
-                    }
-                    std::cout << std::endl;
-                }
-                {
-                    auto it = it2;
-                    std::cout << "conjunctive_search_scores: " << std::endl;
-                    for (uint64_t i = 0; i != it.size(); ++i, ++it) {
-                        std::cout << (*it).score << " ";
-                    }
-                    std::cout << std::endl;
+        auto const& prefix_search_scores = it1.pool()->const_scores();
+        auto const& conjunctive_search_scores = it2.pool()->const_scores();
+        assert(std::is_sorted(prefix_search_scores.begin(),
+                              prefix_search_scores.begin() + it1.size()));
+        assert(std::is_sorted(conjunctive_search_scores.begin(),
+                              conjunctive_search_scores.begin() + it2.size()));
+
+        if (verbose) {
+            std::cout << "query: '" << query << "'" << std::endl;
+            {
+                auto it = it1;
+                std::cout << "prefix_search results: " << it.size()
+                          << std::endl;
+                for (uint64_t i = 0; i != it.size(); ++i, ++it) {
+                    auto completion = *it;
+                    std::cout << completion.score << ": "
+                              << std::string(completion.string.begin,
+                                             completion.string.end)
+                              << std::endl;
                 }
             }
-
-            difference.clear();
-            auto it = std::set_difference(
-                conjunctive_search_scores.begin(),
-                conjunctive_search_scores.begin() + it2.size(),
-                prefix_search_scores.begin(),
-                prefix_search_scores.begin() + it1.size(), difference.begin());
-            more = std::distance(difference.begin(), it);
-            if (verbose) std::cout << "more: " << more << std::endl;
-            better_scored_strings_reported_by_conjunctive_search += more;
+            {
+                auto it = it2;
+                std::cout << "conjunctive_search results: " << it.size()
+                          << std::endl;
+                for (uint64_t i = 0; i != it.size(); ++i, ++it) {
+                    auto completion = *it;
+                    std::cout << completion.score << ": "
+                              << std::string(completion.string.begin,
+                                             completion.string.end)
+                              << std::endl;
+                }
+            }
         }
+
+        difference.clear();
+        auto it = std::set_difference(
+            conjunctive_search_scores.begin(),
+            conjunctive_search_scores.begin() + it2.size(),
+            prefix_search_scores.begin(),
+            prefix_search_scores.begin() + it1.size(), difference.begin());
+        more = std::distance(difference.begin(), it);
+        if (verbose) std::cout << "more: " << more << std::endl;
+        better_scored_strings_reported_by_conjunctive_search += more;
     }
 
     stats.add("strings_reported_by_prefix_search",

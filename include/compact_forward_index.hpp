@@ -32,6 +32,7 @@ struct compact_forward_index {
                 for (uint64_t k = 0; k != n; ++k) {
                     id_type x;
                     input >> x;
+                    assert(x > 0);
                     terms.push_back(x);
                 }
                 m_pointers.push_back(size);
@@ -89,6 +90,7 @@ struct compact_forward_index {
         bool intersects(const range r) const {
             for (uint64_t i = 0; i != size(); ++i) {
                 auto val = m_cv[m_base + i];
+                assert(val > 0);
                 if (r.contains(val)) return true;
             }
             return false;

@@ -47,7 +47,9 @@ struct autocomplete4 {
         init();
         completion_type prefix;
         byte_range suffix;
-        parse(m_dictionary, query, prefix, suffix);
+        if (parse(m_dictionary, query, prefix, suffix, true) == 0) {
+            return m_pool.begin();
+        }
 
         range suffix_lex_range = m_dictionary.locate_prefix(suffix);
         if (suffix_lex_range.is_invalid()) return m_pool.begin();
@@ -73,6 +75,8 @@ struct autocomplete4 {
         range suffix_lex_range = m_dictionary.locate_prefix(suffix);
         if (suffix_lex_range.is_invalid()) return m_pool.begin();
 
+        suffix_lex_range.begin += 1;
+        suffix_lex_range.end += 1;
         uint32_t num_completions =
             conjunctive_topk(prefix, suffix_lex_range, k);
         extract_completions(num_completions);

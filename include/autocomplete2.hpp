@@ -45,7 +45,9 @@ struct autocomplete2 {
         init();
         completion_type prefix;
         byte_range suffix;
-        parse(m_dictionary, query, prefix, suffix);
+        if (parse(m_dictionary, query, prefix, suffix, true) == 0) {
+            return m_pool.begin();
+        }
 
         range suffix_lex_range = m_dictionary.locate_prefix(suffix);
         if (suffix_lex_range.is_invalid()) return m_pool.begin();
@@ -82,6 +84,8 @@ struct autocomplete2 {
             );
             extract_completions(num_completions);
         } else {
+            suffix_lex_range.begin += 1;
+            suffix_lex_range.end += 1;
             num_completions = conjunctive_topk(prefix, suffix_lex_range, k);
         }
 

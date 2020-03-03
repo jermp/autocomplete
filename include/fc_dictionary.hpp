@@ -115,6 +115,7 @@ struct fc_dictionary {
     fc_dictionary() {}
 
     // NOTE: return inclusive ranges, i.e., [a,b]
+    // 0-based ids
     range locate_prefix(byte_range p) const {
         if (p.end - p.begin == 0) return {0, size() - 1};
         auto bucket_id = locate_buckets(p);

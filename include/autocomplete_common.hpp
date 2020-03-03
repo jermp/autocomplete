@@ -6,7 +6,8 @@ namespace autocomplete {
 
 template <typename Dictionary>
 uint32_t parse(Dictionary const& dict, std::string const& query,
-               completion_type& prefix, byte_range& suffix) {
+               completion_type& prefix, byte_range& suffix,
+               bool must_find_prefix = false) {
     uint32_t num_terms = 1;  // for suffix
     byte_range_iterator it(string_to_byte_range(query));
     while (true) {
@@ -16,6 +17,8 @@ uint32_t parse(Dictionary const& dict, std::string const& query,
         if (term_id != global::invalid_term_id) {
             prefix.push_back(term_id);
             ++num_terms;
+        } else {
+            if (must_find_prefix) return 0;
         }
     }
     return num_terms;
