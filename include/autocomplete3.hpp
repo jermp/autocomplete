@@ -5,7 +5,6 @@
 #include "compact_vector.hpp"
 #include "autocomplete_common.hpp"
 #include "scored_string_pool.hpp"
-#include "min_heap.hpp"
 #include "constants.hpp"
 
 namespace autocomplete {
@@ -25,8 +24,6 @@ struct autocomplete3 {
         min_priority_queue_type;
 
     autocomplete3() {
-        // heap_size = 0;
-        // checked_docids = 0;
         m_pool.resize(constants::POOL_SIZE, constants::MAX_K);
         m_topk_completion_set.resize(constants::MAX_K,
                                      2 * constants::MAX_NUM_TERMS_PER_QUERY);
@@ -37,202 +34,109 @@ struct autocomplete3 {
         typename Completions::builder cm_builder(params);
         typename Dictionary::builder di_builder(params);
         typename InvertedIndex::builder ii_builder(params);
-
         auto const& docid_to_lexid = cm_builder.docid_to_lexid();
         m_docid_to_lexid.build(docid_to_lexid.begin(), docid_to_lexid.size(),
                                util::ceil_log2(params.num_completions + 1));
         m_unsorted_docs_list.build(
             util::invert(docid_to_lexid, params.num_completions));
-
         cm_builder.build(m_completions);
         di_builder.build(m_dictionary);
         ii_builder.build(m_inverted_index);
     }
 
-    iterator_type prefix_topk(std::string const& query, const uint32_t k) {
+    template <typename Probe>
+    iterator_type prefix_topk(std::string const& query, const uint32_t k,
+                              Probe& probe) {
         assert(k <= constants::MAX_K);
+
+        probe.start(0);
         init();
         completion_type prefix;
         byte_range suffix;
-        if (parse(m_dictionary, query, prefix, suffix, true) == 0) {
+        constexpr bool must_find_prefix = true;
+        if (!parse(m_dictionary, query, prefix, suffix, must_find_prefix)) {
             return m_pool.begin();
         }
+        probe.stop(0);
 
+        probe.start(1);
         range suffix_lex_range = m_dictionary.locate_prefix(suffix);
         if (suffix_lex_range.is_invalid()) return m_pool.begin();
-
         suffix_lex_range.begin += 1;
         suffix_lex_range.end += 1;
         range r = m_completions.locate_prefix(prefix, suffix_lex_range);
         if (r.is_invalid()) return m_pool.begin();
-
         uint32_t num_completions =
             m_unsorted_docs_list.topk(r, k, m_pool.scores());
-        extract_completions(num_completions);
-        return extract_strings(num_completions);
-    }
+        probe.stop(1);
 
-    iterator_type conjunctive_topk(std::string const& query, const uint32_t k) {
-        assert(k <= constants::MAX_K);
-        init();
-        completion_type prefix;
-        byte_range suffix;
-        uint32_t num_terms = parse(m_dictionary, query, prefix, suffix);
-        assert(num_terms > 0);
-
-        uint32_t num_completions = 0;
-        range suffix_lex_range = m_dictionary.locate_prefix(suffix);
-        if (suffix_lex_range.is_invalid()) return m_pool.begin();
-
-        suffix_lex_range.begin += 1;
-        suffix_lex_range.end += 1;
-        num_completions =
-            conjunctive_topk(num_terms, prefix, suffix_lex_range, k);
-        extract_completions(num_completions);
-        return extract_strings(num_completions);
-    }
-
-    iterator_type topk(std::string const& query, const uint32_t k) {
-        assert(k <= constants::MAX_K);
-        init();
-        completion_type prefix;
-        byte_range suffix;
-        uint32_t num_terms = parse(m_dictionary, query, prefix, suffix);
-        assert(num_terms > 0);
-
-        range suffix_lex_range = m_dictionary.locate_prefix(suffix);
-        if (suffix_lex_range.is_invalid()) return m_pool.begin();
-
-        suffix_lex_range.begin += 1;
-        suffix_lex_range.end += 1;
-        range r = m_completions.locate_prefix(prefix, suffix_lex_range);
-
-        uint32_t num_completions = 0;
-        if (r.is_valid()) {
-            num_completions = m_unsorted_docs_list.topk(r, k, m_pool.scores());
-        }
-
-        if (num_completions < k) {
-            num_completions =
-                conjunctive_topk(num_terms, prefix, suffix_lex_range, k);
-        }
-
-        extract_completions(num_completions);
-        return extract_strings(num_completions);
-    }
-
-    iterator_type topk(std::string const& query, const uint32_t k,
-                       std::vector<timer_type>& timers) {
-        assert(k <= constants::MAX_K);
-
-        timers[0].start();
-        init();
-        completion_type prefix;
-        byte_range suffix;
-        uint32_t num_terms = parse(m_dictionary, query, prefix, suffix);
-        assert(num_terms > 0);
-        timers[0].stop();
-
-        timers[1].start();
-        range suffix_lex_range = m_dictionary.locate_prefix(suffix);
-        if (suffix_lex_range.is_invalid()) return m_pool.begin();
-        suffix_lex_range.begin += 1;
-        suffix_lex_range.end += 1;
-        range r = m_completions.locate_prefix(prefix, suffix_lex_range);
-        uint32_t num_completions = 0;
-        if (r.is_valid()) {
-            num_completions = m_unsorted_docs_list.topk(r, k, m_pool.scores());
-        }
-        timers[1].stop();
-
-        timers[2].start();
-        if (num_completions < k) {
-            num_completions =
-                conjunctive_topk(num_terms, prefix, suffix_lex_range, k);
-        }
-        timers[2].stop();
-
-        timers[3].start();
+        probe.start(2);
         extract_completions(num_completions);
         auto it = extract_strings(num_completions);
-        timers[3].stop();
+        probe.stop(2);
 
         return it;
     }
 
-    // for benchmarking
-    iterator_type prefix_topk(std::string const& query, uint32_t const k,
-                              std::vector<timer_type>& timers) {
-        // step 0
-        timers[0].start();
+    template <typename Probe>
+    iterator_type conjunctive_topk(std::string const& query, const uint32_t k,
+                                   Probe& probe) {
         assert(k <= constants::MAX_K);
+
+        probe.start(0);
         init();
         completion_type prefix;
-        byte_range suffix{0, 0};
-        parse(m_dictionary, query, prefix, suffix);
-        timers[0].stop();
+        byte_range suffix;
+        constexpr bool must_find_prefix = false;
+        parse(m_dictionary, query, prefix, suffix, must_find_prefix);
+        probe.stop(0);
 
-        // step 1
-        timers[1].start();
+        probe.start(1);
+        uint32_t num_completions = 0;
         range suffix_lex_range = m_dictionary.locate_prefix(suffix);
         if (suffix_lex_range.is_invalid()) return m_pool.begin();
-
         suffix_lex_range.begin += 1;
         suffix_lex_range.end += 1;
-        range r = m_completions.locate_prefix(prefix, suffix_lex_range);
-        if (r.is_invalid()) return m_pool.begin();
-        timers[1].stop();
+        num_completions = conjunctive_topk(prefix, suffix_lex_range, k);
+        probe.stop(1);
 
-        // step 2
-        timers[2].start();
-        uint32_t num_completions =
-            m_unsorted_docs_list.topk(r, k, m_pool.scores());
-        timers[2].stop();
-
-        // step 3
-        timers[3].start();
+        probe.start(2);
         extract_completions(num_completions);
         auto it = extract_strings(num_completions);
-        timers[3].stop();
+        probe.stop(2);
 
         return it;
     }
 
-    // for benchmarking
-    iterator_type conjunctive_topk(std::string const& query, uint32_t const k,
-                                   std::vector<timer_type>& timers) {
-        // step 0
-        timers[0].start();
-        assert(k <= constants::MAX_K);
-        init();
-        completion_type prefix;
-        byte_range suffix{0, 0};
-        uint32_t num_terms = parse(m_dictionary, query, prefix, suffix);
-        assert(num_terms > 0);
-        timers[0].stop();
+    // iterator_type topk(std::string const& query, const uint32_t k) {
+    //     assert(k <= constants::MAX_K);
+    //     init();
+    //     completion_type prefix;
+    //     byte_range suffix;
+    //     uint32_t num_terms = parse(m_dictionary, query, prefix, suffix);
+    //     assert(num_terms > 0);
 
-        uint32_t num_completions = 0;
+    //     range suffix_lex_range = m_dictionary.locate_prefix(suffix);
+    //     if (suffix_lex_range.is_invalid()) return m_pool.begin();
 
-        // step 1
-        timers[1].start();
-        range suffix_lex_range = m_dictionary.locate_prefix(suffix);
-        if (suffix_lex_range.is_invalid()) return m_pool.begin();
-        timers[1].stop();
+    //     suffix_lex_range.begin += 1;
+    //     suffix_lex_range.end += 1;
+    //     range r = m_completions.locate_prefix(prefix, suffix_lex_range);
 
-        // step 2
-        timers[2].start();
-        num_completions =
-            conjunctive_topk(num_terms, prefix, suffix_lex_range, k);
-        timers[2].stop();
+    //     uint32_t num_completions = 0;
+    //     if (r.is_valid()) {
+    //         num_completions = m_unsorted_docs_list.topk(r, k,
+    //         m_pool.scores());
+    //     }
 
-        // step 3
-        timers[3].start();
-        extract_completions(num_completions);
-        auto it = extract_strings(num_completions);
-        timers[3].stop();
+    //     if (num_completions < k) {
+    //         num_completions =
+    //             conjunctive_topk(num_terms, prefix, suffix_lex_range, k);
+    //     }
 
-        return it;
-    }
+    //     extract_completions(num_completions);
+    //     return extract_strings(num_completions);
+    // }
 
     size_t bytes() const {
         return m_completions.bytes() + m_unsorted_docs_list.bytes() +
@@ -250,9 +154,6 @@ struct autocomplete3 {
         visitor.visit(m_inverted_index);
         visitor.visit(m_docid_to_lexid);
     }
-
-    // uint64_t heap_size;
-    // uint64_t checked_docids;
 
 private:
     Completions m_completions;
@@ -282,11 +183,11 @@ private:
         }
     }
 
-    uint32_t conjunctive_topk(uint32_t num_terms, completion_type& prefix,
+    uint32_t conjunctive_topk(completion_type& prefix,
                               const range suffix_lex_range, const uint32_t k) {
-        if (num_terms == 1) {  // we've got nothing to intersect
-            iterator it(0, m_inverted_index.num_docs());
-            return conjunctive_topk(it, suffix_lex_range, k);
+        if (prefix.size() == 0) {  // we've got nothing to intersect
+            return heap_topk(m_inverted_index, suffix_lex_range, k,
+                             m_pool.scores());
         }
         deduplicate(prefix);
         if (prefix.size() == 1) {  // we've got nothing to intersect
@@ -310,13 +211,9 @@ private:
         }
         q.make_heap();
 
-        // heap_size += q.size();
-
         uint32_t results = 0;
         for (; it.has_next() and !q.empty(); ++it) {
             auto doc_id = *it;
-            // ++checked_docids;
-
             while (!q.empty()) {
                 auto& z = q.top();
                 auto val = *z;

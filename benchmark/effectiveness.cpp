@@ -23,10 +23,11 @@ void benchmark(std::string const& index_filename, uint32_t k,
 
     std::vector<uint64_t> difference;
     difference.reserve(k);
+    nop_probe probe;
 
     for (auto const& query : queries) {
-        auto it1 = index1.prefix_topk(query, k);
-        auto it2 = index2.conjunctive_topk(query, k);
+        auto it1 = index1.prefix_topk(query, k, probe);
+        auto it2 = index2.conjunctive_topk(query, k, probe);
         strings_reported_by_prefix_search += it1.size();
 
         uint64_t more = 0;

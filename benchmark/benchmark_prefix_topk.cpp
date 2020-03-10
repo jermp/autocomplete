@@ -18,36 +18,33 @@ void benchmark(std::string const& index_filename, uint32_t k,
 
     uint64_t reported_strings = 0;
     auto musec_per_query = [&](double time) {
-        return time / (runs * num_queries);
+        return time / (benchmarking::runs * num_queries);
     };
 
     breakdowns.add("num_queries", std::to_string(num_queries));
 
     if (breakdown) {
-        std::vector<timer_type> timers(4);
-        for (uint32_t run = 0; run != runs; ++run) {
+        timer_probe probe(3);
+        for (uint32_t run = 0; run != benchmarking::runs; ++run) {
             for (auto const& query : queries) {
-                auto it = index.prefix_topk(query, k, timers);
+                auto it = index.prefix_topk(query, k, probe);
                 reported_strings += it.size();
             }
         }
-        std::cout << reported_strings << std::endl;
+        std::cout << "#ignore: " << reported_strings << std::endl;
         breakdowns.add("parsing_musec_per_query",
-                       std::to_string(musec_per_query(timers[0].elapsed())));
-        // breakdowns.add("completions_search_musec_per_query",
-        //                std::to_string(musec_per_query(timers[1].elapsed())));
-        // breakdowns.add("topk_rmq_musec_per_query",
-        //                std::to_string(musec_per_query(timers[2].elapsed())));
+                       std::to_string(musec_per_query(probe.get(0).elapsed())));
         breakdowns.add("prefix_search_musec_per_query",
-                       std::to_string(musec_per_query(timers[1].elapsed())));
+                       std::to_string(musec_per_query(probe.get(1).elapsed())));
         breakdowns.add("reporting_musec_per_query",
-                       std::to_string(musec_per_query(timers[2].elapsed())));
+                       std::to_string(musec_per_query(probe.get(2).elapsed())));
     } else {
         essentials::timer_type timer;
+        nop_probe probe;
         timer.start();
-        for (uint32_t run = 0; run != runs; ++run) {
+        for (uint32_t run = 0; run != benchmarking::runs; ++run) {
             for (auto const& query : queries) {
-                auto it = index.prefix_topk(query, k);
+                auto it = index.prefix_topk(query, k, probe);
                 reported_strings += it.size();
             }
         }
@@ -55,14 +52,6 @@ void benchmark(std::string const& index_filename, uint32_t k,
         std::cout << reported_strings << std::endl;
         breakdowns.add("musec_per_query",
                        std::to_string(musec_per_query(timer.elapsed())));
-
-        // for (auto const& query : queries) {
-        //     auto it = index.prefix_topk(query, k);
-        //     reported_strings += it.size();
-        // }
-        // breakdowns.add("avg_results_per_query",
-        //                std::to_string(static_cast<double>(reported_strings) /
-        //                               queries.size()));
     }
 }
 

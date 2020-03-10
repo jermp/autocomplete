@@ -12,7 +12,7 @@ void test_locate_prefix(Dictionary const& dict, Index const& index,
         range expected = testing::locate_prefix(strings, query);
         completion_type prefix;
         byte_range suffix;
-        parse(dict, query, prefix, suffix);
+        parse(dict, query, prefix, suffix, true);
 
         range suffix_lex_range = dict.locate_prefix(suffix);
         suffix_lex_range.begin += 1;

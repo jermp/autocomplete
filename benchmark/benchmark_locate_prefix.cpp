@@ -31,15 +31,16 @@ void benchmark(parameters const& params, std::vector<query_type>& queries,
 
     essentials::timer_type timer;
     timer.start();
-    for (uint32_t run = 0; run != runs; ++run) {
+    for (uint32_t run = 0; run != benchmarking::runs; ++run) {
         for (auto& query : queries) {
             auto r = index.locate_prefix(query.first, query.second);
             essentials::do_not_optimize_away(r.end - r.begin);
         }
     }
     timer.stop();
-    result.add("musec_per_query",
-               std::to_string(timer.elapsed() / (runs * num_queries)));
+    result.add(
+        "musec_per_query",
+        std::to_string(timer.elapsed() / (benchmarking::runs * num_queries)));
     result.print();
 }
 
@@ -78,7 +79,7 @@ int main(int argc, char** argv) {
         for (auto const& string : strings) {
             completion_type prefix;
             byte_range suffix;
-            parse(dict, string, prefix, suffix);
+            parse(dict, string, prefix, suffix, true);
             range suffix_lex_range = dict.locate_prefix(suffix);
             queries.emplace_back(prefix, suffix_lex_range);
         }

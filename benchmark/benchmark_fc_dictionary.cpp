@@ -11,7 +11,7 @@ void perf_test(Dictionary const& dict,
     static std::vector<uint8_t> decoded(2 * constants::MAX_NUM_CHARS_PER_QUERY);
     essentials::timer_type timer;
 
-    for (uint32_t i = 0; i != runs; ++i) {
+    for (uint32_t i = 0; i != benchmarking::runs; ++i) {
         timer.start();
         for (auto const& query : queries) {
             id_type id = dict.locate(string_to_byte_range(query));
@@ -32,7 +32,7 @@ void perf_test(Dictionary const& dict,
 
     timer.reset();
 
-    for (uint32_t i = 0; i != runs; ++i) {
+    for (uint32_t i = 0; i != benchmarking::runs; ++i) {
         timer.start();
         for (auto const& id : ids) {
             uint8_t string_len = dict.extract(id, decoded.data());
@@ -47,7 +47,7 @@ void perf_test(Dictionary const& dict,
     static std::vector<float> percentages = {0.0, 0.25, 0.50, 0.75, 1.0};
     for (auto p : percentages) {
         timer.reset();
-        for (uint32_t i = 0; i != runs; ++i) {
+        for (uint32_t i = 0; i != benchmarking::runs; ++i) {
             timer.start();
             for (auto const& query : queries) {
                 size_t size = query.size();

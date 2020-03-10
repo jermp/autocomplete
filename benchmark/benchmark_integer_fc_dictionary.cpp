@@ -11,7 +11,7 @@ void perf_test(Dictionary const& dict, std::vector<id_type> const& queries) {
     static completion_type decoded(2 * constants::MAX_NUM_CHARS_PER_QUERY);
     essentials::timer_type timer;
 
-    for (uint32_t i = 0; i != runs; ++i) {
+    for (uint32_t i = 0; i != benchmarking::runs; ++i) {
         timer.start();
         for (auto const& id : queries) {
             uint8_t string_len = dict.extract(id, decoded);

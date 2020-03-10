@@ -6,6 +6,7 @@
 #include <iostream>
 
 #include "types.hpp"
+#include "probe.hpp"
 #include "../benchmark/benchmark_common.hpp"
 
 namespace autocomplete {

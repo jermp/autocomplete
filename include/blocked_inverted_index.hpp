@@ -273,48 +273,44 @@ struct blocked_inverted_index {
             , m_num_docs(ii->num_docs())
             , m_suffix(r) {
             assert(r.is_valid());
+            assert(!term_ids.empty());
+            assert(std::is_sorted(term_ids.begin(), term_ids.end()));
+            assert(std::unique(term_ids.begin(), term_ids.end()) ==
+                   term_ids.end());
 
-            if (!term_ids.empty()) {
-                assert(std::is_sorted(term_ids.begin(), term_ids.end()));
-                assert(std::unique(term_ids.begin(), term_ids.end()) ==
-                       term_ids.end());
-
-                m_blocks.reserve(term_ids.size());  // at most
-                uint32_t current_block_id = ii->block_id(term_ids.front());
-                uint32_t i = 0;
-                uint32_t prev_i = 0;
-                for (; i != term_ids.size(); ++i) {
-                    auto term_id = term_ids[i];
-                    assert(term_id > 0);
-                    uint32_t b = ii->block_id(term_id);
-                    if (b > current_block_id) {
-                        auto block = ii->block(current_block_id);
-                        block.term_ids.reserve(term_ids.size());  // at most
-                        for (; prev_i != i; ++prev_i) {
-                            block.term_ids.push_back(term_ids[prev_i]);
-                        }
-                        m_blocks.push_back(std::move(block));
+            m_blocks.reserve(term_ids.size());  // at most
+            uint32_t current_block_id = ii->block_id(term_ids.front());
+            uint32_t i = 0;
+            uint32_t prev_i = 0;
+            for (; i != term_ids.size(); ++i) {
+                auto term_id = term_ids[i];
+                assert(term_id > 0);
+                uint32_t b = ii->block_id(term_id);
+                if (b > current_block_id) {
+                    auto block = ii->block(current_block_id);
+                    block.term_ids.reserve(term_ids.size());  // at most
+                    for (; prev_i != i; ++prev_i) {
+                        block.term_ids.push_back(term_ids[prev_i]);
                     }
-                    current_block_id = b;
+                    m_blocks.push_back(std::move(block));
                 }
-
-                auto block = ii->block(current_block_id);
-                block.term_ids.reserve(term_ids.size());  // at most
-                for (; prev_i != i; ++prev_i) {
-                    block.term_ids.push_back(term_ids[prev_i]);
-                }
-                m_blocks.push_back(std::move(block));
-
-                std::sort(m_blocks.begin(), m_blocks.end(),
-                          [](auto const& l, auto const& r) {
-                              return l.docs_iterator.size() <
-                                     r.docs_iterator.size();
-                          });
-
-                m_candidate = m_blocks[0].docs_iterator.access(0);
-            } else {
-                m_candidate = 0;
+                current_block_id = b;
             }
+
+            auto block = ii->block(current_block_id);
+            block.term_ids.reserve(term_ids.size());  // at most
+            for (; prev_i != i; ++prev_i) {
+                block.term_ids.push_back(term_ids[prev_i]);
+            }
+            m_blocks.push_back(std::move(block));
+
+            std::sort(m_blocks.begin(), m_blocks.end(),
+                      [](auto const& l, auto const& r) {
+                          return l.docs_iterator.size() <
+                                 r.docs_iterator.size();
+                      });
+
+            m_candidate = m_blocks[0].docs_iterator.access(0);
 
             next();
         }
@@ -329,12 +325,8 @@ struct blocked_inverted_index {
 
         void operator++() {
             assert(m_i == m_blocks.size());
-            if (!m_blocks.empty()) {
-                if (m_blocks.size() > 1) {
-                    m_candidate = m_blocks[0].docs_iterator.next();
-                }
-            } else {
-                m_candidate += 1;
+            if (m_blocks.size() > 1) {
+                m_candidate = m_blocks[0].docs_iterator.next();
             }
             m_i = 0;
             next();
@@ -375,7 +367,6 @@ struct blocked_inverted_index {
         }
 
         void next() {
-            if (m_blocks.empty()) return;
             if (m_blocks.size() == 1) {
                 while (m_candidate < m_num_docs and m_i != m_blocks.size()) {
                     assert(m_i == 0);

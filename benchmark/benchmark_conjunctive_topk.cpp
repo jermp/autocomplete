@@ -16,64 +16,42 @@ void benchmark(std::string const& index_filename, uint32_t k,
     uint32_t num_queries =
         load_queries(queries, max_num_queries, keep, std::cin);
 
-    uint32_t R = runs;  // runs
-
     uint64_t reported_strings = 0;
     auto musec_per_query = [&](double time) {
-        return time / (R * num_queries);
+        return time / (benchmarking::runs * num_queries);
     };
 
     breakdowns.add("num_queries", std::to_string(num_queries));
 
     if (breakdown) {
-        std::vector<timer_type> timers(4);
-        for (uint32_t run = 0; run != R; ++run) {
+        timer_probe probe(3);
+        for (uint32_t run = 0; run != benchmarking::runs; ++run) {
             for (auto const& query : queries) {
-                auto it = index.conjunctive_topk(query, k, timers);
+                auto it = index.conjunctive_topk(query, k, probe);
                 reported_strings += it.size();
             }
         }
-        std::cout << reported_strings << std::endl;
-
-        // breakdowns.add("checked_docids",
-        // std::to_string(index.checked_docids)); breakdowns.add("heap_size",
-        // std::to_string(index.heap_size));
-
-        // auto perc_skipped_searches =
-        //     (static_cast<double>(index.skipped_searches) * 100.0) /
-        //     queries.size();
-        // breakdowns.add("skipped_searches",
-        //                std::to_string(perc_skipped_searches));
-
+        std::cout << "#ignore: " << reported_strings << std::endl;
         breakdowns.add("parsing_musec_per_query",
-                       std::to_string(musec_per_query(timers[0].elapsed())));
-        breakdowns.add("dictionary_search_musec_per_query",
-                       std::to_string(musec_per_query(timers[1].elapsed())));
+                       std::to_string(musec_per_query(probe.get(0).elapsed())));
         breakdowns.add("conjunctive_search_musec_per_query",
-                       std::to_string(musec_per_query(timers[2].elapsed())));
+                       std::to_string(musec_per_query(probe.get(1).elapsed())));
         breakdowns.add("reporting_musec_per_query",
-                       std::to_string(musec_per_query(timers[3].elapsed())));
+                       std::to_string(musec_per_query(probe.get(2).elapsed())));
     } else {
         essentials::timer_type timer;
+        nop_probe probe;
         timer.start();
-        for (uint32_t run = 0; run != runs; ++run) {
+        for (uint32_t run = 0; run != benchmarking::runs; ++run) {
             for (auto const& query : queries) {
-                auto it = index.conjunctive_topk(query, k);
+                auto it = index.conjunctive_topk(query, k, probe);
                 reported_strings += it.size();
             }
         }
         timer.stop();
-        std::cout << reported_strings << std::endl;
+        std::cout << "#ignore: " << reported_strings << std::endl;
         breakdowns.add("musec_per_query",
                        std::to_string(musec_per_query(timer.elapsed())));
-
-        // for (auto const& query : queries) {
-        //     auto it = index.conjunctive_topk(query, k);
-        //     reported_strings += it.size();
-        // }
-        // breakdowns.add("avg_results_per_query",
-        //                std::to_string(static_cast<double>(reported_strings) /
-        //                               queries.size()));
     }
 }
 

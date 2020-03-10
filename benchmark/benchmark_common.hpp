@@ -1,10 +1,13 @@
 #pragma once
 
 #include "../external/cmd_line_parser/include/parser.hpp"
+#include "probe.hpp"
 
 namespace autocomplete {
 
-static const uint32_t runs = 5;
+namespace benchmarking {
+static const uint32_t runs = 1;
+}
 
 // void tolower(std::string& str) {
 //     std::transform(str.begin(), str.end(), str.begin(),

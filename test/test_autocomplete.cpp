@@ -36,8 +36,9 @@ TEST_CASE("test autocomplete topk functions") {
                 "florir",   "fly",         "the starting l",
                 "floridaaa"};
 
+            nop_probe probe;
             for (auto& query : queries) {
-                auto it = index.prefix_topk(query, k);
+                auto it = index.prefix_topk(query, k, probe);
                 std::cout << "top-" << it.size() << " completions for '"
                           << query << "':\n";
                 for (uint32_t i = 0; i != it.size(); ++i, ++it) {
@@ -61,8 +62,9 @@ TEST_CASE("test autocomplete topk functions") {
                 "fo",       "f",        "matt",          "fl",
                 "flor",     "fly",      "the starting l"};
 
+            nop_probe probe;
             for (auto& query : queries) {
-                auto it = index.conjunctive_topk(query, k);
+                auto it = index.conjunctive_topk(query, k, probe);
                 std::cout << "top-" << it.size() << " completions for '"
                           << query << "':\n";
                 for (uint32_t i = 0; i != it.size(); ++i, ++it) {
