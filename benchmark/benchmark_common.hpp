@@ -6,7 +6,7 @@
 namespace autocomplete {
 
 namespace benchmarking {
-static const uint32_t runs = 1;
+static const uint32_t runs = 5;
 }
 
 // void tolower(std::string& str) {

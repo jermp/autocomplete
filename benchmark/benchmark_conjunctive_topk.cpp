@@ -32,6 +32,8 @@ void benchmark(std::string const& index_filename, uint32_t k,
             }
         }
         std::cout << "#ignore: " << reported_strings << std::endl;
+        breakdowns.add("reported_strings",
+                       std::to_string(reported_strings / benchmarking::runs));
         breakdowns.add("parsing_musec_per_query",
                        std::to_string(musec_per_query(probe.get(0).elapsed())));
         breakdowns.add("conjunctive_search_musec_per_query",
@@ -50,6 +52,8 @@ void benchmark(std::string const& index_filename, uint32_t k,
         }
         timer.stop();
         std::cout << "#ignore: " << reported_strings << std::endl;
+        breakdowns.add("reported_strings",
+                       std::to_string(reported_strings / benchmarking::runs));
         breakdowns.add("musec_per_query",
                        std::to_string(musec_per_query(timer.elapsed())));
     }
