@@ -6,12 +6,12 @@ queries_directory = sys.argv[2]
 
 to_filter = Set({})
 print("loading strings to filter...")
-for i in range(1,8):
+for i in range(1,7):
     with open(queries_directory + "/queries.length=" + str(i)) as f:
         for line in f:
             s = line.rstrip('\n')
             to_filter.add(s)
-with open(queries_directory + "/queries.length=8+") as f:
+with open(queries_directory + "/queries.length=7+") as f:
     for line in f:
         s = line.rstrip('\n')
         to_filter.add(s)

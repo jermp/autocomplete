@@ -7,7 +7,7 @@ n = int(sys.argv[3])
 if not os.path.exists(output_directory):
     os.makedirs(output_directory)
 
-num_shards = 7
+num_shards = 6
 files = [open(output_directory + "/queries.length=" + str(i), "w") for i in range(1,num_shards + 1)]
 all_others = open(output_directory + "/queries.length=" + str(num_shards + 1) + "+", "w")
 

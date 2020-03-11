@@ -3,7 +3,7 @@
 echo $1 # input filename
 
 # number of completions to exclude per completion size,
-# e.g., if it is 100, then at most 8 x 100 completions are filtered out
+# e.g., if it is 100, then at most 7 x 100 completions are filtered out
 echo $2
 
 python partition_queries_by_length.py $1 $1.filtered.queries $2
