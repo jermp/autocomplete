@@ -156,8 +156,8 @@ to partition the input completions by number of query terms
 and retain 300 queries at random.
 Query files are placed in the output directory
 `trec_05_efficiency_queries/trec_05_efficiency_queries.completions.queries`.
-(By default, 8 shards will be created: the ones having [1,7] query terms and
-the one collecting all completions with >= 8 query terms).
+(By default, 7 shards will be created: the ones having [1,6] query terms and
+the one collecting all completions with *at least* 7 query terms).
 
 Then the command
 
@@ -170,8 +170,6 @@ We automated the collection of results with the script `script/collected_topk_re
 From within the `/build` directory, run
 
 	python ../script/collect_results_by_varying_percentage.py ef_type1 topk trec05.ef_type1.bin ../test_data/trec_05_efficiency_queries/trec_05_efficiency_queries.completions 10 300
-
-You can also specify the option `--breakdown` to record timings breakdowns.
 
 To benchmark the dictionaries (Front-Coding and trie), just run the following script from within
 the `script` directory:
