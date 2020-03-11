@@ -83,7 +83,11 @@ in preparing the data for indexing.
 Thus, from within the directory `test_data`, it is sufficient
 to do:
 
-	bash preprocess.sh <test_collection> 300
+	bash preprocess.sh <test_collection> <num_queries>
+
+Therefore, for our example with `trec_05_efficiency_queries`, it would be:
+
+	bash preprocess.sh trec_05_efficiency_queries/trec_05_efficiency_queries.completions 300
 
 The second argument in the example, i.e., 300, represents the
 number of completions (per completion size) that are drawn at

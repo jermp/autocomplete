@@ -8,17 +8,11 @@ k = sys.argv[5]
 num_queries = sys.argv[6]
 
 output_filename = collection_basename + "." + index_type
-
-breakdown = ""
-if len(sys.argv) > 7 and sys.argv[7] == "--breakdown":
-    breakdown = "--breakdown"
-    output_filename += ".breakdown"
-
 output_filename += "." + query_mode + ".json"
 query_filename_prefix = collection_basename + ".queries/queries."
 
 percentages = ["0.0", "0.25", "0.50", "0.75"]
 for perc in percentages:
     for terms in range(1,8):
-        os.system("../build/benchmark_" + query_mode + " " + index_type + " " + k + " ../build/" + index_filename + " " + str(terms) + " " + str(num_queries) + " " + perc + " " + breakdown + " < " + query_filename_prefix + "length=" + str(terms) + " 2>> " + output_filename)
-    os.system("../build/benchmark_" + query_mode + " " + index_type + " " + k + " ../build/" + index_filename + " 8+ " + str(num_queries) + " " + perc + " " + breakdown + " < " + query_filename_prefix + "length=8+ 2>> " + output_filename)
+        os.system("../build/benchmark_" + query_mode + " " + index_type + " " + k + " ../build/" + index_filename + " " + str(terms) + " " + str(num_queries) + " " + perc + " < " + query_filename_prefix + "length=" + str(terms) + " 2>> " + output_filename)
+    os.system("../build/benchmark_" + query_mode + " " + index_type + " " + k + " ../build/" + index_filename + " 8+ " + str(num_queries) + " " + perc + " < " + query_filename_prefix + "length=8+ 2>> " + output_filename)
