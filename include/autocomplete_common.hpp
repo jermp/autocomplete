@@ -2,8 +2,13 @@
 
 #include "util_types.hpp"
 #include "min_heap.hpp"
+#include "unsorted_list.hpp"
+#include "minimal_docids.hpp"
+#include "succinct_rmq/cartesian_tree.hpp"
 
 namespace autocomplete {
+
+typedef unsorted_list<cartesian_tree> unsorted_list_type;
 
 template <typename Dictionary>
 bool parse(Dictionary const& dict, std::string const& query,
@@ -50,8 +55,12 @@ uint32_t heap_topk(InvertedIndex const& index, const range r, const uint32_t k,
     while (!q.empty()) {
         auto& z = q.top();
         auto doc_id = *z;
-        topk_scores[results++] = doc_id;
-        if (results == k) return results;
+        bool alread_present = std::binary_search(
+            topk_scores.begin(), topk_scores.begin() + results, doc_id);
+        if (!alread_present) {
+            topk_scores[results++] = doc_id;
+            if (results == k) return results;
+        }
         z.next();
         if (!z.has_next()) q.pop();
         q.heapify();

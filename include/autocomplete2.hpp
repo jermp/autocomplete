@@ -9,8 +9,7 @@
 
 namespace autocomplete {
 
-template <typename Completions, typename UnsortedDocsList, typename Dictionary,
-          typename InvertedIndex>
+template <typename Completions, typename Dictionary, typename InvertedIndex>
 struct autocomplete2 {
     typedef scored_string_pool::iterator iterator_type;
 
@@ -89,15 +88,8 @@ struct autocomplete2 {
         uint32_t num_completions = 0;
         if (prefix.size() == 0) {
             suffix_lex_range.end += 1;
-            constexpr bool must_return_unique_results = true;
             num_completions = m_unsorted_minimal_docs_list.topk(
-                suffix_lex_range, k, m_pool.scores(),
-                must_return_unique_results);
-            if (num_completions < k) {
-                suffix_lex_range.begin += 1;
-                num_completions = heap_topk(m_inverted_index, suffix_lex_range,
-                                            k, m_pool.scores());
-            }
+                m_inverted_index, suffix_lex_range, k, m_pool.scores());
             extract_completions(num_completions);
         } else {
             suffix_lex_range.begin += 1;
@@ -173,8 +165,9 @@ struct autocomplete2 {
 
 private:
     Completions m_completions;
-    UnsortedDocsList m_unsorted_docs_list;
-    UnsortedDocsList m_unsorted_minimal_docs_list;
+    unsorted_list_type m_unsorted_docs_list;
+    typedef minimal_docids<cartesian_tree, InvertedIndex> minimal_docids_type;
+    minimal_docids_type m_unsorted_minimal_docs_list;
     Dictionary m_dictionary;
     InvertedIndex m_inverted_index;
     compact_vector m_docid_to_lexid;

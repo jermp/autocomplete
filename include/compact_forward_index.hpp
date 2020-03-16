@@ -104,6 +104,7 @@ struct compact_forward_index {
     };
 
     forward_list_iterator_type iterator(id_type doc_id) {
+        assert(doc_id < num_docs());
         uint64_t pos = m_pointers.access(doc_id);
         uint64_t n = m_pointers.access(doc_id + 1) - pos;
         return {m_data, pos, n};

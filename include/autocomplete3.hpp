@@ -15,8 +15,7 @@ one iterator for each termID in the lexicographic range of the
 last token of the query.
 */
 
-template <typename Completions, typename UnsortedDocsList, typename Dictionary,
-          typename InvertedIndex>
+template <typename Completions, typename Dictionary, typename InvertedIndex>
 struct autocomplete3 {
     typedef scored_string_pool::iterator iterator_type;
     typedef min_heap<typename InvertedIndex::iterator_type,
@@ -157,7 +156,7 @@ struct autocomplete3 {
 
 private:
     Completions m_completions;
-    UnsortedDocsList m_unsorted_docs_list;
+    unsorted_list_type m_unsorted_docs_list;
     Dictionary m_dictionary;
     InvertedIndex m_inverted_index;
     compact_vector m_docid_to_lexid;

@@ -74,14 +74,14 @@ TEST_CASE("test unsorted_list on doc_ids") {
         //     }
         // }
 
-        succinct_rmq list;
+        unsorted_list_type list;
         list.build(doc_ids);
         REQUIRE(list.size() == doc_ids.size());
-        essentials::save<succinct_rmq>(list, output_filename);
+        essentials::save<unsorted_list_type>(list, output_filename);
     }
 
     {
-        succinct_rmq list;
+        unsorted_list_type list;
         essentials::load(list, output_filename);
 
         std::vector<id_type> topk(constants::MAX_K);
@@ -137,14 +137,14 @@ TEST_CASE("test unsorted_list on minimal doc_ids") {
         input.close();
         REQUIRE(doc_ids.size() == params.num_terms);
 
-        succinct_rmq list;
+        unsorted_list_type list;
         list.build(doc_ids);
         REQUIRE(list.size() == doc_ids.size());
-        essentials::save<succinct_rmq>(list, output_filename);
+        essentials::save<unsorted_list_type>(list, output_filename);
     }
 
     {
-        succinct_rmq list;
+        unsorted_list_type list;
         essentials::load(list, output_filename);
 
         std::vector<id_type> topk(constants::MAX_K);

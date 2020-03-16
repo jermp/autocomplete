@@ -62,6 +62,55 @@ struct scored_range {
     range r;
     uint32_t min_pos;
     id_type min_val;
+
+    static bool greater(scored_range const& l, scored_range const& r) {
+        return l.min_val > r.min_val;
+    }
+};
+
+template <typename Iterator>
+struct scored_range_with_list_iterator {
+    typedef Iterator iterator_type;
+
+    scored_range_with_list_iterator()
+        : min_pos(global::invalid_term_id)
+        , m_open(false) {}
+
+    range r;
+    uint32_t min_pos;
+    id_type min_val;
+    Iterator iterator;
+
+    bool is_open() const {
+        return m_open;
+    }
+
+    template <typename InvertedIndex>
+    void set_iterator(InvertedIndex const& index) {
+        assert(min_pos != global::invalid_term_id);
+        m_open = true;
+        iterator = index.iterator(min_pos);
+    }
+
+    id_type minimum() const {
+        return is_open() ? *iterator : min_val;
+    }
+
+    // static bool greater(scored_range_with_list_iterator const& l,
+    //                     scored_range_with_list_iterator const& r) {
+    //     return l.minimum() > r.minimum();
+    // }
+
+private:
+    bool m_open;
+};
+
+template <typename Iterator>
+struct scored_range_with_list_iterator_comparator {
+    bool operator()(scored_range_with_list_iterator<Iterator> const& l,
+                    scored_range_with_list_iterator<Iterator> const& r) {
+        return l.minimum() > r.minimum();
+    }
 };
 
 struct byte_range {

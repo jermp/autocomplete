@@ -7,8 +7,8 @@
 
 namespace autocomplete {
 
-template <typename Completions, typename UnsortedDocsList, typename Dictionary,
-          typename InvertedIndex, typename ForwardIndex>
+template <typename Completions, typename Dictionary, typename InvertedIndex,
+          typename ForwardIndex>
 struct autocomplete {
     typedef scored_string_pool::iterator iterator_type;
 
@@ -22,8 +22,10 @@ struct autocomplete {
         typename Dictionary::builder di_builder(params);
         typename InvertedIndex::builder ii_builder(params);
         typename ForwardIndex::builder fi_builder(params);
+
         m_unsorted_docs_list.build(cm_builder.doc_ids());
         m_unsorted_minimal_docs_list.build(ii_builder.minimal_doc_ids());
+
         cm_builder.build(m_completions);
         di_builder.build(m_dictionary);
         ii_builder.build(m_inverted_index);
@@ -82,15 +84,8 @@ struct autocomplete {
         uint32_t num_completions = 0;
         if (prefix.size() == 0) {
             suffix_lex_range.end += 1;
-            constexpr bool must_return_unique_results = true;
             num_completions = m_unsorted_minimal_docs_list.topk(
-                suffix_lex_range, k, m_pool.scores(),
-                must_return_unique_results);
-            if (num_completions < k) {
-                suffix_lex_range.begin += 1;
-                num_completions = heap_topk(m_inverted_index, suffix_lex_range,
-                                            k, m_pool.scores());
-            }
+                m_inverted_index, suffix_lex_range, k, m_pool.scores());
         } else {
             suffix_lex_range.begin += 1;
             suffix_lex_range.end += 1;
@@ -162,8 +157,9 @@ struct autocomplete {
 
 private:
     Completions m_completions;
-    UnsortedDocsList m_unsorted_docs_list;
-    UnsortedDocsList m_unsorted_minimal_docs_list;
+    unsorted_list_type m_unsorted_docs_list;
+    typedef minimal_docids<cartesian_tree, InvertedIndex> minimal_docids_type;
+    minimal_docids_type m_unsorted_minimal_docs_list;
     Dictionary m_dictionary;
     InvertedIndex m_inverted_index;
     ForwardIndex m_forward_index;

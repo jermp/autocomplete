@@ -40,9 +40,9 @@ void completion_trie<Nodes, Pointers, LeftExtremes, Sizes>::print_stats()
     print_bps("sizes", sizes_bytes(), size());
 }
 
-template <typename Completions, typename UnsortedDocsList, typename Dictionary,
-          typename InvertedIndex, typename ForwardIndex>
-void autocomplete<Completions, UnsortedDocsList, Dictionary, InvertedIndex,
+template <typename Completions, typename Dictionary, typename InvertedIndex,
+          typename ForwardIndex>
+void autocomplete<Completions, Dictionary, InvertedIndex,
                   ForwardIndex>::print_stats() const {
     size_t total_bytes = bytes();
     std::cout << "using " << essentials::convert(total_bytes, essentials::MiB)
@@ -86,10 +86,9 @@ void autocomplete<Completions, UnsortedDocsList, Dictionary, InvertedIndex,
               m_forward_index.num_integers());
 }
 
-template <typename Completions, typename UnsortedDocsList, typename Dictionary,
-          typename InvertedIndex>
-void autocomplete2<Completions, UnsortedDocsList, Dictionary,
-                   InvertedIndex>::print_stats() const {
+template <typename Completions, typename Dictionary, typename InvertedIndex>
+void autocomplete2<Completions, Dictionary, InvertedIndex>::print_stats()
+    const {
     size_t total_bytes = bytes();
     std::cout << "using " << essentials::convert(total_bytes, essentials::MiB)
               << " [MiB]: "
@@ -122,10 +121,9 @@ void autocomplete2<Completions, UnsortedDocsList, Dictionary,
           m_completions.size());
 }
 
-template <typename Completions, typename UnsortedDocsList, typename Dictionary,
-          typename InvertedIndex>
-void autocomplete3<Completions, UnsortedDocsList, Dictionary,
-                   InvertedIndex>::print_stats() const {
+template <typename Completions, typename Dictionary, typename InvertedIndex>
+void autocomplete3<Completions, Dictionary, InvertedIndex>::print_stats()
+    const {
     size_t total_bytes = bytes();
     std::cout << "using " << essentials::convert(total_bytes, essentials::MiB)
               << " [MiB]: "
@@ -148,10 +146,10 @@ void autocomplete3<Completions, UnsortedDocsList, Dictionary,
           m_completions.size());
 }
 
-template <typename Completions, typename UnsortedDocsList, typename Dictionary,
+template <typename Completions, typename Dictionary,
           typename BlockedInvertedIndex>
-void autocomplete4<Completions, UnsortedDocsList, Dictionary,
-                   BlockedInvertedIndex>::print_stats() const {
+void autocomplete4<Completions, Dictionary, BlockedInvertedIndex>::print_stats()
+    const {
     size_t total_bytes = bytes();
     std::cout << "using " << essentials::convert(total_bytes, essentials::MiB)
               << " [MiB]: "

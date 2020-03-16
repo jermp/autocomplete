@@ -11,7 +11,7 @@ namespace autocomplete {
 
 /* Bast and Weber approach. */
 
-template <typename Completions, typename UnsortedDocsList, typename Dictionary,
+template <typename Completions, typename Dictionary,
           typename BlockedInvertedIndex>
 struct autocomplete4 {
     typedef scored_string_pool::iterator iterator_type;
@@ -148,7 +148,7 @@ struct autocomplete4 {
 
 private:
     Completions m_completions;
-    UnsortedDocsList m_unsorted_docs_list;
+    unsorted_list_type m_unsorted_docs_list;
     Dictionary m_dictionary;
     BlockedInvertedIndex m_inverted_index;
     compact_vector m_docid_to_lexid;

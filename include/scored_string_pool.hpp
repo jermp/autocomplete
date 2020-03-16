@@ -4,6 +4,11 @@
 
 namespace autocomplete {
 
+struct scored_byte_range {
+    byte_range string;
+    id_type score;
+};
+
 struct scored_string_pool {
     void init() {
         push_back_offset(0);

@@ -1,47 +1,9 @@
 #pragma once
 
 #include "compact_vector.hpp"
+#include "util_types.hpp"
 
 namespace autocomplete {
-
-struct scored_byte_range {
-    byte_range string;
-    id_type score;
-};
-
-typedef std::function<bool(scored_range const&, scored_range const&)>
-    scored_range_comparator_type;
-scored_range_comparator_type scored_range_comparator =
-    [](scored_range const& l, scored_range const& r) {
-        return l.min_val > r.min_val;
-    };
-
-struct topk_queue {
-    void push(scored_range sr) {
-        m_q.push_back(sr);
-        std::push_heap(m_q.begin(), m_q.end(), scored_range_comparator);
-    }
-
-    scored_range top() {
-        return m_q.front();
-    }
-
-    void pop() {
-        std::pop_heap(m_q.begin(), m_q.end(), scored_range_comparator);
-        m_q.pop_back();
-    }
-
-    void clear() {
-        m_q.clear();
-    }
-
-    bool empty() const {
-        return m_q.empty();
-    }
-
-private:
-    std::vector<scored_range> m_q;
-};
 
 template <typename RMQ>
 struct unsorted_list {
@@ -132,6 +94,40 @@ struct unsorted_list {
     }
 
 private:
+    struct topk_queue {
+        void push(scored_range sr) {
+            m_q.push_back(sr);
+            std::push_heap(m_q.begin(), m_q.end(), m_comparator);
+        }
+
+        scored_range top() {
+            return m_q.front();
+        }
+
+        void pop() {
+            std::pop_heap(m_q.begin(), m_q.end(), m_comparator);
+            m_q.pop_back();
+        }
+
+        void clear() {
+            m_q.clear();
+        }
+
+        bool empty() const {
+            return m_q.empty();
+        }
+
+    private:
+        std::vector<scored_range> m_q;
+
+        typedef std::function<bool(scored_range const&, scored_range const&)>
+            scrored_range_comparator_type;
+        scrored_range_comparator_type m_comparator = [](scored_range const& l,
+                                                        scored_range const& r) {
+            return scored_range::greater(l, r);
+        };
+    };
+
     topk_queue m_q;
     RMQ m_rmq;
     compact_vector m_list;
