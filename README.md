@@ -1,7 +1,7 @@
 Autocomplete
 ------------
 
-A Query Auto-Completion system based on the paper [Efficient and Effective Query Auto-Completion](http://pages.di.unipi.it/pibiri/papers/SIGIR20.pdf), by Simon Gog, Giulio Ermanno Pibiri, and Rossano Venturini,
+A Query Auto-Completion system based on the paper *[Efficient and Effective Query Auto-Completion](http://pages.di.unipi.it/pibiri/papers/SIGIR20.pdf)*, by Simon Gog, Giulio Ermanno Pibiri, and Rossano Venturini,
 published in ACM SIGIR 2020.
 
 ##### Table of contents
