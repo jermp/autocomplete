@@ -32,11 +32,13 @@ jobs:
         working-directory: ./build
         run: cmake --build . --config Release
 
-      - name: Data preprocessing
+      - name: Setup python
         uses: actions/setup-python@v2
-        with:
-          python-version: 2.x
-          architecture: x64
+          with:
+            python-version: 2.x
+            architecture: x64
+
+      - name: Data preprocessing
         working-directory: ./test_data
         run: bash preprocess.sh trec_05_efficiency_queries/trec_05_efficiency_queries.completions 300
 
