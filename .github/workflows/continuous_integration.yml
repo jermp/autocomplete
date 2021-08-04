@@ -34,9 +34,9 @@ jobs:
 
       - name: Setup python
         uses: actions/setup-python@v2
-          with:
-            python-version: 2.x
-            architecture: x64
+        with:
+          python-version: '2.x'
+          architecture: 'x64'
 
       - name: Data preprocessing
         working-directory: ./test_data
