@@ -33,6 +33,71 @@ struct autocomplete {
     }
 
     template <typename Probe>
+    iterator_type hybrid_topk(std::string const& query, const uint32_t k,
+                              Probe& probe) {
+        assert(k <= constants::MAX_K);
+
+        probe.start(0);
+        init();
+        completion_type prefix;
+        byte_range suffix;
+        constexpr bool must_find_prefix = true;
+        if (!parse(m_dictionary, query, prefix, suffix, must_find_prefix)) {
+            return m_pool.begin();
+        }
+        probe.stop(0);
+
+        probe.start(1);
+        range suffix_lex_range = m_dictionary.locate_prefix(suffix);
+        if (suffix_lex_range.is_invalid()) return m_pool.begin();
+        suffix_lex_range.begin += 1;
+        suffix_lex_range.end += 1;
+        range r = m_completions.locate_prefix(prefix, suffix_lex_range);
+        if (r.is_invalid()) return m_pool.begin();
+        uint32_t num_completions_for_prefix =
+                m_unsorted_docs_list.topk(r, k, m_pool.scores());
+        std::vector<id_type> pool_scores_prefix_topk;
+        for (size_t i = 0; i < m_pool.scores().size(); ++i) {
+            pool_scores_prefix_topk.push_back(m_pool.scores()[i]);
+        }
+        probe.stop(1);
+
+
+        probe.start(3);
+        uint32_t num_completions_for_conjunctive_topk = 0;
+
+        if (prefix.size() == 0) {
+            num_completions_for_conjunctive_topk = m_unsorted_minimal_docs_list.topk(
+                    m_inverted_index, suffix_lex_range, k, m_pool.scores());
+        } else {
+            num_completions_for_conjunctive_topk = conjunctive_topk(prefix, suffix_lex_range, k);
+        }
+        std::vector<id_type> pool_scores_conjunctive_topk;
+        for (size_t i = 0; i < m_pool.scores().size(); ++i) {
+            pool_scores_conjunctive_topk.push_back(m_pool.scores()[i]);
+        }
+        probe.stop(3);
+
+
+        uint32_t num_completions = num_completions_for_prefix + num_completions_for_conjunctive_topk;
+        m_pool.scores().clear();
+
+        for (int i = 0; i < int(pool_scores_prefix_topk.size()); ++i) {
+            m_pool.scores().push_back(pool_scores_prefix_topk[i]);
+        }
+        for (int i = 0; i < int(pool_scores_conjunctive_topk.size()); ++i) {
+            m_pool.scores().push_back(pool_scores_conjunctive_topk[i]);
+        }
+
+
+        probe.start(2);
+        auto it = extract_strings(num_completions);
+        probe.stop(2);
+
+        return it;
+    }
+
+    template <typename Probe>
     iterator_type prefix_topk(std::string const& query, const uint32_t k,
                               Probe& probe) {
         assert(k <= constants::MAX_K);

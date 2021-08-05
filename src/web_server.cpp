@@ -57,7 +57,8 @@ static void ev_handler(struct mg_connection* nc, int ev, void* p) {
             nop_probe probe;
             // auto it = topk_index.topk(query, k probe);
             // auto it = topk_index.prefix_topk(query, k, probe);
-            auto it = topk_index.conjunctive_topk(query, k, probe);
+//            auto it = topk_index.conjunctive_topk(query, k, probe);
+            auto it = topk_index.hybrid_topk(query, k, probe);
             if (it.empty()) {
                 data = "{\"suggestions\":[\"value\":\"\",\"data\":\"\"]}\n";
             } else {
