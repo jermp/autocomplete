@@ -45,3 +45,12 @@ jobs:
       - name: Testing
         working-directory: ./build
         run: ctest
+
+      - name: Building docker image
+        run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/autocomplete:latest .
+
+      - name: Dockerhub Authentication
+        run: docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
+
+      - name: Publishing image to Container Registry
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/autocomplete:latest
