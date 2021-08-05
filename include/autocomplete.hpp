@@ -4,6 +4,9 @@
 #include "autocomplete_common.hpp"
 #include "scored_string_pool.hpp"
 #include "constants.hpp"
+#include <set>
+
+#define trace(x) std::cout << #x << ": " << x << std::endl;
 
 namespace autocomplete {
 
@@ -78,16 +81,28 @@ struct autocomplete {
         }
         probe.stop(3);
 
-
-        uint32_t num_completions = num_completions_for_prefix + num_completions_for_conjunctive_topk;
+        trace(num_completions_for_prefix)
+        trace(num_completions_for_conjunctive_topk)
         m_pool.scores().clear();
+
+        std::set<int> already_covered_scores;
 
         for (int i = 0; i < int(pool_scores_prefix_topk.size()); ++i) {
             m_pool.scores().push_back(pool_scores_prefix_topk[i]);
+            already_covered_scores.insert(pool_scores_prefix_topk[i]);
         }
         for (int i = 0; i < int(pool_scores_conjunctive_topk.size()); ++i) {
-            m_pool.scores().push_back(pool_scores_conjunctive_topk[i]);
+            if (already_covered_scores.find(pool_scores_conjunctive_topk[i]) == already_covered_scores.end()) {
+                m_pool.scores().push_back(pool_scores_conjunctive_topk[i]);
+            } else {
+                std::cout << "Ignoring score " << pool_scores_conjunctive_topk[i] << " to avoid duplicates" << std::endl;
+            }
         }
+        uint32_t num_completions = m_pool.scores().size();
+
+        pool_scores_prefix_topk.clear();
+        pool_scores_conjunctive_topk.clear();
+        already_covered_scores.clear();
 
 
         probe.start(2);
