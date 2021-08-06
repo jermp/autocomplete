@@ -86,19 +86,26 @@ struct autocomplete {
         m_pool.scores().clear();
 
         std::set<int> already_covered_scores;
+        uint32_t num_completions = 0;
 
         for (int i = 0; i < int(pool_scores_prefix_topk.size()); ++i) {
-            m_pool.scores().push_back(pool_scores_prefix_topk[i]);
-            already_covered_scores.insert(pool_scores_prefix_topk[i]);
+            if (already_covered_scores.find(pool_scores_prefix_topk[i]) == already_covered_scores.end()) {
+                m_pool.scores().push_back(pool_scores_prefix_topk[i]);
+                already_covered_scores.insert(pool_scores_prefix_topk[i]);
+                num_completions++;
+            } else {
+                std::cout << "Ignoring score " << pool_scores_prefix_topk[i] << " to avoid duplicates" << std::endl;
+            }
         }
         for (int i = 0; i < int(pool_scores_conjunctive_topk.size()); ++i) {
             if (already_covered_scores.find(pool_scores_conjunctive_topk[i]) == already_covered_scores.end()) {
                 m_pool.scores().push_back(pool_scores_conjunctive_topk[i]);
+                already_covered_scores.insert(pool_scores_conjunctive_topk[i]);
+                num_completions++;
             } else {
                 std::cout << "Ignoring score " << pool_scores_conjunctive_topk[i] << " to avoid duplicates" << std::endl;
             }
         }
-        uint32_t num_completions = m_pool.scores().size();
 
         pool_scores_prefix_topk.clear();
         pool_scores_conjunctive_topk.clear();
