@@ -1,11 +1,15 @@
-FROM alpine:latest
+FROM ubuntu:latest
 
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+EXPOSE 8000
 
-USER appuser
+RUN groupadd appgroup && useradd appuser -G appgroup
 
 COPY ./build /app
 
 WORKDIR /app
+
+RUN chmod +x web_server
+
+USER appuser
 
 CMD ["./web_server", "8000", "trec_05.ef_type1.bin"]
