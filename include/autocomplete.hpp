@@ -45,8 +45,9 @@ struct autocomplete {
         completion_type prefix;
         byte_range suffix;
         constexpr bool must_find_prefix = true;
+        bool perform_prefix_search = true;
         if (!parse(m_dictionary, query, prefix, suffix, must_find_prefix)) {
-            return m_pool.begin();
+            perform_prefix_search = false;
         }
         probe.stop(0);
 
@@ -57,11 +58,16 @@ struct autocomplete {
         suffix_lex_range.end += 1;
         range r = m_completions.locate_prefix(prefix, suffix_lex_range);
         if (r.is_invalid()) return m_pool.begin();
-        uint32_t num_completions_for_prefix =
-                m_unsorted_docs_list.topk(r, k, m_pool.scores());
+
+        uint32_t num_completions_for_prefix = 0;
         std::vector<id_type> pool_scores_prefix_topk;
-        for (size_t i = 0; i < m_pool.scores().size(); ++i) {
-            pool_scores_prefix_topk.push_back(m_pool.scores()[i]);
+
+        if (perform_prefix_search) {
+            num_completions_for_prefix =
+                    m_unsorted_docs_list.topk(r, k, m_pool.scores());
+            for (size_t i = 0; i < m_pool.scores().size(); ++i) {
+                pool_scores_prefix_topk.push_back(m_pool.scores()[i]);
+            }
         }
         probe.stop(1);
 
@@ -106,6 +112,8 @@ struct autocomplete {
                 std::cout << "Ignoring score " << pool_scores_conjunctive_topk[i] << " to avoid duplicates" << std::endl;
             }
         }
+
+        trace(num_completions)
 
         pool_scores_prefix_topk.clear();
         pool_scores_conjunctive_topk.clear();
