@@ -10,6 +10,6 @@ WORKDIR /app
 
 RUN chmod +x web_server
 
-USER appuser
+# USER appuser
 
 CMD ["./web_server", "8000", "trec_05.ef_type1.bin"]
