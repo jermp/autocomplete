@@ -182,3 +182,15 @@ Live demo <a name="demo"></a>
 
 Start the web server with the program `./web_server <port> <index_filename>` and access the demo at
 `localhost:<port>`.
+
+Use a prebuilt docker image
+----------
+
+The following command pulls a prebuilt docker image and runs it locally.
+
+```bash
+docker pull jermp/autocomplete
+docker run -p 8000:8000 -d jermp/autocomplete
+```
+
+The demo can be accessed at [http://localhost:8000](http://localhost:8000)
