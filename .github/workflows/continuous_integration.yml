@@ -57,4 +57,5 @@ jobs:
         run: docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
 
       - name: Publishing image to Container Registry
+        if: github.ref == 'refs/heads/master'
         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/autocomplete:latest
