@@ -63,11 +63,12 @@ struct autocomplete {
 
         uint32_t num_completions_for_prefix = 0;
         std::vector<id_type> pool_scores_prefix_topk;
+        pool_scores_prefix_topk.clear();
 
         if (perform_prefix_search) {
             num_completions_for_prefix =
                     m_unsorted_docs_list.topk(r, k, m_pool.scores());
-            for (size_t i = 0; i < m_pool.scores().size(); ++i) {
+            for (size_t i = 0; i < num_completions_for_prefix; ++i) {
                 pool_scores_prefix_topk.push_back(m_pool.scores()[i]);
             }
             m_pool.scores().clear();
@@ -79,13 +80,15 @@ struct autocomplete {
         uint32_t num_completions_for_conjunctive_topk = 0;
 
         if (prefix.size() == 0) {
+            suffix_lex_range.begin -= 1;
             num_completions_for_conjunctive_topk = m_unsorted_minimal_docs_list.topk(
                     m_inverted_index, suffix_lex_range, k, m_pool.scores());
         } else {
             num_completions_for_conjunctive_topk = conjunctive_topk(prefix, suffix_lex_range, k);
         }
         std::vector<id_type> pool_scores_conjunctive_topk;
-        for (size_t i = 0; i < m_pool.scores().size(); ++i) {
+        pool_scores_conjunctive_topk.clear();
+        for (size_t i = 0; i < num_completions_for_conjunctive_topk; ++i) {
             pool_scores_conjunctive_topk.push_back(m_pool.scores()[i]);
         }
         probe.stop(3);
@@ -95,6 +98,8 @@ struct autocomplete {
         m_pool.scores().clear();
 
         std::set<int> already_covered_scores;
+        already_covered_scores.clear();
+        already_covered_scores.insert(0); // Because we want to ignore 0 as 0 is invalid
         uint32_t num_completions = 0;
 
         for (int i = 0; i < int(pool_scores_prefix_topk.size()); ++i) {
@@ -117,11 +122,6 @@ struct autocomplete {
         }
 
         trace(num_completions)
-
-        pool_scores_prefix_topk.clear();
-        pool_scores_conjunctive_topk.clear();
-        already_covered_scores.clear();
-
 
         probe.start(2);
         auto it = extract_strings(num_completions);
