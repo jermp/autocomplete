@@ -57,7 +57,9 @@ struct autocomplete {
         suffix_lex_range.begin += 1;
         suffix_lex_range.end += 1;
         range r = m_completions.locate_prefix(prefix, suffix_lex_range);
-        if (r.is_invalid()) return m_pool.begin();
+        if (r.is_invalid()) {
+            perform_prefix_search = false;
+        }
 
         uint32_t num_completions_for_prefix = 0;
         std::vector<id_type> pool_scores_prefix_topk;
@@ -68,6 +70,7 @@ struct autocomplete {
             for (size_t i = 0; i < m_pool.scores().size(); ++i) {
                 pool_scores_prefix_topk.push_back(m_pool.scores()[i]);
             }
+            m_pool.scores().clear();
         }
         probe.stop(1);
 
