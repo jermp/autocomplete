@@ -28,6 +28,18 @@ After that, for having a minimal running example, just run
 
 and then access the service [here](http://127.0.0.1:8000).
 
+<!--Use a prebuilt docker image
+---------------------------
+
+The following command pulls a prebuilt docker image and runs it locally.
+
+```bash
+docker pull jermp/autocomplete
+docker run -p 8000:8000 -d jermp/autocomplete
+```
+
+The demo can be accessed at [http://localhost:8000](http://localhost:8000).-->
+
 Compiling the code <a name="compiling"></a>
 ------------------
 
@@ -182,15 +194,3 @@ Live demo <a name="demo"></a>
 
 Start the web server with the program `./web_server <port> <index_filename>` and access the demo at
 `localhost:<port>`.
-
-Use a prebuilt docker image
-----------
-
-The following command pulls a prebuilt docker image and runs it locally.
-
-```bash
-docker pull jermp/autocomplete
-docker run -p 8000:8000 -d jermp/autocomplete
-```
-
-The demo can be accessed at [http://localhost:8000](http://localhost:8000)
