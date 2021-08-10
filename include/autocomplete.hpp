@@ -64,10 +64,14 @@ struct autocomplete {
         uint32_t num_completions_for_prefix = 0;
         std::vector<id_type> pool_scores_prefix_topk;
         pool_scores_prefix_topk.clear();
+        bool perform_conjunctive_search = true;
 
         if (perform_prefix_search) {
             num_completions_for_prefix =
                     m_unsorted_docs_list.topk(r, k, m_pool.scores());
+            if (num_completions_for_prefix >= k) {
+                perform_conjunctive_search = false;
+            }
             for (size_t i = 0; i < num_completions_for_prefix; ++i) {
                 pool_scores_prefix_topk.push_back(m_pool.scores()[i]);
             }
@@ -75,34 +79,37 @@ struct autocomplete {
         }
         probe.stop(1);
 
-
         probe.start(3);
-        uint32_t num_completions_for_conjunctive_topk = 0;
 
-        if (prefix.size() == 0) {
-            suffix_lex_range.begin -= 1;
-            num_completions_for_conjunctive_topk = m_unsorted_minimal_docs_list.topk(
-                    m_inverted_index, suffix_lex_range, k, m_pool.scores());
-        } else {
-            num_completions_for_conjunctive_topk = conjunctive_topk(prefix, suffix_lex_range, k);
-        }
+        uint32_t num_completions_for_conjunctive_topk = 0;
         std::vector<id_type> pool_scores_conjunctive_topk;
         pool_scores_conjunctive_topk.clear();
-        for (size_t i = 0; i < num_completions_for_conjunctive_topk; ++i) {
-            pool_scores_conjunctive_topk.push_back(m_pool.scores()[i]);
-        }
-        probe.stop(3);
 
+        if (perform_conjunctive_search) {
+            if (prefix.size() == 0) {
+                suffix_lex_range.begin -= 1;
+                num_completions_for_conjunctive_topk = m_unsorted_minimal_docs_list.topk(
+                        m_inverted_index, suffix_lex_range, k, m_pool.scores());
+            } else {
+                num_completions_for_conjunctive_topk = conjunctive_topk(prefix, suffix_lex_range, k);
+            }
+
+            for (size_t i = 0; i < num_completions_for_conjunctive_topk; ++i) {
+                pool_scores_conjunctive_topk.push_back(m_pool.scores()[i]);
+            }
+            probe.stop(3);
+
+            m_pool.scores().clear();
+        }
         trace(num_completions_for_prefix)
         trace(num_completions_for_conjunctive_topk)
-        m_pool.scores().clear();
 
         std::set<int> already_covered_scores;
         already_covered_scores.clear();
         already_covered_scores.insert(0); // Because we want to ignore 0 as 0 is invalid
         uint32_t num_completions = 0;
 
-        for (int i = 0; i < int(pool_scores_prefix_topk.size()); ++i) {
+        for (int i = 0; num_completions < k && i < int(pool_scores_prefix_topk.size()); ++i) {
             if (already_covered_scores.find(pool_scores_prefix_topk[i]) == already_covered_scores.end()) {
                 m_pool.scores().push_back(pool_scores_prefix_topk[i]);
                 already_covered_scores.insert(pool_scores_prefix_topk[i]);
@@ -111,7 +118,7 @@ struct autocomplete {
                 std::cout << "Ignoring score " << pool_scores_prefix_topk[i] << " to avoid duplicates" << std::endl;
             }
         }
-        for (int i = 0; i < int(pool_scores_conjunctive_topk.size()); ++i) {
+        for (int i = 0; num_completions < k && i < int(pool_scores_conjunctive_topk.size()); ++i) {
             if (already_covered_scores.find(pool_scores_conjunctive_topk[i]) == already_covered_scores.end()) {
                 m_pool.scores().push_back(pool_scores_conjunctive_topk[i]);
                 already_covered_scores.insert(pool_scores_conjunctive_topk[i]);
