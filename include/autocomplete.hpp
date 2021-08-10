@@ -35,6 +35,16 @@ struct autocomplete {
         fi_builder.build(m_forward_index);
     }
 
+    /**
+     * hybrid_topk implements autocompletion in the following order
+     * For getting top-k results form a given query:
+     *    fetch results from prefix search
+     *    if prefix results size < k
+     *       append the conjunctive search results (deduplication is done)
+     *
+     * Note: Reuse computation of prefix, suffix and suffix lex range
+     *
+     */
     template <typename Probe>
     iterator_type hybrid_topk(std::string const& query, const uint32_t k,
                               Probe& probe) {
