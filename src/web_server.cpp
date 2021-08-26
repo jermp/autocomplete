@@ -50,7 +50,17 @@ static void ev_handler(struct mg_connection* nc, int ev, void* p) {
             char k_buf[16];
             int k_len = mg_get_http_var(&(hm->query_string), "k", k_buf, 16);
             if (k_len > 0) {
-                k = std::stoull(std::string(k_buf, k_buf + k_len));
+                try {
+                    k = std::stoull(std::string(k_buf, k_buf + k_len));
+                } catch (std::exception e) {
+                    std::string error_message = "400: Bad Request";
+                    /* Send headers */
+                    mg_printf(nc, "%s",
+                              "HTTP/1.1 400 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+                    mg_printf_http_chunk(nc, error_message.c_str(), error_message.size());
+                    mg_send_http_chunk(nc, "",
+                                       0);  // send empty chunk, the end of response
+                }
             }
 
             std::string data;
