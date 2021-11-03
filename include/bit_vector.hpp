@@ -242,12 +242,6 @@ struct bit_vector {
         build(in);
     }
 
-    bit_vector& operator=(bit_vector const& other) {
-        bit_vector tmp(other);
-        tmp.swap(*this);
-        return *this;
-    }
-
     void swap(bit_vector& other) {
         std::swap(other.m_size, m_size);
         other.m_bits.swap(m_bits);
