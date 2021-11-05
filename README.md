@@ -1,3 +1,5 @@
+[![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/jermp/autocomplete.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/jermp/autocomplete/context:cpp)
+
 Autocomplete
 ------------
 
