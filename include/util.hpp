@@ -45,12 +45,17 @@ uint64_t find(S const& sequence, uint64_t id, uint64_t lo, uint64_t hi) {
                     return pos;
                 }
             }
+//            break;
         }
         uint64_t pos = lo + ((hi - lo) >> 1);
         uint64_t val = sequence.access(pos);
         if (val == id) {
             return pos;
         } else if (val > id) {
+            // Rescuing hi from unsigned underflow
+            if (pos == 0) {
+                return global::not_found;
+            }
             hi = pos - 1;
         } else {
             lo = pos + 1;
