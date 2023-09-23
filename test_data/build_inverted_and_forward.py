@@ -52,7 +52,7 @@ with open(input_filename, 'r') as f:
         if not discard:
             # NOTE: not sorted!
             if doc_id >= num_docs:
-                print doc_id,num_docs
+                print(doc_id,num_docs)
             forward_index[doc_id] = mapped;
 
             lines += 1

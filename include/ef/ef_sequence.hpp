@@ -49,6 +49,7 @@ struct ef_sequence {
             ++within;
         }
         assert(values.size() == n);
+        assert(std::is_sorted(values.begin(), values.end()));
         compress(values.begin(), values.size(), values.back());
     }
 

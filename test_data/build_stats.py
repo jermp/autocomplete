@@ -43,7 +43,7 @@ print("completions: " + str(lines))
 output_file.write(str(lines) + "\n")
 output_file.write(str(universe + 1) + "\n")
 output_file.write(str(len(nodes_per_level)) + "\n")
-for key, value in sorted(nodes_per_level.iteritems(), key = lambda kv: kv[0]):
+for key, value in sorted(nodes_per_level.items(), key = lambda kv: kv[0]):
     output_file.write(str(value) + "\n")
 output_file.close()
 

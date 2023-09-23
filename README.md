@@ -28,7 +28,7 @@ After that, for having a minimal running example, just run
 
 and then access the service [from localhost](http://localhost:8000).
 
-### Or you can use a prebuilt Docker image  
+### Or you can use a prebuilt Docker image
 
 The following command pulls a prebuilt Docker image and runs it locally.
 
@@ -160,7 +160,7 @@ They should have been created already if you have run the
 script `preprocess.sh`, otherwise
 you can use
 
-	python partition_queries_by_length.py trec_05_efficiency_queries/trec_05_efficiency_queries.completions trec_05_efficiency_queries/trec_05_efficiency_queries.completions.queries 300
+	python3 partition_queries_by_length.py trec_05_efficiency_queries/trec_05_efficiency_queries.completions trec_05_efficiency_queries/trec_05_efficiency_queries.completions.queries 300
 
 to partition the input completions by number of query terms
 and retain 300 queries at random.
@@ -179,7 +179,7 @@ of the prefix of the last token is retained.
 We automated the collection of results with the script `script/collected_topk_results_by_varying_percentage.py`.
 From within the `/build` directory, run
 
-	python ../script/collect_results_by_varying_percentage.py ef_type1 topk trec05.ef_type1.bin ../test_data/trec_05_efficiency_queries/trec_05_efficiency_queries.completions 10 300
+	python3 ../script/collect_results_by_varying_percentage.py ef_type1 topk trec05.ef_type1.bin ../test_data/trec_05_efficiency_queries/trec_05_efficiency_queries.completions 10 300
 
 To benchmark the dictionaries (Front-Coding and trie), just run the following script from within
 the `script` directory:
