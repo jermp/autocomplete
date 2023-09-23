@@ -33,9 +33,9 @@ jobs:
         run: cmake --build . --config Release
 
       - name: Setup python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
         with:
-          python-version: '2.x'
+          python-version: '3.x'
           architecture: 'x64'
 
       - name: Data preprocessing
