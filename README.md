@@ -1,8 +1,10 @@
 Autocomplete
 ------------
 
-A Query Auto-Completion system based on the paper *[Efficient and Effective Query Auto-Completion](http://pages.di.unipi.it/pibiri/papers/SIGIR20.pdf)*, by Simon Gog, Giulio Ermanno Pibiri, and Rossano Venturini,
+A Query Auto-Completion system based on the paper *[Efficient and Effective Query Auto-Completion](https://dl.acm.org/doi/10.1145/3397271.3401432)*, by Simon Gog, Giulio Ermanno Pibiri, and Rossano Venturini,
 published in ACM SIGIR 2020.
+
+Please, cite the paper if you use the data structures from this library.
 
 ##### Table of contents
 1. [Installation and quick start](#install)
@@ -40,7 +42,8 @@ And then access the service [from localhost](http://localhost:8000).
 Compiling the code <a name="compiling"></a>
 ------------------
 
-The code has been tested on Linux with `gcc` 7.4.0, 8.3.0, 9.0.0 and on Mac 10.14 with `clang` 10.0.0.
+The code has been tested on Linux with `gcc` 7.4.0, 8.3.0, 9.0.0, on Mac OS 10.14 and 12.4 with `clang` 10.0.0 and 13.0.0.
+
 To build the code, [`CMake`](https://cmake.org/) is required.
 
 Clone the repository with
